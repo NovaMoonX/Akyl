@@ -1,8 +1,15 @@
-import { addEdge, Controls, MiniMap, ReactFlow, useEdgesState, useNodesState, type Connection } from '@xyflow/react';
+import {
+  addEdge,
+  Controls,
+  ReactFlow,
+  useEdgesState,
+  useNodesState,
+  type Connection
+} from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useCallback } from 'react';
-import CustomNode from './components/CustomNode';
 import './App.css';
+import CustomNode from './components/CustomNode';
 
 const nodeTypes = {
   custom: CustomNode,
@@ -51,7 +58,7 @@ const Flow = () => {
   const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
   return (
-    <div className='w-screen h-screen bg-blue-100'>
+    <div className='w-screen h-screen'>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -60,10 +67,8 @@ const Flow = () => {
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
-        className='bg-teal-50'
       >
-        <MiniMap />
-        <Controls />
+        <Controls position='bottom-right'/>
       </ReactFlow>
     </div>
   );
