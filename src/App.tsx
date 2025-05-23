@@ -1,4 +1,11 @@
-import { addEdge, Controls, ReactFlow, useEdgesState, useNodesState, type Connection } from '@xyflow/react';
+import {
+  addEdge,
+  Controls,
+  ReactFlow,
+  useEdgesState,
+  useNodesState,
+  type Connection,
+} from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useCallback } from 'react';
 import './App.css';
@@ -48,10 +55,16 @@ const Flow = () => {
   const [nodes, __setNodes, onNodesChange] = useNodesState(initNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initEdges);
 
-  const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+  const onConnect = useCallback(
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges],
+  );
 
   return (
-    <div id='app' className='w-screen h-screen relative'>
+    <div id='app' className='relative h-screen w-screen'>
+      <h1 className='font-brand absolute z-10 left-0 bottom-0 p-3 bg-teal-50/50 text-4xl font-black text-emerald-700 rounded-tr-xl'>
+        Akyl
+      </h1>
       <ReactFlow
         nodes={nodes}
         edges={edges}
