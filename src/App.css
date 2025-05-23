@@ -19,4 +19,16 @@
   --font-brand: 'Averia Serif Libre', 'serif';
 
   --color-brand: '#047857'; /* teal-700 */
+
+  --animate-slide-down: slide-down 0.15s ease-out forwards;
+  @keyframes slide-down {
+    0% {
+      transform: scaleY(0);
+      opacity: 0;
+    }
+    100% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
 }

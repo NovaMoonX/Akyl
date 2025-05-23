@@ -1,9 +1,131 @@
-import { MenuIcon } from 'lucide-react';
+import {
+  CopyPlusIcon,
+  FolderIcon,
+  MenuIcon,
+  SaveIcon,
+  SettingsIcon,
+  ShieldQuestionIcon,
+  SquarePlusIcon,
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+
+interface MenuItem {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}
+
+const items: MenuItem[] = [
+  {
+    icon: <SquarePlusIcon />,
+    label: 'New Space',
+    onClick: () => {
+      console.log('Create New clicked');
+    },
+  },
+  {
+    icon: <FolderIcon />,
+    label: 'Open',
+    onClick: () => {
+      console.log('Open clicked');
+    },
+  },
+  {
+    icon: <SaveIcon />,
+    label: 'Save',
+    onClick: () => {
+      console.log('Save clicked');
+    },
+  },
+  {
+    icon: <CopyPlusIcon />,
+    label: 'Duplicate',
+    onClick: () => {
+      console.log('Duplicate clicked');
+    },
+  },
+  {
+    icon: <ShieldQuestionIcon />,
+    label: 'Help',
+    onClick: () => {
+      console.log('Help clicked');
+    },
+  },
+  {
+    icon: <SettingsIcon />,
+    label: 'Configurations',
+    onClick: () => {
+      console.log('Config clicked');
+    },
+  },
+];
 
 export default function HeaderMenu() {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close the dropdown when clicking outside of it
+  useEffect(() => {
+    const handleMouseAction = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    const handlePointerAction = (event: PointerEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    // Mouse events for actions that are NOT part of the grid
+    document.addEventListener('mousedown', handleMouseAction);
+    // Pointer events for actions that are part of the grid
+    document.addEventListener('pointerdown', handlePointerAction);
+
+    return () => {
+      document.removeEventListener('mousedown', handleMouseAction);
+      document.removeEventListener('pointerdown', handlePointerAction);
+    };
+  }, []);
+
   return (
-    <button className='rounded-lg bg-white px-4 py-5 text-teal-500 shadow-md'>
-      <MenuIcon />
-    </button>
+    <>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className='rounded-lg bg-white px-4 py-5 text-teal-500 shadow-md hover:bg-gray-100'
+      >
+        <MenuIcon />
+      </button>
+
+      {isOpen && (
+        <div
+          ref={dropdownRef}
+          className='animate-slide-down absolute top-full left-0 mt-2 w-48 origin-top transform rounded-md bg-white py-1 shadow-lg transition-transform duration-1000 ease-out'
+        >
+          {items.map((item, index) => {
+            const Icon = (item.icon as React.ReactElement).type;
+            return (
+              <button
+                key={index}
+                onClick={() => {
+                  item.onClick();
+                  setIsOpen(false); // Close dropdown after clicking an item
+                }}
+                className='flex w-full flex-row items-center gap-1 px-4 py-2 text-left text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+              >
+                <Icon size={16} />
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </>
   );
 }

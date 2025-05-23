@@ -14,5 +14,5 @@
 }
 
 button {
-  @apply hover:cursor-pointer hover:transition-all;
+  @apply hover:cursor-pointer hover:transition-all duration-300;
 }
