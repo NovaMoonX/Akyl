@@ -1,16 +1,16 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 .react-flow {
-  @apply bg-teal-50
+  @apply bg-teal-50;
 }
 
 /* Controls */
 .react-flow__controls-button {
-  @apply bg-teal-50 text-black my-0.5
+  @apply my-0.5 bg-teal-50 text-black;
 }
 .react-flow__controls-button:hover {
-  @apply outline-teal-500
+  @apply cursor-default outline-teal-500;
 }
 .react-flow__controls-button:focus {
-  @apply outline-teal-700 outline-2
+  @apply outline-2 outline-teal-700;
 }

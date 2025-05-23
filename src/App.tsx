@@ -51,7 +51,7 @@ const Flow = () => {
   const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
   return (
-    <div className='w-screen h-screen relative'>
+    <div id='app' className='w-screen h-screen relative'>
       <ReactFlow
         nodes={nodes}
         edges={edges}
