@@ -1,11 +1,4 @@
-import {
-  addEdge,
-  Controls,
-  ReactFlow,
-  useEdgesState,
-  useNodesState,
-  type Connection
-} from '@xyflow/react';
+import { addEdge, Controls, ReactFlow, useEdgesState, useNodesState, type Connection } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useCallback } from 'react';
 import './App.css';
@@ -66,9 +59,10 @@ const Flow = () => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
-        fitView
+        fitView={true}
+        fitViewOptions={{ padding: 1 }}
       >
-        <Controls position='bottom-right'/>
+        <Controls position='bottom-right' />
       </ReactFlow>
     </div>
   );
