@@ -62,7 +62,7 @@ const Flow = () => {
 
   return (
     <div id='app' className='relative h-screen w-screen'>
-      <h1 className='font-brand absolute z-10 left-0 bottom-0 p-3 bg-teal-50/50 text-4xl font-black text-emerald-700 rounded-tr-xl'>
+      <h1 className='font-brand absolute bottom-0 left-0 z-10 rounded-tr-xl bg-teal-50/50 p-3 text-4xl font-black text-emerald-700'>
         Akyl
       </h1>
       <ReactFlow
@@ -76,7 +76,7 @@ const Flow = () => {
         fitViewOptions={{ padding: 1 }}
       >
         <Header />
-        <Controls position='bottom-right' />
+        <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
       </ReactFlow>
     </div>
   );
