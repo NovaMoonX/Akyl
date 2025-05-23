@@ -2,7 +2,7 @@ import { addEdge, Controls, ReactFlow, useEdgesState, useNodesState, type Connec
 import '@xyflow/react/dist/base.css';
 import { useCallback } from 'react';
 import './App.css';
-import CustomNode from './components/CustomNode';
+import { CustomNode, Header } from './components';
 
 const nodeTypes = {
   custom: CustomNode,
@@ -51,7 +51,7 @@ const Flow = () => {
   const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
   return (
-    <div className='w-screen h-screen'>
+    <div className='w-screen h-screen relative'>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -62,6 +62,7 @@ const Flow = () => {
         fitView={true}
         fitViewOptions={{ padding: 1 }}
       >
+        <Header />
         <Controls position='bottom-right' />
       </ReactFlow>
     </div>
