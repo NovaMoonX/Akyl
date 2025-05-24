@@ -1,22 +1,34 @@
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
+import type { Space } from '../lib';
 import { useSpace } from '../store';
 import useURL from './useURL';
 
 export default function useInitSpace() {
-  const [showLoadScreen, setShowLoadScreen] = useState(false);
-  const spaceId = useSpace(useShallow((state) => state.space.id));
+  const { setSpace } = useSpace();
   const { spaceId: urlSpaceId } = useURL();
+  const [showLoadScreen, setShowLoadScreen] = useState(true);
+  const spaceId = useSpace(useShallow((state) => state.space.id));
 
   useEffect(() => {
     if (!urlSpaceId) {
-      setShowLoadScreen(true);
+      setSpace({} as Space);
+      return;
     }
-    if (urlSpaceId && !localStorage.getItem(urlSpaceId)) {
+
+    const fetchedSpace = localStorage.getItem(urlSpaceId);
+    if (urlSpaceId && !fetchedSpace) {
       window.location.href = '/';
-      setShowLoadScreen(true);
+      setSpace({} as Space);
+      return;
     }
-  }, [spaceId, urlSpaceId]);
+
+    if (urlSpaceId && fetchedSpace) {
+      const space = JSON.parse(fetchedSpace);
+      setSpace(space);
+      setShowLoadScreen(false);
+    }
+  }, [spaceId, urlSpaceId, setSpace]);
 
   return { showLoadScreen };
 }

@@ -7,7 +7,7 @@ import {
 import type { Space } from './space.types';
 
 export function createNewSpace() {
-  const id = generateId('space')
+  const id = generateId('space');
   const timestamp = Date.now();
   const theme = getTheme();
 
@@ -35,6 +35,5 @@ export function createNewSpace() {
     },
   };
   localStorage.setItem(id, JSON.stringify(space));
-  console.log('space', space); // REMOVE
   window.location.href = `/${space.id}`;
 }

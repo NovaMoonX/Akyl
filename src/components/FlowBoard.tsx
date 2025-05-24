@@ -43,8 +43,10 @@ export default function Flow() {
         fitView={true}
         fitViewOptions={{ padding: 1 }}
       >
-        <Header />
-        <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
+        {!showLoadScreen && <Header />}
+        {!showLoadScreen && (
+          <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
+        )}
         {showLoadScreen && <LoadScreen />}
       </ReactFlow>
     </div>
