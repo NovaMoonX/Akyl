@@ -7,6 +7,10 @@ export type {
   IncomeCategory,
 } from './budget.types';
 
+// File
+export { exportFile, importFile } from './file.actions';
+export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
+
 // Node
 export type { Node, NodeData, NodeType } from './node.types';
 

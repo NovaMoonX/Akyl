@@ -8,8 +8,9 @@ import {
   SquarePlusIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { createNewSpace } from '../../lib';
+import { createNewSpace, importFile } from '../../lib';
 import ConfirmationModal from '../modals/ConfirmationModal';
+import SaveModal from '../modals/SaveModal';
 import ThemeToggle from '../ui/ThemeToggle';
 
 interface MenuItem {
@@ -47,6 +48,7 @@ const items: MenuItem[] = [
 export default function HeaderMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleMenuItemClick = (label: string) => {
@@ -55,10 +57,10 @@ export default function HeaderMenu() {
         setIsConfirmationOpen(true);
         break;
       case 'Open':
-        console.log('Open clicked');
+        importFile()
         break;
       case 'Save':
-        console.log('Save clicked');
+        setIsSaveModalOpen(true);
         break;
       case 'Duplicate':
         console.log('Duplicate clicked');
@@ -154,6 +156,13 @@ export default function HeaderMenu() {
           onConfirm={handleConfirmationModalConfirm}
           onCancel={() => setIsConfirmationOpen(false)}
           onClose={() => setIsConfirmationOpen(false)}
+        />
+      )}
+
+      {isSaveModalOpen && (
+        <SaveModal
+          isOpen={isSaveModalOpen}
+          onClose={() => setIsSaveModalOpen(false)}
         />
       )}
     </>

@@ -4,7 +4,7 @@ import {
   ShieldQuestionIcon,
   SquarePlusIcon,
 } from 'lucide-react';
-import { createNewSpace } from '../lib';
+import { createNewSpace, importFile } from '../lib';
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -24,7 +24,7 @@ const items: MenuItem[] = [
     icon: <FolderIcon />,
     label: 'Open',
     onClick: () => {
-      console.log('Open clicked');
+      importFile();
     },
   },
   {
