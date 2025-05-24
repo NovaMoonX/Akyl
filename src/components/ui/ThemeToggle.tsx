@@ -5,8 +5,8 @@ import { join } from '../../utils';
 export default function ThemeToggle() {
   return (
     <div className='flex gap-0.5 rounded-md border border-gray-300 p-1 dark:border-gray-700'>
-      <ToggleButton theme='light' icon={Moon} />
-      <ToggleButton theme='dark' icon={Sun} />
+      <ToggleButton theme='light' icon={Sun} />
+      <ToggleButton theme='dark' icon={Moon} />
     </div>
   );
 }
@@ -18,12 +18,12 @@ function ToggleButton({
   theme: 'light' | 'dark';
   icon: LucideIcon;
 }) {
-  const { theme: currentTheme, toggleTheme } = useTheme();
+  const { theme: currentTheme, setTheme } = useTheme();
   const Icon = icon;
 
   return (
     <button
-      onClick={toggleTheme}
+      onClick={() => setTheme(theme)}
       className={join(
         'rounded-md p-1 hover:border-transparent focus:outline-none',
         theme === currentTheme
