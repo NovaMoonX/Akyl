@@ -1,9 +1,22 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import './styles/theme.css';
+@custom-variant dark (&:where(.dark, .dark *));
 
-.react-flow__node-selectorNode {
-  font-size: 12px;
-  background: #eee;
-  border: 1px solid #555;
-  border-radius: 5px;
-  text-align: center;
+.react-flow {
+  @apply bg-background-light dark:bg-background-dark;
+}
+
+.react-flow__attribution {
+  @apply bg-background-light dark:bg-background-dark dark:text-surface-light;
+}
+
+/* Controls */
+.react-flow__controls-button {
+  @apply bg-background-light dark:bg-background-dark text-surface-dark dark:text-surface-light my-0.5 rounded;
+}
+.react-flow__controls-button:hover {
+  @apply cursor-default outline-teal-500;
+}
+.react-flow__controls-button:focus {
+  @apply outline-2 outline-teal-700;
 }
