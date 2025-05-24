@@ -1,5 +1,6 @@
 import type { BackgroundVariant } from '@xyflow/react';
 import type { Expense, Income } from './budget.types';
+import { CashFlowVerbiagePairs } from './space.constants';
 
 export interface SpaceMetadata {
   createdBy: string;
@@ -13,6 +14,7 @@ export interface SpaceMetadata {
 
 export type Theme = 'light' | 'dark';
 export type Currency = 'USD' | 'EUR';
+export type CashFlowVerbiage = keyof typeof CashFlowVerbiagePairs;
 
 export interface Config {
   theme: Theme;
@@ -23,6 +25,7 @@ export interface Config {
     | '';
   accentColor: string;
   currency: Currency;
+  cashFlowVerbiage: CashFlowVerbiage;
 }
 
 export interface Space {
