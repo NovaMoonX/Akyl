@@ -8,6 +8,7 @@ import {
   SquarePlusIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import ThemeToggle from '../ui/ThemeToggle';
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -124,6 +125,11 @@ export default function HeaderMenu() {
               </button>
             );
           })}
+          <div className='h-0.5 w-full bg-gray-200' />
+          <div className='flex items-center justify-between pl-4 pr-3 py-1'>
+            <p>Theme</p>
+            <ThemeToggle />
+          </div>
         </div>
       )}
     </>
