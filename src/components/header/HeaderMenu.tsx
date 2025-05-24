@@ -81,12 +81,6 @@ export default function HeaderMenu() {
     createNewSpace();
   };
 
-  const handleSave = (name: string, continuous: boolean) => {
-    // TODO: Implement save logic for the space using name and continuous
-    // For now, just log the values
-    console.log('Save Space:', name, 'Continuous:', continuous);
-  };
-
   // Close the dropdown when clicking outside of it
   useEffect(() => {
     const handleMouseAction = (event: MouseEvent) => {
@@ -169,7 +163,6 @@ export default function HeaderMenu() {
         <SaveModal
           isOpen={isSaveModalOpen}
           onClose={() => setIsSaveModalOpen(false)}
-          onSave={handleSave}
         />
       )}
     </>

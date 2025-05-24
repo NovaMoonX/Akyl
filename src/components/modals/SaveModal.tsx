@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { exportFile, FILE_EXTENSION } from '../../lib';
 import { useSpace } from '../../store';
 import Checkbox from '../ui/Checkbox';
 import Modal from '../ui/Modal';
@@ -6,10 +7,9 @@ import Modal from '../ui/Modal';
 interface SaveModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (name: string, continuous: boolean) => void;
 }
 
-export default function SaveModal({ isOpen, onClose, onSave }: SaveModalProps) {
+export default function SaveModal({ isOpen, onClose }: SaveModalProps) {
   const { space } = useSpace();
   const [fileName, setFileName] = useState(
     (space.title || '').replace(/\s+/g, '-').toLowerCase(), // Convert to kebab-case
@@ -17,7 +17,7 @@ export default function SaveModal({ isOpen, onClose, onSave }: SaveModalProps) {
   const [continuous, setContinuous] = useState(false);
 
   const handleSave = () => {
-    onSave(fileName, continuous);
+    exportFile(fileName, space);
     onClose();
   };
 
@@ -34,7 +34,7 @@ export default function SaveModal({ isOpen, onClose, onSave }: SaveModalProps) {
               placeholder={space.title || 'File name'}
               className='dark:bg-surface-dark dark:text-surface-light grow rounded border border-gray-300 px-3 py-2 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
             />
-            <p>.akyl</p>
+            <p>{FILE_EXTENSION}</p>
           </div>
         </div>
 
