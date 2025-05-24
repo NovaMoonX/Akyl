@@ -7,11 +7,12 @@ import {
 import type { Space } from './space.types';
 
 export function createNewSpace() {
+  const id = generateId('space')
   const timestamp = Date.now();
   const theme = getTheme();
 
   const space: Space = {
-    id: generateId('space'),
+    id,
     title: '',
     description: '',
     metadata: {
@@ -33,7 +34,7 @@ export function createNewSpace() {
       cashFlowVerbiage: 'default',
     },
   };
-
+  localStorage.setItem(id, JSON.stringify(space));
   console.log('space', space); // REMOVE
-  window.location.href = `/${space.id}`; // TODO: remove this line
+  window.location.href = `/${space.id}`;
 }
