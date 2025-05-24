@@ -8,62 +8,76 @@ import {
   SquarePlusIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { createNewSpace } from '../../lib';
+import ConfirmationModal from '../modals/ConfirmationModal';
 import ThemeToggle from '../ui/ThemeToggle';
 
 interface MenuItem {
   icon: React.ReactNode;
   label: string;
-  onClick: () => void;
 }
 
 const items: MenuItem[] = [
   {
     icon: <SquarePlusIcon />,
     label: 'New Space',
-    onClick: () => {
-      console.log('Create New clicked');
-    },
   },
   {
     icon: <FolderIcon />,
     label: 'Open',
-    onClick: () => {
-      console.log('Open clicked');
-    },
   },
   {
     icon: <SaveIcon />,
     label: 'Save',
-    onClick: () => {
-      console.log('Save clicked');
-    },
   },
   {
     icon: <CopyPlusIcon />,
     label: 'Duplicate',
-    onClick: () => {
-      console.log('Duplicate clicked');
-    },
   },
   {
     icon: <ShieldQuestionIcon />,
     label: 'Help',
-    onClick: () => {
-      console.log('Help clicked');
-    },
   },
   {
     icon: <SettingsIcon />,
     label: 'Configurations',
-    onClick: () => {
-      console.log('Config clicked');
-    },
   },
 ];
 
 export default function HeaderMenu() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleMenuItemClick = (label: string) => {
+    switch (label) {
+      case 'New Space':
+        setIsConfirmationOpen(true);
+        break;
+      case 'Open':
+        console.log('Open clicked');
+        break;
+      case 'Save':
+        console.log('Save clicked');
+        break;
+      case 'Duplicate':
+        console.log('Duplicate clicked');
+        break;
+      case 'Help':
+        console.log('Help clicked');
+        break;
+      case 'Configurations':
+        console.log('Config clicked');
+        break;
+      default:
+        break;
+    }
+    setIsMenuOpen(false);
+  };
+
+  const handleConfirmationModalConfirm = () => {
+    createNewSpace();
+  };
 
   // Close the dropdown when clicking outside of it
   useEffect(() => {
@@ -72,7 +86,7 @@ export default function HeaderMenu() {
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
+        setIsMenuOpen(false);
       }
     };
     const handlePointerAction = (event: PointerEvent) => {
@@ -80,7 +94,7 @@ export default function HeaderMenu() {
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
+        setIsMenuOpen(false);
       }
     };
 
@@ -98,13 +112,13 @@ export default function HeaderMenu() {
   return (
     <>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
         className='bg-surface-light dark:bg-surface-dark hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark rounded-lg px-4 py-5 text-teal-500 shadow-md'
       >
         <MenuIcon />
       </button>
 
-      {isOpen && (
+      {isMenuOpen && (
         <div
           ref={dropdownRef}
           className='animate-slide-down bg-surface-light dark:bg-surface-dark absolute top-full left-0 mt-2 w-48 origin-top transform rounded-md py-1 shadow-lg transition-transform duration-1000 ease-out'
@@ -115,8 +129,7 @@ export default function HeaderMenu() {
               <button
                 key={index}
                 onClick={() => {
-                  item.onClick();
-                  setIsOpen(false); // Close dropdown after clicking an item
+                  handleMenuItemClick(item.label);
                 }}
                 className='hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark flex w-full flex-row items-center gap-1 px-4 py-2 text-left text-gray-500 hover:text-gray-900 hover:dark:text-gray-100'
               >
@@ -131,6 +144,17 @@ export default function HeaderMenu() {
             <ThemeToggle />
           </div>
         </div>
+      )}
+
+      {isConfirmationOpen && (
+        <ConfirmationModal
+          isOpen={true}
+          message='Any unsaved changes will be lost. Are you sure you want to create a new space?'
+          title='Create New Space'
+          onConfirm={handleConfirmationModalConfirm}
+          onCancel={() => setIsConfirmationOpen(false)}
+          onClose={() => setIsConfirmationOpen(false)}
+        />
       )}
     </>
   );
