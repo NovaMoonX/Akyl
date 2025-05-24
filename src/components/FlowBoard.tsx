@@ -61,7 +61,7 @@ const Flow = () => {
 
   return (
     <div id='app' className='relative h-screen w-screen'>
-      <h1 className='font-brand absolute bottom-0 left-0 z-10 rounded-tr-xl bg-teal-50/50 p-3 text-4xl font-black text-emerald-700'>
+      <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 absolute bottom-0 left-0 z-10 rounded-tr-xl p-3 text-4xl font-black text-emerald-700'>
         Akyl
       </h1>
       <ReactFlow

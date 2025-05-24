@@ -99,7 +99,7 @@ export default function HeaderMenu() {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className='rounded-lg bg-white px-4 py-5 text-teal-500 shadow-md hover:bg-gray-100'
+        className='bg-surface-light dark:bg-surface-dark hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark rounded-lg px-4 py-5 text-teal-500 shadow-md'
       >
         <MenuIcon />
       </button>
@@ -107,7 +107,7 @@ export default function HeaderMenu() {
       {isOpen && (
         <div
           ref={dropdownRef}
-          className='animate-slide-down absolute top-full left-0 mt-2 w-48 origin-top transform rounded-md bg-white py-1 shadow-lg transition-transform duration-1000 ease-out'
+          className='animate-slide-down bg-surface-light dark:bg-surface-dark absolute top-full left-0 mt-2 w-48 origin-top transform rounded-md py-1 shadow-lg transition-transform duration-1000 ease-out'
         >
           {items.map((item, index) => {
             const Icon = (item.icon as React.ReactElement).type;
@@ -118,16 +118,16 @@ export default function HeaderMenu() {
                   item.onClick();
                   setIsOpen(false); // Close dropdown after clicking an item
                 }}
-                className='flex w-full flex-row items-center gap-1 px-4 py-2 text-left text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                className='hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark flex w-full flex-row items-center gap-1 px-4 py-2 text-left text-gray-500 hover:text-gray-900 hover:dark:text-gray-100'
               >
                 <Icon size={16} />
                 {item.label}
               </button>
             );
           })}
-          <div className='h-0.5 w-full bg-gray-200' />
-          <div className='flex items-center justify-between pl-4 pr-3 py-1'>
-            <p>Theme</p>
+          <div className='h-0.5 w-full bg-gray-200 dark:bg-gray-700' />
+          <div className='flex items-center justify-between py-1 pr-3 pl-4'>
+            <p className='opacity-80'>Theme</p>
             <ThemeToggle />
           </div>
         </div>

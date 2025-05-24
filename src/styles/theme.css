@@ -1,0 +1,24 @@
+@theme {
+  --font-brand: 'Averia Serif Libre', 'serif';
+
+  --color-surface-light: #ffffff; /* white */
+  --color-surface-hover-light: #f3f4f6; /* gray-100 */
+  --color-surface-dark: #111827; /* gray-900 */
+  --color-surface-hover-dark: #374151; /* gray-700 */
+
+  --color-background-light: #f0fdfa; /* teal-50 */
+  --color-background-dark: #1f2937; /* gray-800 */
+  --color-brand: #047857; /* teal-700 */
+
+  --animate-slide-down: slide-down 0.15s ease-out forwards;
+  @keyframes slide-down {
+    0% {
+      transform: scaleY(0);
+      opacity: 0;
+    }
+    100% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+}

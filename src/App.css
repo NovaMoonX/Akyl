@@ -1,34 +1,22 @@
 @import 'tailwindcss';
+@import './styles/theme.css';
+@custom-variant dark (&:where(.dark, .dark *));
 
 .react-flow {
-  @apply bg-teal-50;
+  @apply bg-background-light dark:bg-background-dark;
+}
+
+.react-flow__attribution {
+  @apply bg-background-light dark:bg-background-dark dark:text-surface-light;
 }
 
 /* Controls */
 .react-flow__controls-button {
-  @apply my-0.5 bg-teal-50 text-black;
+  @apply bg-background-light dark:bg-background-dark text-surface-dark dark:text-surface-light my-0.5 rounded;
 }
 .react-flow__controls-button:hover {
   @apply cursor-default outline-teal-500;
 }
 .react-flow__controls-button:focus {
   @apply outline-2 outline-teal-700;
-}
-
-@theme {
-  --font-brand: 'Averia Serif Libre', 'serif';
-
-  --color-brand: '#047857'; /* teal-700 */
-
-  --animate-slide-down: slide-down 0.15s ease-out forwards;
-  @keyframes slide-down {
-    0% {
-      transform: scaleY(0);
-      opacity: 0;
-    }
-    100% {
-      transform: scaleY(1);
-      opacity: 1;
-    }
-  }
 }
