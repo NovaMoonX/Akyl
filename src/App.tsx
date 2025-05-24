@@ -6,6 +6,7 @@ import { useInitSpace } from './hooks';
 
 export default function App() {
   useInitSpace();
+  // TASK: persist spaces locally
 
   return (
     <ThemeProvider>

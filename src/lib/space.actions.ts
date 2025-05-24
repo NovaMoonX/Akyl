@@ -35,4 +35,5 @@ export function createNewSpace() {
   };
 
   console.log('space', space); // REMOVE
+  window.location.href = `/${space.id}`; // TODO: remove this line
 }
