@@ -23,7 +23,12 @@ export default function Modal({
   return (
     <>
       {createPortal(
-        <div role='dialog' className='fixed inset-0 z-50 overflow-y-auto'>
+        <div
+          role='dialog'
+          aria-modal={true}
+          aria-labelledby={title ? 'modal-title' : undefined}
+          className='fixed inset-0 z-50 overflow-y-auto'
+        >
           <div className='flex min-h-screen items-center justify-center p-2 sm:p-4'>
             <div
               className='bg-opacity-25 bg-background-light/50 dark:bg-background-dark/50 fixed inset-0 transition-opacity'

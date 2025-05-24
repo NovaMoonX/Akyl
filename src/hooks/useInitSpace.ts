@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useShallow } from 'zustand/shallow';
 import type { Space } from '../lib';
 import { useSpace } from '../store';
 import useURL from './useURL';
@@ -8,7 +7,6 @@ export default function useInitSpace() {
   const { setSpace } = useSpace();
   const { spaceId: urlSpaceId } = useURL();
   const [showLoadScreen, setShowLoadScreen] = useState(true);
-  const spaceId = useSpace(useShallow((state) => state.space.id));
 
   useEffect(() => {
     if (!urlSpaceId) {
@@ -28,7 +26,7 @@ export default function useInitSpace() {
       setSpace(space);
       setShowLoadScreen(false);
     }
-  }, [spaceId, urlSpaceId, setSpace]);
+  }, [urlSpaceId, setSpace]);
 
   return { showLoadScreen };
 }

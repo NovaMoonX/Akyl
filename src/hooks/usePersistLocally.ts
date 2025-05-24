@@ -1,13 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import type { Space } from '../lib';
 import { useSpace } from '../store';
 import useURL from './useURL';
 
+const THROTTLE_TIME = 1000; // 1 second
+
 export default function usePersistLocally() {
   const { space } = useSpace();
   const { spaceId: urlSpaceId } = useURL();
   const { theme } = useTheme();
+  const lastSavedAt = useRef<number>(0);
 
   useEffect(() => {
     // Only save when both spaceId and urlSpaceId are present
@@ -19,6 +22,8 @@ export default function usePersistLocally() {
       return;
     }
 
+    let timeout: number;
+
     const spaceToSave: Space = {
       ...space,
       config: {
@@ -26,6 +31,26 @@ export default function usePersistLocally() {
         theme,
       },
     };
-    localStorage.setItem(space.id, JSON.stringify(spaceToSave));
+
+    const saveLocally = () => {
+      localStorage.setItem(urlSpaceId, JSON.stringify(spaceToSave));
+      lastSavedAt.current = Date.now();
+    };
+
+    // Save changes once it has been THROTTLE_TIME since the last save
+    if (lastSavedAt.current - Date.now() < THROTTLE_TIME) {
+      timeout = setTimeout(
+        saveLocally,
+        THROTTLE_TIME - (Date.now() - lastSavedAt.current),
+      );
+    } else {
+      saveLocally();
+    }
+
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
   }, [space, urlSpaceId, theme]);
 }
