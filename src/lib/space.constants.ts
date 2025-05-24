@@ -2,35 +2,40 @@ export const CURRENT_FILE_VERSION = '1.0.0';
 export const CURRENT_APP_VERSION = '1.0.0';
 
 // Cash Flow
-export declare enum CashFlowInVerbiageEnum {
-  Income = 'income',
-  Inflow = 'inflow',
-  Earnings = 'earnings',
-  MoneyIn = 'money in',
-}
+export const CashFlowInVerbiages = {
+  Income: 'income',
+  Inflow: 'inflow',
+  Earnings: 'earnings',
+  MoneyIn: 'money in',
+} as const;
 
-export declare enum CashFlowOutVerbiageEnum {
-  Expense = 'expense',
-  Outflow = 'outflow',
-  Spending = 'spending',
-  MoneyOut = 'money out',
-}
+export const CashFlowOutVerbiages = {
+  Expense: 'expense',
+  Outflow: 'outflow',
+  Spending: 'spending',
+  MoneyOut: 'money out',
+} as const;
 
 export const CashFlowVerbiagePairs = {
   default: {
-    in: CashFlowInVerbiageEnum.Income,
-    out: CashFlowOutVerbiageEnum.Expense,
+    in: CashFlowInVerbiages.Income,
+    out: CashFlowOutVerbiages.Expense,
   },
   flow: {
-    in: CashFlowInVerbiageEnum.Inflow,
-    out: CashFlowOutVerbiageEnum.Outflow,
+    in: CashFlowInVerbiages.Inflow,
+    out: CashFlowOutVerbiages.Outflow,
   },
   formal: {
-    in: CashFlowInVerbiageEnum.Earnings,
-    out: CashFlowOutVerbiageEnum.Spending,
+    in: CashFlowInVerbiages.Earnings,
+    out: CashFlowOutVerbiages.Spending,
   },
   money: {
-    in: CashFlowInVerbiageEnum.MoneyIn,
-    out: CashFlowOutVerbiageEnum.MoneyOut,
+    in: CashFlowInVerbiages.MoneyIn,
+    out: CashFlowOutVerbiages.MoneyOut,
   },
 } as const;
+
+// Colors
+export const SpaceAccentColors = {
+  default: '#f0fdfa', // teal-50
+};
