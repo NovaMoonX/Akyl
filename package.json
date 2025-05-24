@@ -10,12 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@redux-devtools/extension": "^3.3.0",
     "@tailwindcss/vite": "^4.1.7",
     "@xyflow/react": "^12.6.4",
     "lucide-react": "^0.511.0",
+    "nanoid": "^5.1.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "tailwindcss": "^4.1.7"
+    "react-router": "^7.6.0",
+    "tailwindcss": "^4.1.7",
+    "uuid": "^11.1.0",
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

@@ -9,50 +9,19 @@ import {
 import '@xyflow/react/dist/base.css';
 import { useCallback } from 'react';
 import { CustomNode, Header } from '../components';
+import { useInitSpace } from '../hooks';
+import LoadScreen from './LoadScreen';
 
 const nodeTypes = {
   custom: CustomNode,
 };
 
-const initNodes = [
-  {
-    id: '1',
-    type: 'custom',
-    data: { name: 'Jane Doe', job: 'CEO', emoji: '😎' },
-    position: { x: 0, y: 50 },
-  },
-  {
-    id: '2',
-    type: 'custom',
-    data: { name: 'Tyler Weary', job: 'Designer', emoji: '🤓' },
+export default function Flow() {
+  const { showLoadScreen } = useInitSpace();
 
-    position: { x: -200, y: 200 },
-  },
-  {
-    id: '3',
-    type: 'custom',
-    data: { name: 'Kristi Price', job: 'Developer', emoji: '🤩' },
-    position: { x: 200, y: 200 },
-  },
-];
-
-const initEdges = [
-  {
-    id: 'e1-2',
-    source: '1',
-    target: '2',
-  },
-  {
-    id: 'e1-3',
-    source: '1',
-    target: '3',
-  },
-];
-
-const Flow = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [nodes, __setNodes, onNodesChange] = useNodesState(initNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initEdges);
+  const [nodes, __setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -61,7 +30,7 @@ const Flow = () => {
 
   return (
     <div id='app' className='relative h-screen w-screen'>
-      <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 absolute bottom-0 left-0 z-10 rounded-tr-xl p-3 text-4xl font-black text-emerald-700'>
+      <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-4xl font-black text-emerald-700'>
         Akyl
       </h1>
       <ReactFlow
@@ -74,11 +43,12 @@ const Flow = () => {
         fitView={true}
         fitViewOptions={{ padding: 1 }}
       >
-        <Header />
-        <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
+        {!showLoadScreen && <Header />}
+        {!showLoadScreen && (
+          <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
+        )}
+        {showLoadScreen && <LoadScreen />}
       </ReactFlow>
     </div>
   );
-};
-
-export default Flow;
+}

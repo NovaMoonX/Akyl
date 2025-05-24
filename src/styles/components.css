@@ -1,0 +1,13 @@
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium;
+  }
+
+  .btn-primary {
+    @apply bg-surface-dark text-surface-light hover:bg-surface-hover-dark dark:bg-surface-light dark:text-surface-dark hover:dark:bg-surface-hover-light;
+  }
+
+  .btn-secondary {
+    @apply border-surface-dark hover:bg-surface-hover-light dark:border-surface-light hover:dark:bg-surface-hover-dark border;
+  }
+}
