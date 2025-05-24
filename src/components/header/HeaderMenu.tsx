@@ -10,6 +10,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { createNewSpace } from '../../lib';
 import ConfirmationModal from '../modals/ConfirmationModal';
+import SaveModal from '../modals/SaveModal';
 import ThemeToggle from '../ui/ThemeToggle';
 
 interface MenuItem {
@@ -47,6 +48,7 @@ const items: MenuItem[] = [
 export default function HeaderMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleMenuItemClick = (label: string) => {
@@ -58,7 +60,7 @@ export default function HeaderMenu() {
         console.log('Open clicked');
         break;
       case 'Save':
-        console.log('Save clicked');
+        setIsSaveModalOpen(true);
         break;
       case 'Duplicate':
         console.log('Duplicate clicked');
@@ -77,6 +79,12 @@ export default function HeaderMenu() {
 
   const handleConfirmationModalConfirm = () => {
     createNewSpace();
+  };
+
+  const handleSave = (name: string, continuous: boolean) => {
+    // TODO: Implement save logic for the space using name and continuous
+    // For now, just log the values
+    console.log('Save Space:', name, 'Continuous:', continuous);
   };
 
   // Close the dropdown when clicking outside of it
@@ -154,6 +162,14 @@ export default function HeaderMenu() {
           onConfirm={handleConfirmationModalConfirm}
           onCancel={() => setIsConfirmationOpen(false)}
           onClose={() => setIsConfirmationOpen(false)}
+        />
+      )}
+
+      {isSaveModalOpen && (
+        <SaveModal
+          isOpen={isSaveModalOpen}
+          onClose={() => setIsSaveModalOpen(false)}
+          onSave={handleSave}
         />
       )}
     </>
