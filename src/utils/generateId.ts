@@ -7,13 +7,13 @@ export default function generateId(type: ItemType) {
 
   switch (type) {
     case 'space':
-      uuid = 'sp' + nanoid(16);
+      uuid = nanoid(16).replace(/-/g, '_');
       break;
     case 'node':
       uuid = uuidv4();
       break;
     case 'budget':
-      uuid = 'db-' + nanoid();
+      uuid = 'bg-' + nanoid();
       break;
   }
 
