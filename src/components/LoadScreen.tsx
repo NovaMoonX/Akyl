@@ -45,7 +45,17 @@ const items: MenuItem[] = [
 export default function LoadScreen() {
   return (
     <div className='absolute top-0 left-0 z-10 flex min-h-screen w-screen'>
-      <div className='m-auto w-48 py-1'>
+      <div className='relative m-auto w-48 py-1'>
+        <div className='absolute -top-3 -left-14 w-full min-w-fit -translate-y-full'>
+          <div className='text-brand relative'>
+            <h1 className='font-brand min-w-fit text-center text-9xl font-black'>
+              Akyl
+            </h1>
+            <span className='absolute -top-1 -right-3 text-xl'>©</span>
+          </div>
+          <p className='text-brand mt-1 text-center'>Cash Flow Visualizer</p>
+        </div>
+
         {items.map((item, index) => {
           const Icon = (item.icon as React.ReactElement).type;
           return (

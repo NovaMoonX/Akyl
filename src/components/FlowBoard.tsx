@@ -30,9 +30,11 @@ export default function Flow() {
 
   return (
     <div id='app' className='relative h-screen w-screen'>
-      <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-4xl font-black text-emerald-700'>
-        Akyl
-      </h1>
+      {!showLoadScreen && (
+        <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-4xl font-black'>
+          Akyl
+        </h1>
+      )}
       <ReactFlow
         nodes={nodes}
         edges={edges}
