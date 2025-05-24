@@ -8,7 +8,7 @@ import {
   SquarePlusIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { createNewSpace } from '../../lib';
+import { createNewSpace, importFile } from '../../lib';
 import ConfirmationModal from '../modals/ConfirmationModal';
 import SaveModal from '../modals/SaveModal';
 import ThemeToggle from '../ui/ThemeToggle';
@@ -57,7 +57,7 @@ export default function HeaderMenu() {
         setIsConfirmationOpen(true);
         break;
       case 'Open':
-        console.log('Open clicked');
+        importFile()
         break;
       case 'Save':
         setIsSaveModalOpen(true);

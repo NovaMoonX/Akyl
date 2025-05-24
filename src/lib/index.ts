@@ -8,7 +8,7 @@ export type {
 } from './budget.types';
 
 // File
-export { exportFile } from './file.actions';
+export { exportFile, importFile } from './file.actions';
 export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 
 // Node
