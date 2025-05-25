@@ -16,7 +16,6 @@ import { useInitSpace } from '../hooks';
 import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
 import LoadScreen from './LoadScreen';
-import ThemeToggle2 from './ui/ThemeToggle2';
 
 const nodeTypes = {
   custom: CustomNode,
@@ -56,11 +55,6 @@ export default function Flow() {
 
   return (
     <div id='app' className='relative h-screen w-screen'>
-      {!showLoadScreen && (
-        <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-4xl font-black'>
-          Akyl
-        </h1>
-      )}
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -71,12 +65,16 @@ export default function Flow() {
         fitView={true}
         fitViewOptions={{ padding: 1 }}
       >
-        {showLoadScreen && <ThemeToggle2 />}
-        {!showLoadScreen && <Header />}
-        {!showLoadScreen && (
-          <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
-        )}
         {showLoadScreen && <LoadScreen />}
+        {!showLoadScreen && (
+          <>
+            <Header />
+            <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-4xl font-black'>
+              Akyl
+            </h1>
+            <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
+          </>
+        )}
         {backgroundPattern !== NO_BACKGROUND_VARIANT && (
           <Background
             color='#047857'
