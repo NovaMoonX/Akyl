@@ -1,8 +1,7 @@
 import {
   FolderIcon,
-  LogInIcon,
   ShieldQuestionIcon,
-  SquarePlusIcon,
+  SquarePlusIcon
 } from 'lucide-react';
 import { APP_SLOGAN, createNewSpace, importFile } from '../lib';
 
@@ -34,13 +33,13 @@ const items: MenuItem[] = [
       console.log('Help clicked');
     },
   },
-  {
-    icon: <LogInIcon />,
-    label: 'Login',
-    onClick: () => {
-      console.log('Login clicked');
-    },
-  },
+  // {
+  //   icon: <LogInIcon />,
+  //   label: 'Login',
+  //   onClick: () => {
+  //     console.log('Login clicked');
+  //   },
+  // },
 ];
 export default function LoadScreen() {
   return (

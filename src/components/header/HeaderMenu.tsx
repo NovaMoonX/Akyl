@@ -1,6 +1,7 @@
 import {
   CopyPlusIcon,
   FolderIcon,
+  HomeIcon,
   MenuIcon,
   SaveIcon,
   SettingsIcon,
@@ -19,6 +20,10 @@ interface MenuItem {
 }
 
 const items: MenuItem[] = [
+  {
+    icon: <HomeIcon />,
+    label: 'Home',
+  },
   {
     icon: <SquarePlusIcon />,
     label: 'New Space',
@@ -43,21 +48,41 @@ const items: MenuItem[] = [
     icon: <SettingsIcon />,
     label: 'Configurations',
   },
+  // {
+  //   icon: <LogInIcon />,
+  //   label: 'Login',
+  // },
 ];
 
 export default function HeaderMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState<{
+    title?: string;
+    message: string;
+    onConfirm: () => void;
+  }>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleMenuItemClick = (label: string) => {
     switch (label) {
+      case 'Home':
+        setConfirmation({
+          message:
+            'Any unsaved changes will be lost once you head back to the home screen.',
+          onConfirm: () => (window.location.href = '/'),
+        });
+        break;
       case 'New Space':
-        setIsConfirmationOpen(true);
+        setConfirmation({
+          title: 'Create New Space',
+          message:
+            'Any unsaved changes will be lost. Are you sure you want to create a new space?',
+          onConfirm: createNewSpace,
+        });
         break;
       case 'Open':
-        importFile()
+        importFile();
         break;
       case 'Save':
         setIsSaveModalOpen(true);
@@ -75,10 +100,6 @@ export default function HeaderMenu() {
         break;
     }
     setIsMenuOpen(false);
-  };
-
-  const handleConfirmationModalConfirm = () => {
-    createNewSpace();
   };
 
   // Close the dropdown when clicking outside of it
@@ -148,14 +169,17 @@ export default function HeaderMenu() {
         </div>
       )}
 
-      {isConfirmationOpen && (
+      {confirmation?.message && (
         <ConfirmationModal
           isOpen={true}
-          message='Any unsaved changes will be lost. Are you sure you want to create a new space?'
-          title='Create New Space'
-          onConfirm={handleConfirmationModalConfirm}
-          onCancel={() => setIsConfirmationOpen(false)}
-          onClose={() => setIsConfirmationOpen(false)}
+          message={confirmation.message}
+          title={confirmation.title}
+          onConfirm={() => {
+            confirmation.onConfirm();
+            setConfirmation(undefined);
+          }}
+          onCancel={() => setConfirmation(undefined)}
+          onClose={() => setConfirmation(undefined)}
         />
       )}
 
