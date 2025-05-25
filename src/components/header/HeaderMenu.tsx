@@ -11,6 +11,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { createNewSpace, importFile } from '../../lib';
 import ConfirmationModal from '../modals/ConfirmationModal';
+import DuplicateSpaceModal from '../modals/DuplicateSpaceModal';
 import SaveModal from '../modals/SaveModal';
 import ThemeToggle from '../ui/ThemeToggle';
 
@@ -62,6 +63,7 @@ export default function HeaderMenu() {
     onConfirm: () => void;
   }>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleMenuItemClick = (label: string) => {
@@ -88,7 +90,7 @@ export default function HeaderMenu() {
         setIsSaveModalOpen(true);
         break;
       case 'Duplicate':
-        console.log('Duplicate clicked');
+        setIsDuplicateModalOpen(true);
         break;
       case 'Help':
         console.log('Help clicked');
@@ -169,9 +171,10 @@ export default function HeaderMenu() {
         </div>
       )}
 
+      {/* All Modals for Menu Actions */}
       {confirmation?.message && (
         <ConfirmationModal
-          isOpen={true}
+          isOpen={Boolean(confirmation?.message)}
           message={confirmation.message}
           title={confirmation.title}
           onConfirm={() => {
@@ -183,12 +186,15 @@ export default function HeaderMenu() {
         />
       )}
 
-      {isSaveModalOpen && (
-        <SaveModal
-          isOpen={isSaveModalOpen}
-          onClose={() => setIsSaveModalOpen(false)}
-        />
-      )}
+      <SaveModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+      />
+
+      <DuplicateSpaceModal
+        isOpen={isDuplicateModalOpen}
+        onClose={() => setIsDuplicateModalOpen(false)}
+      />
     </>
   );
 }

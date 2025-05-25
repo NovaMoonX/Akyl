@@ -4,10 +4,10 @@
   }
 
   .btn-primary {
-    @apply bg-surface-dark text-surface-light hover:bg-surface-hover-dark dark:bg-surface-light dark:text-surface-dark hover:dark:bg-surface-hover-light;
+    @apply bg-surface-dark text-surface-light not-disabled:hover:bg-surface-hover-dark dark:bg-surface-light dark:text-surface-dark not-disabled:hover:dark:bg-surface-hover-light disabled:bg-gray-500;
   }
 
   .btn-secondary {
-    @apply border-surface-dark hover:bg-surface-hover-light dark:border-surface-light hover:dark:bg-surface-hover-dark border;
+    @apply border-surface-dark not-disabled:hover:bg-surface-hover-light dark:border-surface-light not-disabled:hover:dark:bg-surface-hover-dark border disabled:border-gray-600 disabled:opacity-60;
   }
 }

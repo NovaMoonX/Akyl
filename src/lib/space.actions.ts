@@ -38,3 +38,26 @@ export function createNewSpace() {
   localStorage.setItem(id, JSON.stringify(space));
   window.location.href = `/${space.id}`;
 }
+
+export function duplicateSpace(spaceId: string) {
+  const space = localStorage.getItem(spaceId);
+  if (!space) return;
+
+  const parsedSpace = JSON.parse(space) as Space;
+  const newSpaceId = generateId('space');
+  const timestamp = Date.now();
+
+  const newSpace: Space = {
+    ...parsedSpace,
+    id: newSpaceId,
+    title: `${parsedSpace.title} (Copy)`,
+    metadata: {
+      ...parsedSpace.metadata,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    },
+  };
+
+  localStorage.setItem(newSpaceId, JSON.stringify(newSpace));
+  window.location.href = `/${newSpaceId}`;
+}

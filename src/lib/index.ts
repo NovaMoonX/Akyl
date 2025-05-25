@@ -19,7 +19,7 @@ export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 export type { Node, NodeData, NodeType } from './node.types';
 
 // Space
-export { createNewSpace } from './space.actions';
+export { createNewSpace, duplicateSpace } from './space.actions';
 export {
   CashFlowVerbiagePairs,
   CURRENT_APP_VERSION,
