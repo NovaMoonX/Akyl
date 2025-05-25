@@ -8,13 +8,14 @@ import {
   ShieldQuestionIcon,
   SquarePlusIcon,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { createNewSpace, importFile } from '../../lib';
 import ConfigModal from '../modals/ConfigModal';
 import ConfirmationModal from '../modals/ConfirmationModal';
 import DuplicateSpaceModal from '../modals/DuplicateSpaceModal';
 import HelpModal from '../modals/HelpModal';
 import SaveModal from '../modals/SaveModal';
+import Dropdown from '../ui/Dropdown';
 import ThemeToggle from '../ui/ThemeToggle';
 
 interface MenuItem {
@@ -68,7 +69,6 @@ export default function HeaderMenu() {
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleMenuItemClick = (label: string) => {
     switch (label) {
@@ -108,36 +108,6 @@ export default function HeaderMenu() {
     setIsMenuOpen(false);
   };
 
-  // Close the dropdown when clicking outside of it
-  useEffect(() => {
-    const handleMouseAction = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsMenuOpen(false);
-      }
-    };
-    const handlePointerAction = (event: PointerEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    // Mouse events for actions that are NOT part of the grid
-    document.addEventListener('mousedown', handleMouseAction);
-    // Pointer events for actions that are part of the grid
-    document.addEventListener('pointerdown', handlePointerAction);
-
-    return () => {
-      document.removeEventListener('mousedown', handleMouseAction);
-      document.removeEventListener('pointerdown', handlePointerAction);
-    };
-  }, []);
-
   return (
     <>
       <button
@@ -147,33 +117,32 @@ export default function HeaderMenu() {
         <MenuIcon />
       </button>
 
-      {isMenuOpen && (
-        <div
-          ref={dropdownRef}
-          className='animate-slide-down bg-surface-light dark:bg-surface-dark absolute top-full left-0 mt-2 w-48 origin-top transform rounded-md py-1 shadow-lg transition-transform duration-1000 ease-out'
-        >
-          {items.map((item, index) => {
-            const Icon = (item.icon as React.ReactElement).type;
-            return (
-              <button
-                key={index}
-                onClick={() => {
-                  handleMenuItemClick(item.label);
-                }}
-                className='hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark flex w-full flex-row items-center gap-1 px-4 py-2 text-left text-gray-500 hover:text-gray-900 hover:dark:text-gray-100'
-              >
-                <Icon size={16} />
-                {item.label}
-              </button>
-            );
-          })}
-          <div className='h-0.5 w-full bg-gray-200 dark:bg-gray-700' />
-          <div className='flex items-center justify-between py-1 pr-3 pl-4'>
-            <p className='opacity-80'>Theme</p>
-            <ThemeToggle />
-          </div>
+      <Dropdown
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        className='left-0'
+      >
+        {items.map((item, index) => {
+          const Icon = (item.icon as React.ReactElement).type;
+          return (
+            <button
+              key={index}
+              onClick={() => {
+                handleMenuItemClick(item.label);
+              }}
+              className='hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark flex w-full flex-row items-center gap-1 px-4 py-2 text-left text-gray-500 hover:text-gray-900 hover:dark:text-gray-100'
+            >
+              <Icon size={16} />
+              {item.label}
+            </button>
+          );
+        })}
+        <div className='h-0.5 w-full bg-gray-200 dark:bg-gray-700' />
+        <div className='flex items-center justify-between py-1 pr-3 pl-4'>
+          <p className='opacity-80'>Theme</p>
+          <ThemeToggle />
         </div>
-      )}
+      </Dropdown>
 
       {/* All Modals for Menu Actions */}
       {confirmation?.message && (
