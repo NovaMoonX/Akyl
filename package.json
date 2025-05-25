@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "predeploy": "npm run build && npm run preview",
+    "fbdeploy": "npm run build && firebase deploy",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -13,6 +15,7 @@
     "@redux-devtools/extension": "^3.3.0",
     "@tailwindcss/vite": "^4.1.7",
     "@xyflow/react": "^12.6.4",
+    "firebase": "^11.8.1",
     "lucide-react": "^0.511.0",
     "nanoid": "^5.1.5",
     "react": "^19.1.0",

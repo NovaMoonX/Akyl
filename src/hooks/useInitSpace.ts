@@ -11,12 +11,14 @@ export default function useInitSpace() {
   useEffect(() => {
     if (!urlSpaceId) {
       setSpace({} as Space);
+      document.title = 'Akyl';
       return;
     }
 
     const fetchedSpace = localStorage.getItem(urlSpaceId);
     if (urlSpaceId && !fetchedSpace) {
       window.location.href = '/';
+      document.title = 'Akyl';
       setSpace({} as Space);
       return;
     }
@@ -25,6 +27,10 @@ export default function useInitSpace() {
       const space = JSON.parse(fetchedSpace);
       setSpace(space);
       setShowLoadScreen(false);
+
+      if (space.title) {
+        document.title = `Akyl - ${space.title}`;
+      }
     }
   }, [urlSpaceId, setSpace]);
 
