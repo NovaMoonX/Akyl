@@ -16,7 +16,8 @@ export { exportFile, importFile } from './file.actions';
 export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 
 // Node
-export type { Node, NodeData, NodeType } from './node.types';
+export { NODE_IN_ID, NODE_OUT_ID } from './node.constants';
+export type { Edge, Node, NodeData, NodeType } from './node.types';
 
 // Space
 export { createNewSpace, duplicateSpace } from './space.actions';

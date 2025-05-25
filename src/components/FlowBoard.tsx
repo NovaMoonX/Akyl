@@ -4,21 +4,20 @@ import {
   BackgroundVariant,
   Controls,
   ReactFlow,
-  useEdgesState,
-  useNodesState,
   type Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { CustomNode, Header } from '../components';
-import { useInitSpace } from '../hooks';
+import { Header } from '../components';
+import { useInitSpace, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
 import LoadScreen from './LoadScreen';
+import L1Node from './nodes/L1Node';
 
 const nodeTypes = {
-  custom: CustomNode,
+  L1: L1Node,
 };
 
 const DEFAULT_BACKGROUND = BackgroundVariant.Cross;
@@ -43,11 +42,10 @@ export default function Flow() {
   const backgroundPattern = useSpace(
     useShallow((state) => state?.space?.config?.backgroundPattern),
   );
+  const { nodes, edges, onNodesChange, onEdgesChange, setEdges } =
+    useSpaceFlow();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [nodes, __setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
+  // TASK: is this onConnect function necessary?
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges],
