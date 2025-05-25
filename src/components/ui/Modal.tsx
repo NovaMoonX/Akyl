@@ -9,6 +9,7 @@ interface ModalProps {
   title?: string;
   children: React.ReactNode;
   contentOnly?: boolean;
+  centerTitle?: boolean;
 }
 
 export default function Modal({
@@ -17,6 +18,7 @@ export default function Modal({
   title,
   children,
   contentOnly = false,
+  centerTitle = false,
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -42,7 +44,16 @@ export default function Modal({
             >
               {!contentOnly && (
                 <div className='mb-4 flex items-center justify-between'>
-                  {title && <h1 className='text-center text-xl'>{title}</h1>}
+                  {title && (
+                    <h1
+                      className={join(
+                        'w-full text-xl',
+                        centerTitle && 'text-center',
+                      )}
+                    >
+                      {title}
+                    </h1>
+                  )}
                   <button
                     onClick={onClose}
                     className='rounded-md p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
