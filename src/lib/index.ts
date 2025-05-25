@@ -1,3 +1,6 @@
+// App
+export { APP_SLOGAN } from './app.constants';
+
 // Budget
 export type {
   BudgetItemCadence,
@@ -9,6 +12,7 @@ export type {
 
 // File
 export { exportFile, importFile } from './file.actions';
+
 export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 
 // Node

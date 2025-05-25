@@ -4,7 +4,7 @@ import {
   ShieldQuestionIcon,
   SquarePlusIcon,
 } from 'lucide-react';
-import { createNewSpace, importFile } from '../lib';
+import { APP_SLOGAN, createNewSpace, importFile } from '../lib';
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -53,7 +53,7 @@ export default function LoadScreen() {
             </h1>
             <span className='absolute -top-1 -right-3 text-xl'>©</span>
           </div>
-          <p className='text-brand mt-1 text-center'>Cash Flow Visualizer</p>
+          <p className='text-brand mt-1 text-center font-medium'>{APP_SLOGAN}</p>
         </div>
 
         {items.map((item, index) => {
