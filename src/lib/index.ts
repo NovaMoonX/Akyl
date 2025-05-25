@@ -1,5 +1,9 @@
 // App
-export { APP_SLOGAN, NO_BACKGROUND_VARIANT } from './app.constants';
+export {
+  APP_SLOGAN,
+  NO_BACKGROUND_VARIANT,
+  SUPPORT_EMAIL,
+} from './app.constants';
 
 // Budget
 export type {

@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createNewSpace, importFile } from '../../lib';
 import ConfirmationModal from '../modals/ConfirmationModal';
 import DuplicateSpaceModal from '../modals/DuplicateSpaceModal';
+import HelpModal from '../modals/HelpModal';
 import SaveModal from '../modals/SaveModal';
 import ThemeToggle from '../ui/ThemeToggle';
 
@@ -64,6 +65,7 @@ export default function HeaderMenu() {
   }>();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleMenuItemClick = (label: string) => {
@@ -93,7 +95,7 @@ export default function HeaderMenu() {
         setIsDuplicateModalOpen(true);
         break;
       case 'Help':
-        console.log('Help clicked');
+        setIsHelpModalOpen(true);
         break;
       case 'Configurations':
         console.log('Config clicked');
@@ -194,6 +196,11 @@ export default function HeaderMenu() {
       <DuplicateSpaceModal
         isOpen={isDuplicateModalOpen}
         onClose={() => setIsDuplicateModalOpen(false)}
+      />
+
+      <HelpModal
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
       />
     </>
   );
