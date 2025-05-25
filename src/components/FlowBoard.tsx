@@ -11,6 +11,7 @@ import { useCallback } from 'react';
 import { CustomNode, Header } from '../components';
 import { useInitSpace } from '../hooks';
 import LoadScreen from './LoadScreen';
+import ThemeToggle2 from './ui/ThemeToggle2';
 
 const nodeTypes = {
   custom: CustomNode,
@@ -45,6 +46,7 @@ export default function Flow() {
         fitView={true}
         fitViewOptions={{ padding: 1 }}
       >
+        {showLoadScreen && <ThemeToggle2 />}
         {!showLoadScreen && <Header />}
         {!showLoadScreen && (
           <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
