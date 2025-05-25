@@ -1,6 +1,7 @@
 import { FolderIcon, ShieldQuestionIcon, SquarePlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { APP_SLOGAN, createNewSpace, importFile } from '../lib';
+import DreamTrigger from './DreamTrigger';
 import HelpModal from './modals/HelpModal';
 
 interface MenuItem {
@@ -75,6 +76,10 @@ export default function LoadScreen() {
             );
           })}
         </div>
+      </div>
+
+      <div className='absolute bottom-0 left-0 z-10 p-1'>
+        <DreamTrigger />
       </div>
 
       <HelpModal
