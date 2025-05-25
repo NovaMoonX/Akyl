@@ -1,5 +1,7 @@
 import {
   addEdge,
+  Background,
+  BackgroundVariant,
   Controls,
   ReactFlow,
   useEdgesState,
@@ -8,8 +10,10 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useCallback } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { CustomNode, Header } from '../components';
 import { useInitSpace } from '../hooks';
+import { useSpace } from '../store';
 import LoadScreen from './LoadScreen';
 import ThemeToggle2 from './ui/ThemeToggle2';
 
@@ -17,8 +21,28 @@ const nodeTypes = {
   custom: CustomNode,
 };
 
+const DEFAULT_BACKGROUND = BackgroundVariant.Cross;
+const BackgroundVariantGaps = {
+  [BackgroundVariant.Cross]: 40,
+  [BackgroundVariant.Dots]: 30,
+  [BackgroundVariant.Lines]: 30,
+} as const;
+const BackgroundVariantSizes = {
+  [BackgroundVariant.Cross]: 6,
+  [BackgroundVariant.Dots]: 4,
+  [BackgroundVariant.Lines]: undefined,
+} as const;
+const BackgroundVariantClasses = {
+  [BackgroundVariant.Cross]: 'opacity-60 dark:opacity-70',
+  [BackgroundVariant.Dots]: 'opacity-50 dark:opacity-70',
+  [BackgroundVariant.Lines]: 'opacity-40 dark:opacity-30',
+};
+
 export default function Flow() {
   const { showLoadScreen } = useInitSpace();
+  const backgroundPattern = useSpace(
+    useShallow((state) => state?.space?.config?.backgroundPattern),
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [nodes, __setNodes, onNodesChange] = useNodesState([]);
@@ -52,6 +76,19 @@ export default function Flow() {
           <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
         )}
         {showLoadScreen && <LoadScreen />}
+        {backgroundPattern !== '' && (
+          <Background
+            color='#047857'
+            gap={BackgroundVariantGaps[backgroundPattern ?? DEFAULT_BACKGROUND]}
+            variant={backgroundPattern ?? DEFAULT_BACKGROUND}
+            size={
+              BackgroundVariantSizes[backgroundPattern ?? DEFAULT_BACKGROUND]
+            }
+            className={
+              BackgroundVariantClasses[backgroundPattern ?? DEFAULT_BACKGROUND]
+            }
+          />
+        )}
       </ReactFlow>
     </div>
   );

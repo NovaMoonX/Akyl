@@ -45,7 +45,7 @@ const items: MenuItem[] = [
 export default function LoadScreen() {
   return (
     <div className='absolute top-0 left-0 z-10 flex min-h-screen w-screen'>
-      <div className='relative m-auto w-48 py-1'>
+      <div className='bg-background-light/70 dark:bg-background-dark/70 relative m-auto w-48 py-1'>
         <div className='absolute -top-3 -left-14 w-full min-w-fit -translate-y-full'>
           <div className='text-brand relative'>
             <h1 className='font-brand min-w-fit text-center text-9xl font-black'>

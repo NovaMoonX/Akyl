@@ -1,3 +1,4 @@
+import { BackgroundVariant } from '@xyflow/react';
 import { generateId, getTheme, getUserLocale } from '../utils';
 import {
   CURRENT_APP_VERSION,
@@ -28,7 +29,7 @@ export function createNewSpace() {
     expenses: [],
     config: {
       theme,
-      backgroundPattern: '',
+      backgroundPattern: BackgroundVariant.Cross,
       accentColor: SpaceAccentColors.default,
       currency: 'USD',
       cashFlowVerbiage: 'default',
