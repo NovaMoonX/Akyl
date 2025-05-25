@@ -1,7 +1,9 @@
 import type { BackgroundVariant } from '@xyflow/react';
-import { NO_BACKGROUND_VARIANT } from './app.constants';
 import type { Expense, Income } from './budget.types';
-import { CashFlowVerbiagePairs } from './space.constants';
+import {
+  CashFlowVerbiagePairs,
+  NO_BACKGROUND_VARIANT,
+} from './space.constants';
 
 export interface SpaceMetadata {
   createdBy: string;

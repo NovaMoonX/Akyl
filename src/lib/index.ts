@@ -1,9 +1,5 @@
 // App
-export {
-  APP_SLOGAN,
-  NO_BACKGROUND_VARIANT,
-  SUPPORT_EMAIL,
-} from './app.constants';
+export { APP_SLOGAN, SUPPORT_EMAIL } from './app.constants';
 
 // Budget
 export type {
@@ -28,6 +24,7 @@ export {
   CashFlowVerbiagePairs,
   CURRENT_APP_VERSION,
   CURRENT_FILE_VERSION,
+  NO_BACKGROUND_VARIANT,
   SpaceAccentColors,
 } from './space.constants';
 export type {

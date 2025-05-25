@@ -2,14 +2,14 @@ export const CURRENT_FILE_VERSION = '1.0.0';
 export const CURRENT_APP_VERSION = '1.0.0';
 
 // Cash Flow
-export const CashFlowInVerbiages = {
+const CashFlowInVerbiages = {
   Income: 'income',
   Inflow: 'inflow',
   Earnings: 'earnings',
   MoneyIn: 'money in',
 } as const;
 
-export const CashFlowOutVerbiages = {
+const CashFlowOutVerbiages = {
   Expense: 'expense',
   Outflow: 'outflow',
   Spending: 'spending',
@@ -39,3 +39,5 @@ export const CashFlowVerbiagePairs = {
 export const SpaceAccentColors = {
   default: '#f0fdfa', // teal-50
 };
+
+export const NO_BACKGROUND_VARIANT = '';

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createNewSpace, importFile } from '../../lib';
+import ConfigModal from '../modals/ConfigModal';
 import ConfirmationModal from '../modals/ConfirmationModal';
 import DuplicateSpaceModal from '../modals/DuplicateSpaceModal';
 import HelpModal from '../modals/HelpModal';
@@ -66,6 +67,7 @@ export default function HeaderMenu() {
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleMenuItemClick = (label: string) => {
@@ -98,7 +100,7 @@ export default function HeaderMenu() {
         setIsHelpModalOpen(true);
         break;
       case 'Configurations':
-        console.log('Config clicked');
+        setIsConfigModalOpen(true);
         break;
       default:
         break;
@@ -201,6 +203,11 @@ export default function HeaderMenu() {
       <HelpModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
+      />
+
+      <ConfigModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
       />
     </>
   );
