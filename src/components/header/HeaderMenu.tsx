@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { createNewSpace, importFile } from '../../lib';
+import DreamTrigger from '../DreamTrigger';
 import ConfigModal from '../modals/ConfigModal';
 import ConfirmationModal from '../modals/ConfirmationModal';
 import DuplicateSpaceModal from '../modals/DuplicateSpaceModal';
@@ -142,6 +143,7 @@ export default function HeaderMenu() {
           <p className='opacity-80'>Theme</p>
           <ThemeToggle />
         </div>
+        <DreamTrigger />
       </Dropdown>
 
       {/* All Modals for Menu Actions */}
