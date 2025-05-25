@@ -1,4 +1,5 @@
 import type { BackgroundVariant } from '@xyflow/react';
+import { NO_BACKGROUND_VARIANT } from './app.constants';
 import type { Expense, Income } from './budget.types';
 import { CashFlowVerbiagePairs } from './space.constants';
 
@@ -22,7 +23,7 @@ export interface Config {
     | BackgroundVariant.Cross
     | BackgroundVariant.Dots
     | BackgroundVariant.Lines
-    | '';
+    | typeof NO_BACKGROUND_VARIANT;
   accentColor: string;
   currency: Currency;
   cashFlowVerbiage: CashFlowVerbiage;
