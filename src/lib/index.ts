@@ -1,5 +1,5 @@
 // App
-export { APP_SLOGAN, NO_BACKGROUND_VARIANT } from './app.constants';
+export { APP_SLOGAN, SUPPORT_EMAIL } from './app.constants';
 
 // Budget
 export type {
@@ -19,11 +19,12 @@ export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 export type { Node, NodeData, NodeType } from './node.types';
 
 // Space
-export { createNewSpace } from './space.actions';
+export { createNewSpace, duplicateSpace } from './space.actions';
 export {
   CashFlowVerbiagePairs,
   CURRENT_APP_VERSION,
   CURRENT_FILE_VERSION,
+  NO_BACKGROUND_VARIANT,
   SpaceAccentColors,
 } from './space.constants';
 export type {

@@ -1,8 +1,14 @@
 import { useShallow } from 'zustand/shallow';
+import { CashFlowVerbiagePairs } from '../../lib';
 import { useSpace } from '../../store';
 
 export default function HeaderBar() {
-  const title = useSpace(useShallow((state) => state.space.title));
+  const [title, cashFlowVerbiage] = useSpace(
+    useShallow((state) => [
+      state.space.title,
+      state.space.config.cashFlowVerbiage,
+    ]),
+  );
   const { updateSpace } = useSpace();
 
   return (
@@ -15,10 +21,10 @@ export default function HeaderBar() {
       />
       <div className='flex gap-3 text-sm'>
         <button className='text-surface-light rounded border border-transparent px-4 py-2.5 transition not-dark:bg-emerald-500 not-dark:hover:bg-emerald-600 dark:text-emerald-600 hover:dark:border-emerald-600'>
-          Add Income
+          add {CashFlowVerbiagePairs[cashFlowVerbiage].in}
         </button>
         <button className='text-surface-light rounded border border-transparent px-4 py-2.5 transition not-dark:bg-rose-500 not-dark:hover:bg-rose-600 dark:text-rose-600 hover:dark:border-rose-600'>
-          Add Expense
+          add {CashFlowVerbiagePairs[cashFlowVerbiage].out}
         </button>
       </div>
     </div>
