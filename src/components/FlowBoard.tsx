@@ -13,6 +13,7 @@ import { useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { CustomNode, Header } from '../components';
 import { useInitSpace } from '../hooks';
+import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
 import LoadScreen from './LoadScreen';
 import ThemeToggle2 from './ui/ThemeToggle2';
@@ -76,7 +77,7 @@ export default function Flow() {
           <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
         )}
         {showLoadScreen && <LoadScreen />}
-        {backgroundPattern !== '' && (
+        {backgroundPattern !== NO_BACKGROUND_VARIANT && (
           <Background
             color='#047857'
             gap={BackgroundVariantGaps[backgroundPattern ?? DEFAULT_BACKGROUND]}
