@@ -22,7 +22,7 @@ export default function usePersistLocally() {
       return;
     }
 
-    let timeout: number;
+    let timeout: NodeJS.Timeout;
 
     const spaceToSave: Space = {
       ...space,
