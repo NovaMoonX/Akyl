@@ -4,10 +4,10 @@
   }
 
   .btn-primary {
-    @apply bg-surface-dark text-surface-light not-disabled:hover:bg-surface-hover-dark dark:bg-surface-light dark:text-surface-dark not-disabled:hover:dark:bg-surface-hover-light disabled:bg-gray-500;
+    @apply bg-surface-dark text-surface-light enabled:hover:bg-surface-hover-dark dark:bg-surface-light dark:text-surface-dark enabled:hover:dark:bg-surface-hover-light disabled:bg-gray-500;
   }
 
   .btn-secondary {
-    @apply border-surface-dark not-disabled:hover:bg-surface-hover-light dark:border-surface-light not-disabled:hover:dark:bg-surface-hover-dark border disabled:border-gray-600 disabled:opacity-60;
+    @apply border-surface-dark enabled:hover:bg-surface-hover-light dark:border-surface-light enabled:hover:dark:bg-surface-hover-dark border disabled:border-gray-600 disabled:opacity-60;
   }
 }

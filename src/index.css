@@ -20,5 +20,5 @@ html {
 }
 
 button {
-  @apply duration-300 hover:cursor-pointer hover:transition-all disabled:hover:cursor-not-allowed;
+  @apply duration-300 hover:cursor-pointer hover:transition-all disabled:cursor-not-allowed;
 }
