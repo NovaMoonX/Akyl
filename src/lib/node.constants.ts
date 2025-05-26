@@ -1,2 +1,1 @@
-export const NODE_IN_ID = '_in-node_';
-export const NODE_OUT_ID = '_out-node_';
+export const NODE_CORE_ID = '_core-node_';

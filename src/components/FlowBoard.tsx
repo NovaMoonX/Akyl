@@ -14,10 +14,10 @@ import { useInitSpace, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
 import LoadScreen from './LoadScreen';
-import L1Node from './nodes/L1Node';
+import CoreNode from './nodes/CoreNode';
 
 const nodeTypes = {
-  L1: L1Node,
+  core: CoreNode,
 };
 
 const DEFAULT_BACKGROUND = BackgroundVariant.Cross;
