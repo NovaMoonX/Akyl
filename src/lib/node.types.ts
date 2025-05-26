@@ -17,6 +17,7 @@ export interface Node {
     x: number;
     y: number;
   };
+  draggable?: boolean;
 }
 
 export interface Edge {

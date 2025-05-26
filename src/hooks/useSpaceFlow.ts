@@ -9,6 +9,7 @@ const initNodes: Node[] = [
     type: 'core',
     position: { x: 0, y: 0 },
     data: {},
+    draggable: false,
   },
 ];
 
