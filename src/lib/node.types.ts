@@ -1,5 +1,6 @@
 export type BudgetType = 'income' | 'expense';
 export type NodeType = 'core' | 'L1' | 'L2' | 'budget'; // L1, L2, L3 are for levels of nodes in the flowchart (parent nodes), income and expense are for budget items (leaf nodes)
+export type EdgeType = 'inflow' | 'outflow';
 
 export const CoreData = {};
 export interface L1Data {
@@ -23,11 +24,12 @@ export interface Node {
     x: number;
     y: number;
   };
-  draggable?: boolean;
+  draggable: false;
 }
 
 export interface Edge {
   id: string;
   source: string;
   target: string;
+  type?: EdgeType;
 }

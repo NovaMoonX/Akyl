@@ -13,6 +13,7 @@ import { Header } from '../components';
 import { useInitSpace, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
+import { AnimatedInflowEdge, AnimatedOutflowEdge } from './edges';
 import LoadScreen from './LoadScreen';
 import BudgetNode from './nodes/BudgetNode';
 import CoreNode from './nodes/CoreNode';
@@ -22,6 +23,11 @@ const nodeTypes = {
   core: CoreNode,
   L1: L1Node,
   budget: BudgetNode,
+};
+
+const edgeTypes = {
+  inflow: AnimatedInflowEdge,
+  outflow: AnimatedOutflowEdge,
 };
 
 const DEFAULT_BACKGROUND = BackgroundVariant.Cross;
@@ -64,6 +70,7 @@ export default function Flow() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView={true}
       >
         {showLoadScreen && <LoadScreen />}
