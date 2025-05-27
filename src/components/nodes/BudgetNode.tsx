@@ -79,8 +79,17 @@ function BudgetNode({ data }: BudgetNodeProps) {
         </span>
       </div>
 
-      <Handle type='target' position={Position.Top} className='invisible' />
-      <Handle type='source' position={Position.Bottom} className='invisible' />
+      {/* move handle inward for smoother edge animation */}
+      <Handle
+        type='target'
+        position={Position.Top}
+        className='invisible translate-y-3'
+      />
+      <Handle
+        type='source'
+        position={Position.Bottom}
+        className='invisible -translate-y-3'
+      />
     </div>
   );
 }

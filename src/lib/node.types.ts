@@ -27,9 +27,15 @@ export interface Node {
   draggable: false;
 }
 
+export interface EdgeData {
+  animationTreeLevel: number; // 0-index, from top to bottom
+  [key: string]: unknown;
+}
+
 export interface Edge {
   id: string;
   source: string;
   target: string;
   type?: EdgeType;
+  data?: EdgeData;
 }

@@ -78,48 +78,72 @@ const demoEdges: Edge[] = [
     source: 'income-bucket-1',
     target: NODE_CORE_ID,
     type: 'inflow',
+    data: {
+      animationTreeLevel: 1,
+    },
   },
   {
     id: 'income-bucket-2-to-core',
     source: 'income-bucket-2',
     target: NODE_CORE_ID,
     type: 'inflow',
+    data: {
+      animationTreeLevel: 1,
+    },
   },
   {
     id: 'core-to-expense-bucket-1',
     source: NODE_CORE_ID,
     target: 'expense-bucket-1',
     type: 'outflow',
+    data: {
+      animationTreeLevel: 2,
+    },
   },
   {
     id: 'core-to-expense-bucket-2',
     source: NODE_CORE_ID,
     target: 'expense-bucket-2',
     type: 'outflow',
+    data: {
+      animationTreeLevel: 2,
+    },
   },
   {
     id: 'income-bucket-1-to-income-item-1',
     source: 'income-item-1',
     target: 'income-bucket-1',
     type: 'inflow',
+    data: {
+      animationTreeLevel: 0,
+    },
   },
   {
     id: 'income-bucket-2-to-income-item-2',
     source: 'income-item-2',
     target: 'income-bucket-2',
     type: 'inflow',
+    data: {
+      animationTreeLevel: 0,
+    },
   },
   {
     id: 'expense-bucket-1-to-expense-item-1',
     source: 'expense-bucket-1',
     target: 'expense-item-1',
     type: 'outflow',
+    data: {
+      animationTreeLevel: 3,
+    },
   },
   {
     id: 'expense-bucket-2-to-expense-item-2',
     source: 'expense-bucket-2',
     target: 'expense-item-2',
     type: 'outflow',
+    data: {
+      animationTreeLevel: 3,
+    },
   },
 ];
 

@@ -17,11 +17,12 @@ export { exportFile, importFile } from './file.actions';
 export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 
 // Node
-export { NODE_CORE_ID } from './node.constants';
+export { EDGE_ANIMATION_TIME, NODE_CORE_ID } from './node.constants';
 export type {
   BudgetData,
   BudgetType,
   Edge,
+  EdgeData,
   L1Data,
   Node,
   NodeData,
