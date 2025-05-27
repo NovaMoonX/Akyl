@@ -20,6 +20,7 @@ export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 export { NODE_CORE_ID } from './node.constants';
 export type {
   BudgetData,
+  BudgetType,
   Edge,
   L1Data,
   Node,

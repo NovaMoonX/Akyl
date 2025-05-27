@@ -31,14 +31,14 @@ const demoNodes: Node[] = [
   {
     id: 'income-item-1',
     type: 'budget',
-    position: { x: -100, y: -400 },
+    position: { x: -150, y: -400 },
     data: { budgetItemId: 'income-item-1' },
     draggable: false,
   },
   {
     id: 'income-item-2',
     type: 'budget',
-    position: { x: 100, y: -400 },
+    position: { x: 150, y: -400 },
     data: { budgetItemId: 'income-item-2' },
     draggable: false,
   },
