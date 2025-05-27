@@ -10,6 +10,13 @@
   --color-background-dark: #1f2937; /* gray-800 */
   --color-brand: #047857; /* teal-700 */
 
+  --color-node-border: #d1d5db; /* gray-300 */
+
+  --color-inflow: #10b981; /* emerald-500 */
+  --color-inflow-darker: #059669; /* emerald-600 */
+  --color-outflow: #f43f5e; /* rose-500 */
+  --color-outflow-darker: #e11d48; /* rose-600 */
+
   --animate-slide-down: slide-down 0.15s ease-out forwards;
   @keyframes slide-down {
     0% {

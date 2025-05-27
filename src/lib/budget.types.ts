@@ -29,8 +29,7 @@ export interface Income {
 }
 
 export type ExpenseCategory =
-  | 'Rent'
-  | 'Utilities'
+  | 'Housing'
   | 'Groceries'
   | 'Transportation'
   | 'Entertainment'

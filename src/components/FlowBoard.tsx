@@ -4,22 +4,30 @@ import {
   BackgroundVariant,
   Controls,
   ReactFlow,
-  useEdgesState,
-  useNodesState,
   type Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { CustomNode, Header } from '../components';
-import { useInitSpace } from '../hooks';
+import { Header } from '../components';
+import { useInitSpace, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
+import { AnimatedInflowEdge, AnimatedOutflowEdge } from './edges';
 import LoadScreen from './LoadScreen';
-import ThemeToggle2 from './ui/ThemeToggle2';
+import BudgetNode from './nodes/BudgetNode';
+import CoreNode from './nodes/CoreNode';
+import L1Node from './nodes/L1Node';
 
 const nodeTypes = {
-  custom: CustomNode,
+  core: CoreNode,
+  L1: L1Node,
+  budget: BudgetNode,
+};
+
+const edgeTypes = {
+  inflow: AnimatedInflowEdge,
+  outflow: AnimatedOutflowEdge,
 };
 
 const DEFAULT_BACKGROUND = BackgroundVariant.Cross;
@@ -44,11 +52,10 @@ export default function Flow() {
   const backgroundPattern = useSpace(
     useShallow((state) => state?.space?.config?.backgroundPattern),
   );
+  const { nodes, edges, onNodesChange, onEdgesChange, setEdges } =
+    useSpaceFlow();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [nodes, __setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
+  // TASK: is this onConnect function necessary?
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges],
@@ -56,11 +63,6 @@ export default function Flow() {
 
   return (
     <div id='app' className='relative h-screen w-screen'>
-      {!showLoadScreen && (
-        <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-4xl font-black'>
-          Akyl
-        </h1>
-      )}
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -68,15 +70,19 @@ export default function Flow() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView={true}
-        fitViewOptions={{ padding: 1 }}
       >
-        {showLoadScreen && <ThemeToggle2 />}
-        {!showLoadScreen && <Header />}
-        {!showLoadScreen && (
-          <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
-        )}
         {showLoadScreen && <LoadScreen />}
+        {!showLoadScreen && (
+          <>
+            <Header />
+            <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-4xl font-black'>
+              Akyl
+            </h1>
+            <Controls position='bottom-right' />
+          </>
+        )}
         {backgroundPattern !== NO_BACKGROUND_VARIANT && (
           <Background
             color='#047857'
