@@ -31,14 +31,14 @@ const demoNodes: Node[] = [
   {
     id: 'expense-1',
     type: 'L1',
-    position: { x: -100, y: 200 },
+    position: { x: -100, y: 300 },
     data: { label: 'Rent', amount: 50.75, type: 'expense' },
     draggable: false,
   },
   {
     id: 'expense-2',
     type: 'L1',
-    position: { x: 100, y: 200 },
+    position: { x: 100, y: 300 },
     data: { label: 'Other Bills (Utilities)', amount: 100, type: 'expense' },
     draggable: false,
   }
