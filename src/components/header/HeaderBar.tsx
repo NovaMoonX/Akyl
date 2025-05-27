@@ -26,10 +26,10 @@ export default function HeaderBar() {
         className='text-surface-hover-dark dark:text-surface-hover-light w-96 text-xl font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
       />
       <div className='flex gap-3 text-sm'>
-        <button className='text-surface-light rounded border border-transparent px-4 py-2.5 transition not-dark:bg-emerald-500 not-dark:hover:bg-emerald-600 dark:text-emerald-600 hover:dark:border-emerald-600'>
+        <button className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-4 py-2.5 transition'>
           add {CashFlowVerbiagePairs[cashFlowVerbiage].in}
         </button>
-        <button className='text-surface-light rounded border border-transparent px-4 py-2.5 transition not-dark:bg-rose-500 not-dark:hover:bg-rose-600 dark:text-rose-600 hover:dark:border-rose-600'>
+        <button className='text-surface-light not-dark:bg-outflow not-dark:hover:bg-outflow-darker dark:text-outflow-darker hover:dark:border-outflow-darker rounded border border-transparent px-4 py-2.5 transition'>
           add {CashFlowVerbiagePairs[cashFlowVerbiage].out}
         </button>
       </div>

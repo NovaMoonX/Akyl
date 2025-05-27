@@ -63,7 +63,7 @@ export default function Flow() {
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView={true}
-        fitViewOptions={{ padding: 1 }}
+        fitViewOptions={{ padding: 0.5 }}
       >
         {showLoadScreen && <LoadScreen />}
         {!showLoadScreen && (
@@ -72,7 +72,10 @@ export default function Flow() {
             <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-4xl font-black'>
               Akyl
             </h1>
-            <Controls position='bottom-right' fitViewOptions={{ padding: 1 }} />
+            <Controls
+              position='bottom-right'
+              fitViewOptions={{ padding: 0.5 }}
+            />
           </>
         )}
         {backgroundPattern !== NO_BACKGROUND_VARIANT && (
