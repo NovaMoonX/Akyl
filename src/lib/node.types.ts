@@ -1,5 +1,5 @@
 export type BudgetType = 'income' | 'expense';
-export type NodeType = 'core' | 'L1' | 'L2' | 'budget'; // L1, L2, L3 are for levels of nodes in the flowchart (parent nodes), income and expense are for budget items (leaf nodes)
+export type NodeType = 'core' | 'L1' | 'L2' | 'budget';
 export type EdgeType = 'inflow' | 'outflow';
 
 export const CoreData = {};
