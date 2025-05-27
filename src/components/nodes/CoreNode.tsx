@@ -1,6 +1,7 @@
 import { Handle, Position } from '@xyflow/react';
 import { memo } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { useBudget } from '../../hooks';
 import { CashFlowVerbiagePairs, formatCurrency } from '../../lib';
 import { NODE_CORE_ID } from '../../lib/node.constants';
 import { useSpace } from '../../store';
@@ -16,6 +17,7 @@ function CoreNode({ id }: CoreNodeProps) {
       state?.space?.config?.currency,
     ]),
   );
+  const { incomesTotal, expensesTotal } = useBudget();
 
   if (id !== NODE_CORE_ID || !cashFlowVerbiage || !currency) {
     return null;
@@ -32,14 +34,14 @@ function CoreNode({ id }: CoreNodeProps) {
       <div className='absolute top-0 left-0 flex h-1/2 w-full translate-y-1 flex-col items-center justify-center'>
         <span className='text-xl font-bold'>{inflowLabel}</span>
         <span className='text-inflow font-semibold/80 text-xl'>
-          {formatCurrency(600, currency)}
+          {formatCurrency(incomesTotal, currency)}
         </span>
       </div>
       {/* Outflow Label (bottom half) */}
       <div className='absolute bottom-0 left-0 flex h-1/2 w-full -translate-y-1.5 flex-col items-center justify-center'>
         <span className='text-xl font-bold'>{outflowLabel}</span>
         <span className='text-outflow font-semibold/80 text-xl'>
-          {formatCurrency(600, currency)}
+          {formatCurrency(expensesTotal, currency)}
         </span>
       </div>
 

@@ -15,55 +15,103 @@ const initNodes: Node[] = [
 
 const demoNodes: Node[] = [
   {
-    id: 'income-1',
+    id: 'income-bucket-1',
     type: 'L1',
     position: { x: -100, y: -200 },
-    data: { label: 'HubSpot', amount: 200, type: 'income' },
+    data: { label: 'HubSpot', amount: 4000, type: 'income' },
     draggable: false,
   },
   {
-    id: 'income-2',
+    id: 'income-bucket-2',
     type: 'L1',
     position: { x: 100, y: -200 },
-    data: { label: 'Side Gig (Photography)', amount: 450.50, type: 'income' },
+    data: { label: 'Side Gig (Photography)', amount: 450.5, type: 'income' },
     draggable: false,
   },
   {
-    id: 'expense-1',
+    id: 'income-item-1',
+    type: 'budget',
+    position: { x: -100, y: -400 },
+    data: { budgetItemId: 'income-item-1' },
+    draggable: false,
+  },
+  {
+    id: 'income-item-2',
+    type: 'budget',
+    position: { x: 100, y: -400 },
+    data: { budgetItemId: 'income-item-2' },
+    draggable: false,
+  },
+  {
+    id: 'expense-bucket-1',
     type: 'L1',
     position: { x: -100, y: 300 },
-    data: { label: 'Rent', amount: 50.75, type: 'expense' },
+    data: { label: 'Living', amount: 1000, type: 'expense' },
     draggable: false,
   },
   {
-    id: 'expense-2',
+    id: 'expense-bucket-2',
     type: 'L1',
     position: { x: 100, y: 300 },
     data: { label: 'Other Bills (Utilities)', amount: 100, type: 'expense' },
     draggable: false,
-  }
-]
+  },
+  {
+    id: 'expense-item-1',
+    type: 'budget',
+    position: { x: -100, y: 500 },
+    data: { budgetItemId: 'expense-item-1' },
+    draggable: false,
+  },
+  {
+    id: 'expense-item-2',
+    type: 'budget',
+    position: { x: 100, y: 500 },
+    data: { budgetItemId: 'expense-item-2' },
+    draggable: false,
+  },
+];
 
 const demoEdges: Edge[] = [
   {
-    id: 'income-1-to-core',
-    source: 'income-1',
+    id: 'income-bucket-1-to-core',
+    source: 'income-bucket-1',
     target: NODE_CORE_ID,
   },
   {
-    id: 'income-2-to-core',
-    source: 'income-2',
+    id: 'income-bucket-2-to-core',
+    source: 'income-bucket-2',
     target: NODE_CORE_ID,
   },
   {
-    id: 'core-to-expense-1',
+    id: 'core-to-expense-bucket-1',
     source: NODE_CORE_ID,
-    target: 'expense-1',
+    target: 'expense-bucket-1',
   },
   {
-    id: 'core-to-expense-2',
+    id: 'core-to-expense-bucket-2',
     source: NODE_CORE_ID,
-    target: 'expense-2',
+    target: 'expense-bucket-2',
+  },
+  {
+    id: 'income-bucket-1-to-income-item-1',
+    source: 'income-item-1',
+    target: 'income-bucket-1',
+  },
+  {
+    id: 'income-bucket-2-to-income-item-2',
+    source: 'income-item-2',
+    target: 'income-bucket-2',
+  },
+  {
+    id: 'expense-bucket-1-to-expense-item-1',
+    source: 'expense-bucket-1',
+    target: 'expense-item-1',
+  },
+  {
+    id: 'expense-bucket-2-to-expense-item-2',
+    source: 'expense-bucket-2',
+    target: 'expense-item-2',
   },
 ];
 
