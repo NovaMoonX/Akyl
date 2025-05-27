@@ -2,6 +2,7 @@
 export { APP_SLOGAN, SUPPORT_EMAIL } from './app.constants';
 
 // Budget
+export { formatCurrency } from './budget.actions';
 export type {
   BudgetItemCadence,
   Expense,
@@ -17,7 +18,7 @@ export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 
 // Node
 export { NODE_CORE_ID } from './node.constants';
-export type { Edge, Node, NodeData, NodeType } from './node.types';
+export type { Edge, L1Data, Node, NodeData, NodeType } from './node.types';
 
 // Space
 export { createNewSpace, duplicateSpace } from './space.actions';

@@ -15,9 +15,11 @@ import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
 import LoadScreen from './LoadScreen';
 import CoreNode from './nodes/CoreNode';
+import L1Node from './nodes/L1Node';
 
 const nodeTypes = {
   core: CoreNode,
+  L1: L1Node,
 };
 
 const DEFAULT_BACKGROUND = BackgroundVariant.Cross;

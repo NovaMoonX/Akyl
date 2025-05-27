@@ -1,13 +1,18 @@
 export type NodeType = 'core' | 'L1' | 'L2' | 'income' | 'expense'; // L1, L2, L3 are for levels of nodes in the flowchart (parent nodes), income and expense are for budget items (leaf nodes)
 
-export const L1Data = {};
-
+export const CoreData = {};
+export interface L1Data {
+  label: string;
+  amount: number;
+  type: 'income' | 'expense';
+  [key: string]: unknown;
+}
 export interface BudgetData {
   budgetItemId: string;
   [key: string]: unknown;
 }
 
-export type NodeData = typeof L1Data | BudgetData;
+export type NodeData = typeof CoreData | L1Data | BudgetData;
 
 export interface Node {
   id: string;
