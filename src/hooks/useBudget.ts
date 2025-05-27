@@ -7,12 +7,15 @@ import { useSpace } from '../store';
 const demoIncomes = [
   {
     id: 'income-item-1',
-    label: 'Salary from Company',
+    label: 'Salary',
     amount: 4000,
+    source: 'HubSpot'
+    // category: ''
   },
   {
     id: 'income-item-2',
-    label: '#1 Client (Photography)',
+    label: '#1 Client',
+    source: 'Side Gig (Photography)',
     amount: 450.5,
   },
 ] as Income[];
@@ -21,11 +24,13 @@ const demoExpenses = [
   {
     id: 'expense-item-1',
     label: 'Rent',
+    category: 'Housing',
     amount: 1000,
   },
   {
     id: 'expense-item-2',
-    label: 'Phone Bill',
+    label: 'Monthly Food',
+    category: 'Groceries',
     amount: 100,
   },
 ] as Expense[];

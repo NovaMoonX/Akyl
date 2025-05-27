@@ -46,14 +46,14 @@ const demoNodes: Node[] = [
     id: 'expense-bucket-1',
     type: 'L1',
     position: { x: -100, y: 300 },
-    data: { label: 'Living', amount: 1000, type: 'expense' },
+    data: { label: 'Housing', amount: 1000, type: 'expense' },
     draggable: false,
   },
   {
     id: 'expense-bucket-2',
     type: 'L1',
     position: { x: 100, y: 300 },
-    data: { label: 'Other Bills (Utilities)', amount: 100, type: 'expense' },
+    data: { label: 'Groceries', amount: 100, type: 'expense' },
     draggable: false,
   },
   {
