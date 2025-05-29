@@ -9,7 +9,7 @@ const demoIncomes = [
     id: 'income-item-1',
     label: 'Salary',
     amount: 4000,
-    source: 'HubSpot'
+    source: 'HubSpot',
     // category: ''
   },
   {
@@ -39,6 +39,21 @@ export default function useBudget() {
   const [incomes, expenses] = useSpace(
     useShallow((state) => [state?.space?.incomes, state?.space?.expenses]),
   );
+
+  const incomeSources = useMemo(() => {
+    const sourceCount = new Map<string, number>();
+    for (const income of [...incomes, ...demoIncomes]) {
+      if (income.source) {
+        sourceCount.set(
+          income.source,
+          (sourceCount.get(income.source) || 0) + 1,
+        );
+      }
+    }
+    return Array.from(sourceCount.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([source]) => source);
+  }, [incomes]);
 
   const incomesMap = useMemo(() => {
     return [...incomes, ...demoIncomes].reduce(
@@ -102,5 +117,6 @@ export default function useBudget() {
     incomesTotal,
     expensesTotal,
     getBudgetItem,
+    incomeSources,
   };
 }

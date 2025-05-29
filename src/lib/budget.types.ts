@@ -24,7 +24,7 @@ export interface Income {
   source: string; // i.e. Company name, freelance job, friends/family, etc.
   category: IncomeCategory;
   otherCategory: string;
-  cadence: BudgetItemCadence;
+  // cadence: BudgetItemCadence; // FUTURE: support cadence for incomes and expenses
   notes: string;
 }
 
@@ -45,6 +45,6 @@ export interface Expense {
   category: ExpenseCategory;
   otherCategory: string;
   subCategory: string; // i.e. Water, Electricity, Gas -> Utilities
-  cadence: BudgetItemCadence;
+  // cadence: BudgetItemCadence;
   notes: string;
 }
