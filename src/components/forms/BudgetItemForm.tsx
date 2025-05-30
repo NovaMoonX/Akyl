@@ -17,6 +17,8 @@ export interface BudgetItemFormProps {
     value: unknown,
   ) => void;
   children?: React.ReactNode;
+  saveButtonDisabled?: boolean;
+  onSave?: () => void;
 }
 
 export default function BudgetItemForm({
@@ -27,6 +29,8 @@ export default function BudgetItemForm({
   notes = '',
   onFieldChange,
   children,
+  saveButtonDisabled = false,
+  onSave,
 }: BudgetItemFormProps) {
   const currency = useSpace(
     useShallow((state) => state.space?.config?.currency || 'USD'),
@@ -136,7 +140,12 @@ export default function BudgetItemForm({
         <button className='btn btn-secondary' onClick={handleClose}>
           Cancel
         </button>
-        <button type='button' className='btn btn-primary'>
+        <button
+          type='button'
+          className='btn btn-primary'
+          onClick={onSave}
+          disabled={saveButtonDisabled}
+        >
           Save
         </button>
       </div>

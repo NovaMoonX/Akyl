@@ -50,6 +50,13 @@ export default function IncomeForm() {
     });
   };
 
+  const isSaveDisabled =
+    !formData?.label ||
+    !formData?.amount ||
+    formData?.amount <= 0 ||
+    !formData?.source ||
+    !formData?.category;
+
   return (
     <BudgetItemForm
       label={formData?.label}
@@ -60,6 +67,7 @@ export default function IncomeForm() {
       onFieldChange={(field, val) =>
         handleFieldChange(field as keyof Income, val)
       }
+      saveButtonDisabled={isSaveDisabled}
     >
       {/* Source */}
       <div>
