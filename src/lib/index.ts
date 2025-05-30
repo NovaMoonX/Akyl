@@ -8,6 +8,7 @@ export {
 
 // Budget
 export { formatCurrency, getCurrencySymbol } from './budget.actions';
+export { IncomeCategories } from './budget.constants';
 export type {
   BudgetItemCadence,
   BudgetItemCadenceType,

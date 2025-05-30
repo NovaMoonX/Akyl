@@ -1,26 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useBudget } from '../../hooks';
-import { URL_PARAM_ID } from '../../lib';
-import type { Income, IncomeCategory } from '../../lib/budget.types';
+import { IncomeCategories, URL_PARAM_ID } from '../../lib';
+import type { Income } from '../../lib/budget.types';
+import { useSpace } from '../../store';
 import { generateId } from '../../utils';
 import { Combobox } from '../ui/Combobox';
 import BudgetItemForm from './BudgetItemForm';
-
-const INCOME_CATEGORIES: { value: IncomeCategory; label: string }[] = [
-  { value: 'Salary', label: 'Salary' },
-  { value: 'Bonus', label: 'Bonus' },
-  { value: 'Freelance', label: 'Freelance' },
-  { value: 'Investment', label: 'Investment' },
-  { value: 'Gift', label: 'Gift' },
-  { value: 'Other', label: 'Other' },
-];
 
 export default function IncomeForm() {
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<Income>();
   const incomeItemId = searchParams.get(URL_PARAM_ID);
   const { incomesMap, incomeSources } = useBudget();
+  const { addIncome, updateIncome } = useSpace();
 
   useEffect(() => {
     const defaultIncome: Income = {
@@ -50,6 +43,16 @@ export default function IncomeForm() {
     });
   };
 
+  const handleSave = () => {
+    if (!formData) return;
+    // Save logic here, e.g., update the budget store or make an API call
+    if (incomeItemId) {
+      updateIncome(incomeItemId, formData);
+    } else {
+      addIncome(formData);
+    }
+  };
+
   const isSaveDisabled =
     !formData?.label ||
     !formData?.amount ||
@@ -68,16 +71,29 @@ export default function IncomeForm() {
         handleFieldChange(field as keyof Income, val)
       }
       saveButtonDisabled={isSaveDisabled}
+      onSave={handleSave}
     >
       {/* Source */}
       <div>
         <label className='font-medium'>Source</label>
         <Combobox
           value={formData?.source ?? ''}
-          options={incomeSources.map((src) => ({
-            value: src,
-            label: src,
-          }))}
+          options={[
+            // Add custom source if it exists
+            ...(formData?.source
+              ? [
+                  {
+                    value: formData.source,
+                    label: formData.source,
+                  },
+                ]
+              : []),
+            // Include all existing income sources from the budget
+            ...incomeSources.map((src) => ({
+              value: src,
+              label: src,
+            })),
+          ]}
           onChange={(val) => handleFieldChange('source', val)}
           allowAdd={true}
           onAddOption={(val) => handleFieldChange('source', val)}
@@ -89,15 +105,38 @@ export default function IncomeForm() {
       <div>
         <label className='font-medium'>Category</label>
         <Combobox
-          value={formData?.category ?? ''}
+          value={
+            formData?.category === 'Other'
+              ? (formData?.otherCategory ?? '')
+              : (formData?.category ?? '')
+          }
           options={[
-            ...INCOME_CATEGORIES,
-            { value: 'Value', label: 'Value' },
-            { value: 'Custom', label: 'Custom' },
+            // Add custom category if it exists
+            ...(formData?.otherCategory
+              ? [
+                  {
+                    value: formData.otherCategory,
+                    label: formData.otherCategory,
+                  },
+                ]
+              : []),
+            // Include all existing income categories from the budget
+            ...IncomeCategories.filter((cat) => cat !== 'Other').map(
+              (source) => ({
+                value: source,
+                label: source,
+              }),
+            ),
           ]}
-          onChange={(val) => handleFieldChange('category', val)}
+          onChange={(val) => {
+            handleFieldChange('category', val);
+            handleFieldChange('otherCategory', '');
+          }}
           allowAdd={true}
-          onAddOption={(val) => handleFieldChange('category', val)}
+          onAddOption={(val) => {
+            handleFieldChange('otherCategory', val);
+            handleFieldChange('category', 'Other');
+          }}
           placeholder='Select or add category...'
         />
       </div>
