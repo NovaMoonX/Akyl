@@ -82,7 +82,11 @@ export default function IncomeForm() {
         <label className='font-medium'>Category</label>
         <Combobox
           value={formData?.category ?? ''}
-          options={INCOME_CATEGORIES}
+          options={[
+            ...INCOME_CATEGORIES,
+            { value: 'Value', label: 'Value' },
+            { value: 'Custom', label: 'Custom' },
+          ]}
           onChange={(val) => handleFieldChange('category', val)}
           allowAdd={true}
           onAddOption={(val) => handleFieldChange('category', val)}

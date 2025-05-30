@@ -1,5 +1,6 @@
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { join } from '../../utils';
 
 export interface Option {
   label: string;
@@ -23,13 +24,24 @@ export function Combobox({
   placeholder = 'Select...',
   allowAdd = false,
   onAddOption,
-  className,
+  className = '',
 }: ComboboxProps) {
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [filtered, setFiltered] = useState<Option[]>(options);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const showAdd = useMemo(
+    () =>
+      allowAdd &&
+      inputValue.trim() &&
+      !options.some(
+        (opt) => opt.label.toLowerCase() === inputValue.trim().toLowerCase(),
+      ),
+    [allowAdd, inputValue, options],
+  );
 
   useEffect(() => {
     setFiltered(
@@ -37,6 +49,7 @@ export function Combobox({
         opt.label.toLowerCase().includes(inputValue.toLowerCase()),
       ),
     );
+    setHighlightedIndex(0);
   }, [inputValue, options]);
 
   useEffect(() => {
@@ -52,6 +65,16 @@ export function Combobox({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const list = document.getElementById('combobox-listbox');
+    if (!list) return;
+    const item = list.children[highlightedIndex] as HTMLElement | undefined;
+    if (item) {
+      item.scrollIntoView({ block: 'nearest' });
+    }
+  }, [highlightedIndex, isOpen, filtered.length, showAdd]);
+
   const handleSelect = (val: string) => {
     onChange(val);
     setInputValue('');
@@ -66,16 +89,37 @@ export function Combobox({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex((prev) => {
+        const max = showAdd
+          ? filtered.length
+          : Math.max(filtered.length - 1, 0);
+        return prev < max ? prev + 1 : 0;
+      });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex((prev) => {
+        const max = showAdd
+          ? filtered.length
+          : Math.max(filtered.length - 1, 0);
+        return prev > 0 ? prev - 1 : max;
+      });
+    } else if (e.key === 'Enter') {
+      if (showAdd && highlightedIndex === filtered.length) {
+        handleAdd();
+      } else if (filtered[highlightedIndex]) {
+        handleSelect(filtered[highlightedIndex].value);
+      }
+    }
+  };
+
   const selectedLabel = options.find((opt) => opt.value === value)?.label;
-  const showAdd =
-    allowAdd &&
-    inputValue.trim() &&
-    !options.some(
-      (opt) => opt.label.toLowerCase() === inputValue.trim().toLowerCase(),
-    );
 
   return (
-    <div ref={containerRef} className={`relative w-full ${className ?? ''}`}>
+    <div ref={containerRef} className={join('relative w-full', className)}>
       <div
         className='dark:bg-surface-dark dark:text-surface-light flex items-center rounded border border-gray-300 bg-white px-3 py-2 focus-within:border-emerald-500 dark:border-gray-700'
         onClick={() => {
@@ -97,22 +141,27 @@ export function Combobox({
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
+          onKeyDown={handleKeyDown}
         />
         <div className='ml-2 text-gray-500'>
           {isOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
         </div>
       </div>
       {isOpen && (
-        <ul className='dark:bg-surface-dark dark:text-surface-light bg-surface-light absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border border-gray-200/50 shadow-lg dark:border-gray-400/50'>
+        <ul
+          id='combobox-listbox'
+          className='dark:bg-surface-dark dark:text-surface-light bg-surface-light absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border border-gray-200/50 shadow-lg dark:border-gray-400/50'
+        >
           {filtered.length > 0
-            ? filtered.map((opt) => (
+            ? filtered.map((opt, idx) => (
                 <li
                   key={opt.value}
-                  className={`cursor-pointer px-4 py-2 hover:bg-emerald-100 dark:hover:bg-emerald-900 ${
-                    value === opt.value
-                      ? 'bg-emerald-50 dark:bg-emerald-800'
-                      : ''
-                  }`}
+                  className={join(
+                    'cursor-pointer px-4 py-2 hover:bg-emerald-100 dark:hover:bg-emerald-900',
+                    value === opt.value && 'bg-emerald-50 dark:bg-emerald-800',
+                    highlightedIndex === idx &&
+                      'bg-emerald-100 dark:bg-emerald-900',
+                  )}
                   onClick={() => handleSelect(opt.value)}
                   role='option'
                   aria-selected={value === opt.value}
@@ -125,7 +174,11 @@ export function Combobox({
               )}
           {showAdd && (
             <li
-              className='cursor-pointer px-4 py-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900'
+              className={join(
+                'cursor-pointer px-4 py-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900',
+                highlightedIndex === filtered.length &&
+                  'bg-emerald-100 dark:bg-emerald-900',
+              )}
               onClick={handleAdd}
               role='option'
             >
