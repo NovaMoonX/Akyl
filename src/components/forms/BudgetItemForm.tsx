@@ -7,6 +7,7 @@ import { useSpace } from '../../store';
 // import CadenceForm from './CadenceForm';
 
 export interface BudgetItemFormProps {
+  title: string;
   label?: string;
   description?: string;
   amount?: number;
@@ -22,6 +23,7 @@ export interface BudgetItemFormProps {
 }
 
 export default function BudgetItemForm({
+  title,
   label = '',
   description = '',
   amount = 0,
@@ -44,6 +46,7 @@ export default function BudgetItemForm({
 
   return (
     <div className='flex flex-col gap-4'>
+      <h2 className='text-xl font-bold'>{title}</h2>
       {/* Label */}
       <div>
         <label className='font-medium'>Name</label>
