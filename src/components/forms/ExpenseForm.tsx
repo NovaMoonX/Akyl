@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useBudget } from '../../hooks';
-import { ExpenseCategories, URL_PARAM_ID } from '../../lib';
+import { URL_PARAM_ID } from '../../lib';
 import type { Expense } from '../../lib/budget.types';
 import { useSpace } from '../../store';
 import { generateId } from '../../utils';
@@ -12,7 +12,8 @@ export default function ExpenseForm() {
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<Expense>();
   const expenseItemId = searchParams.get(URL_PARAM_ID);
-  const { expensesMap, expenseSubCategoriesMap } = useBudget();
+  const { expensesMap, expenseSubCategoriesMap, expenseCategories } =
+    useBudget();
   const { addExpense, updateExpense } = useSpace();
 
   useEffect(() => {
@@ -90,12 +91,10 @@ export default function ExpenseForm() {
                   },
                 ]
               : []),
-            ...ExpenseCategories.filter((cat) => cat !== 'Other').map(
-              (cat) => ({
-                value: cat,
-                label: cat,
-              }),
-            ),
+            ...expenseCategories.map((cat) => ({
+              value: cat,
+              label: cat,
+            })),
           ]}
           onChange={(val) => {
             handleFieldChange('category', val);

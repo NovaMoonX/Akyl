@@ -6,7 +6,6 @@ export const IncomeCategories: IncomeCategory[] = [
   'Freelance',
   'Investment',
   'Gift',
-  'Other',
 ];
 
 export const ExpenseCategories: ExpenseCategory[] = [
@@ -16,5 +15,4 @@ export const ExpenseCategories: ExpenseCategory[] = [
   'Entertainment',
   'Healthcare',
   'Personal Spending',
-  'Other',
 ];

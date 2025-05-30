@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useBudget } from '../../hooks';
-import { IncomeCategories, URL_PARAM_ID } from '../../lib';
+import { URL_PARAM_ID } from '../../lib';
 import type { Income } from '../../lib/budget.types';
 import { useSpace } from '../../store';
 import { generateId } from '../../utils';
@@ -12,7 +12,7 @@ export default function IncomeForm() {
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<Income>();
   const incomeItemId = searchParams.get(URL_PARAM_ID);
-  const { incomesMap, incomeSources } = useBudget();
+  const { incomesMap, incomeSources, incomeCategories } = useBudget();
   const { addIncome, updateIncome } = useSpace();
 
   useEffect(() => {
@@ -122,12 +122,10 @@ export default function IncomeForm() {
                 ]
               : []),
             // Include all existing income categories from the budget
-            ...IncomeCategories.filter((cat) => cat !== 'Other').map(
-              (source) => ({
-                value: source,
-                label: source,
-              }),
-            ),
+            ...incomeCategories.map((cat) => ({
+              value: cat,
+              label: cat,
+            })),
           ]}
           onChange={(val) => {
             handleFieldChange('category', val);

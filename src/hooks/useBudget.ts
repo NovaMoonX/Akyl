@@ -1,6 +1,11 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import type { Expense, Income } from '../lib';
+import {
+  ExpenseCategories,
+  IncomeCategories,
+  type Expense,
+  type Income,
+} from '../lib';
 import type { BudgetType } from '../lib/node.types';
 import { useSpace } from '../store';
 
@@ -71,6 +76,26 @@ export default function useBudget() {
     return map;
   }, [expenses]);
 
+  const incomeCategories = useMemo(() => {
+    const categories = new Set<string>(IncomeCategories);
+    for (const income of [...incomes, ...demoIncomes]) {
+      if (income.category) {
+        categories.add(income.category);
+      }
+    }
+    return Array.from(categories).sort();
+  }, [incomes]);
+
+  const expenseCategories = useMemo(() => {
+    const categories = new Set<string>(ExpenseCategories);
+    for (const expense of [...expenses, ...demoExpenses]) {
+      if (expense.category) {
+        categories.add(expense.category);
+      }
+    }
+    return Array.from(categories).sort();
+  }, [expenses]);
+
   const incomesMap = useMemo(() => {
     return [...incomes, ...demoIncomes].reduce(
       (acc, income) => {
@@ -135,5 +160,7 @@ export default function useBudget() {
     getBudgetItem,
     incomeSources,
     expenseSubCategoriesMap,
+    incomeCategories,
+    expenseCategories,
   };
 }
