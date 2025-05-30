@@ -6,6 +6,7 @@ interface DropdownProps {
   onClose: () => void;
   children: React.ReactNode;
   className?: string;
+  closeOnOverlayClick?: boolean;
 }
 
 export default function Dropdown({
@@ -13,11 +14,12 @@ export default function Dropdown({
   onClose,
   children,
   className,
+  closeOnOverlayClick = true,
 }: DropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !closeOnOverlayClick) return;
     const handleMouseAction = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -41,7 +43,7 @@ export default function Dropdown({
       document.removeEventListener('pointerdown', handlePointerAction);
       document.removeEventListener('mousedown', handleMouseAction);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, closeOnOverlayClick]);
 
   if (!isOpen) return null;
 
