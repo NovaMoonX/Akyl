@@ -4,6 +4,7 @@ import { useBudget } from '../../hooks';
 import { URL_PARAM_ID } from '../../lib';
 import type { Income, IncomeCategory } from '../../lib/budget.types';
 import { generateId } from '../../utils';
+import { Combobox } from '../ui/Combobox';
 import BudgetItemForm from './BudgetItemForm';
 
 const INCOME_CATEGORIES: { value: IncomeCategory; label: string }[] = [
@@ -19,7 +20,7 @@ export default function IncomeForm() {
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<Income>();
   const incomeItemId = searchParams.get(URL_PARAM_ID);
-  const { incomesMap } = useBudget();
+  const { incomesMap, incomeSources } = useBudget();
 
   useEffect(() => {
     const defaultIncome: Income = {
@@ -63,39 +64,30 @@ export default function IncomeForm() {
       {/* Source */}
       <div>
         <label className='font-medium'>Source</label>
-        <input
-          type='text'
-          className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-          placeholder='e.g. Company Name'
+        <Combobox
           value={formData?.source ?? ''}
-          onChange={(e) => handleFieldChange('source', e.target.value)}
+          options={incomeSources.map((src) => ({
+            value: src,
+            label: src,
+          }))}
+          onChange={(val) => handleFieldChange('source', val)}
+          allowAdd={true}
+          onAddOption={(val) => handleFieldChange('source', val)}
+          placeholder='Select or add source...'
         />
       </div>
 
       {/* Category */}
       <div>
         <label className='font-medium'>Category</label>
-        <div className='mt-1 flex flex-wrap gap-2'>
-          {INCOME_CATEGORIES.map((opt) => (
-            <button
-              key={opt.value}
-              type='button'
-              className={`btn btn-sm ${formData?.category === opt.value ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => handleFieldChange('category', opt.value)}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-        {formData?.category === 'Other' && (
-          <input
-            type='text'
-            className='mt-2 w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-            placeholder='Other category'
-            value={formData?.otherCategory ?? ''}
-            onChange={(e) => handleFieldChange('otherCategory', e.target.value)}
-          />
-        )}
+        <Combobox
+          value={formData?.category ?? ''}
+          options={INCOME_CATEGORIES}
+          onChange={(val) => handleFieldChange('category', val)}
+          allowAdd={true}
+          onAddOption={(val) => handleFieldChange('category', val)}
+          placeholder='Select or add category...'
+        />
       </div>
     </BudgetItemForm>
   );
