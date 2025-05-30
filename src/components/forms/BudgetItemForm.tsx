@@ -3,8 +3,6 @@ import { useShallow } from 'zustand/shallow';
 import { getCurrencySymbol } from '../../lib';
 import type { BudgetItemCadence } from '../../lib/budget.types';
 import { useSpace } from '../../store';
-// If you have a CadenceForm, import it here
-// import CadenceForm from './CadenceForm';
 
 export interface BudgetItemFormProps {
   title: string;
@@ -40,7 +38,6 @@ export default function BudgetItemForm({
   const [, setSearchParams] = useSearchParams();
 
   const handleClose = () => {
-    // Implement close logic here, e.g., reset form or close modal
     setSearchParams({});
   };
 

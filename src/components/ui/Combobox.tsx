@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { join } from '../../utils';
 
 export interface Option {
@@ -26,6 +26,7 @@ export function Combobox({
   onAddOption,
   className = '',
 }: ComboboxProps) {
+  const comboboxId = useId();
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [filtered, setFiltered] = useState<Option[]>(options);
@@ -67,13 +68,13 @@ export function Combobox({
 
   useEffect(() => {
     if (!isOpen) return;
-    const list = document.getElementById('combobox-listbox');
+    const list = document.getElementById(comboboxId);
     if (!list) return;
     const item = list.children[highlightedIndex] as HTMLElement | undefined;
     if (item) {
       item.scrollIntoView({ block: 'nearest' });
     }
-  }, [highlightedIndex, isOpen, filtered.length, showAdd]);
+  }, [highlightedIndex, isOpen, filtered.length, showAdd, comboboxId]);
 
   const handleSelect = (val: string) => {
     onChange(val);
@@ -149,7 +150,7 @@ export function Combobox({
       </div>
       {isOpen && (
         <ul
-          id='combobox-listbox'
+          id={comboboxId}
           className='dark:bg-surface-dark dark:text-surface-light bg-surface-light absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border border-gray-200/50 shadow-lg dark:border-gray-400/50'
         >
           {filtered.length > 0
