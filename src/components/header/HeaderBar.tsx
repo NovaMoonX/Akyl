@@ -4,7 +4,6 @@ import {
   CashFlowVerbiagePairs,
   URL_PARAM_FORM,
   type BudgetType,
-  type Income,
 } from '../../lib';
 import { useSpace } from '../../store';
 import IncomeForm from '../forms/IncomeForm';
@@ -29,11 +28,11 @@ export default function HeaderBar() {
   const handleOpenForm = (type: BudgetType) => {
     setSearchParams({ [URL_PARAM_FORM]: type });
   };
+
   const handleCloseForm = () => {
     setSearchParams({});
   };
 
-  // render dropdown here
   return (
     <>
       <div className='bg-surface-light dark:bg-surface-dark flex w-full flex-grow items-center justify-between rounded-lg px-4 py-2.5 shadow-md'>
@@ -65,9 +64,7 @@ export default function HeaderBar() {
         className='right-0 w-fit max-w-md !p-6'
         closeOnOverlayClick={false}
       >
-        {searchParams.get(URL_PARAM_FORM) === 'income' && (
-          <IncomeForm value={{} as Income} onChange={() => {}} />
-        )}
+        {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}
       </Dropdown>
     </>
   );

@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { getCurrencySymbol } from '../../lib';
 import type { BudgetItemCadence } from '../../lib/budget.types';
@@ -6,11 +7,11 @@ import { useSpace } from '../../store';
 // import CadenceForm from './CadenceForm';
 
 export interface BudgetItemFormProps {
-  label: string;
-  description: string;
-  amount: number;
-  cadence: BudgetItemCadence;
-  notes: string;
+  label?: string;
+  description?: string;
+  amount?: number;
+  cadence?: BudgetItemCadence;
+  notes?: string;
   onFieldChange: (
     field: 'label' | 'description' | 'amount' | 'cadence' | 'notes',
     value: unknown,
@@ -19,17 +20,23 @@ export interface BudgetItemFormProps {
 }
 
 export default function BudgetItemForm({
-  label,
-  description,
-  amount,
-  cadence,
-  notes,
+  label = '',
+  description = '',
+  amount = 0,
+  cadence = { type: 'month', interval: 1 },
+  notes = '',
   onFieldChange,
   children,
 }: BudgetItemFormProps) {
   const currency = useSpace(
     useShallow((state) => state.space?.config?.currency || 'USD'),
   );
+  const [, setSearchParams] = useSearchParams();
+
+  const handleClose = () => {
+    // Implement close logic here, e.g., reset form or close modal
+    setSearchParams({});
+  };
 
   return (
     <div className='flex flex-col gap-4'>
@@ -41,7 +48,7 @@ export default function BudgetItemForm({
           className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
           value={label}
           onChange={(e) => onFieldChange('label', e.target.value)}
-          placeholder='Paycheck (with bonus)'
+          placeholder='e.g. Paycheck'
           autoFocus={true}
         />
       </div>
@@ -54,6 +61,7 @@ export default function BudgetItemForm({
           className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
           value={description}
           onChange={(e) => onFieldChange('description', e.target.value)}
+          placeholder='Optional'
         />
       </div>
 
@@ -83,6 +91,7 @@ export default function BudgetItemForm({
               type='number'
               min={1}
               className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+              aria-description='Enter the frequency interval for this budget item'
               value={cadence?.interval}
               onChange={(e) =>
                 onFieldChange('cadence', {
@@ -98,6 +107,7 @@ export default function BudgetItemForm({
             onChange={(e) =>
               onFieldChange('cadence', { ...cadence, type: e.target.value })
             }
+            aria-description='Select the frequency of this budget item'
           >
             <option value='day'>day(s)</option>
             <option value='week'>week(s)</option>
@@ -114,11 +124,21 @@ export default function BudgetItemForm({
       <div>
         <label className='font-medium'>Notes</label>
         <textarea
-          className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+          className='min-h-20 w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
           value={notes}
           onChange={(e) => onFieldChange('notes', e.target.value)}
           rows={2}
         />
+      </div>
+
+      {/* Footer */}
+      <div className='flex justify-end gap-2'>
+        <button className='btn btn-secondary' onClick={handleClose}>
+          Cancel
+        </button>
+        <button type='button' className='btn btn-primary'>
+          Save
+        </button>
       </div>
     </div>
   );
