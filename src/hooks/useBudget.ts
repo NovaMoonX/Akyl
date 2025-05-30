@@ -55,6 +55,22 @@ export default function useBudget() {
       .map(([source]) => source);
   }, [incomes]);
 
+  const expenseSubCategoriesMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    for (const expense of [...expenses, ...demoExpenses]) {
+      if (expense.category && expense.subCategory) {
+        if (!map[expense.category]) {
+          map[expense.category] = [];
+        }
+        // Only add if not already present
+        if (!map[expense.category].includes(expense.subCategory)) {
+          map[expense.category].push(expense.subCategory);
+        }
+      }
+    }
+    return map;
+  }, [expenses]);
+
   const incomesMap = useMemo(() => {
     return [...incomes, ...demoIncomes].reduce(
       (acc, income) => {
@@ -118,5 +134,6 @@ export default function useBudget() {
     expensesTotal,
     getBudgetItem,
     incomeSources,
+    expenseSubCategoriesMap,
   };
 }

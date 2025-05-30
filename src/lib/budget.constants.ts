@@ -1,4 +1,4 @@
-import type { IncomeCategory } from './budget.types';
+import type { ExpenseCategory, IncomeCategory } from './budget.types';
 
 export const IncomeCategories: IncomeCategory[] = [
   'Salary',
@@ -6,5 +6,15 @@ export const IncomeCategories: IncomeCategory[] = [
   'Freelance',
   'Investment',
   'Gift',
+  'Other',
+];
+
+export const ExpenseCategories: ExpenseCategory[] = [
+  'Housing',
+  'Groceries',
+  'Transportation',
+  'Entertainment',
+  'Healthcare',
+  'Personal Spending',
   'Other',
 ];
