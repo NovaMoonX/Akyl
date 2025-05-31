@@ -38,10 +38,12 @@ export default function BudgetItemForm({
   );
   const [, setSearchParams] = useSearchParams();
   const [showDescription, setShowDescription] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
 
   useEffect(() => {
     if (description) setShowDescription(true);
-  }, [description]);
+    if (notes) setShowNotes(true);
+  }, [description, notes]);
 
   const handleClose = () => {
     setSearchParams({});
@@ -50,7 +52,6 @@ export default function BudgetItemForm({
   return (
     <div className='flex flex-col gap-4'>
       <h2 className='text-xl font-bold'>{title}</h2>
-      {/* Label */}
       <div>
         <label className='font-medium'>Name</label>
         <input
@@ -88,7 +89,6 @@ export default function BudgetItemForm({
         </div>
       )}
 
-      {/* Amount + Cadence */}
       <div>
         <label className='font-medium'>Amount</label>
         <div className='mt-1 flex flex-wrap items-center gap-2'>
@@ -143,18 +143,29 @@ export default function BudgetItemForm({
       {/* Children for custom fields */}
       {children}
 
-      {/* Notes */}
-      <div>
-        <label className='font-medium'>Notes</label>
-        <textarea
-          className='min-h-20 w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-          value={notes}
-          onChange={(e) => onFieldChange('notes', e.target.value)}
-          rows={2}
-        />
-      </div>
+      {!showNotes && (
+        <div className='flex justify-end mb-4'>
+          <button
+            type='button'
+            className='mt-1 ml-auto text-sm underline opacity-70 hover:opacity-85'
+            onClick={() => setShowNotes(true)}
+          >
+            Add notes
+          </button>
+        </div>
+      )}
+      {showNotes && (
+        <div>
+          <label className='font-medium'>Notes</label>
+          <textarea
+            className='min-h-20 w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+            value={notes}
+            onChange={(e) => onFieldChange('notes', e.target.value)}
+            rows={2}
+          />
+        </div>
+      )}
 
-      {/* Footer */}
       <div className='flex justify-end gap-2'>
         <button className='btn btn-secondary' onClick={handleClose}>
           Cancel
