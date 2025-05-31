@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { getCurrencySymbol } from '../../lib';
@@ -36,6 +37,11 @@ export default function BudgetItemForm({
     useShallow((state) => state.space?.config?.currency || 'USD'),
   );
   const [, setSearchParams] = useSearchParams();
+  const [showDescription, setShowDescription] = useState(false);
+
+  useEffect(() => {
+    if (description) setShowDescription(true);
+  }, [description]);
 
   const handleClose = () => {
     setSearchParams({});
@@ -55,19 +61,32 @@ export default function BudgetItemForm({
           placeholder='e.g. Paycheck'
           autoFocus={true}
         />
+
+        {!showDescription && (
+          <div className='flex justify-end'>
+            <button
+              type='button'
+              className='mt-1 ml-auto text-sm underline opacity-70 hover:opacity-85'
+              onClick={() => setShowDescription(true)}
+            >
+              Add description
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Description */}
-      <div>
-        <label className='font-medium'>Description</label>
-        <input
-          type='text'
-          className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-          value={description}
-          onChange={(e) => onFieldChange('description', e.target.value)}
-          placeholder='Optional'
-        />
-      </div>
+      {showDescription && (
+        <div>
+          <label className='font-medium'>Description</label>
+          <input
+            type='text'
+            className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+            value={description}
+            onChange={(e) => onFieldChange('description', e.target.value)}
+            placeholder='Optional'
+          />
+        </div>
+      )}
 
       {/* Amount + Cadence */}
       <div>
