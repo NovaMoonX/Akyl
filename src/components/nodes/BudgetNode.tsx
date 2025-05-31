@@ -1,10 +1,13 @@
 import { Handle, Position } from '@xyflow/react';
-import { Maximize2Icon } from 'lucide-react';
+import { PencilIcon } from 'lucide-react';
 import { memo } from 'react';
+import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
 import {
   formatCurrency,
+  URL_PARAM_FORM,
+  URL_PARAM_ID,
   type BudgetData,
   type Expense,
   type Income,
@@ -23,9 +26,13 @@ function BudgetNode({ data }: BudgetNodeProps) {
   );
   const { getBudgetItem } = useBudget();
   const { item: budgetItem, type } = getBudgetItem(budgetItemId);
+  const [, setSearchParams] = useSearchParams();
 
-  const handleOnExpand = () => {
-    console.log('Expand button clicked');
+  const handleEdit = () => {
+    setSearchParams({
+      [URL_PARAM_FORM]: type,
+      [URL_PARAM_ID]: budgetItemId,
+    });
   };
 
   if (!budgetItem) {
@@ -59,11 +66,11 @@ function BudgetNode({ data }: BudgetNodeProps) {
         <p className='flex-1 truncate font-semibold'>{budgetItem.label}</p>
         <button
           type='button'
-          onClick={handleOnExpand}
-          className='shrink-0 opacity-60 hover:opacity-80'
-          aria-label='Expand Budget Item'
+          onClick={handleEdit}
+          className='shrink-0 translate-x-0.5 -translate-y-0.5 opacity-60 hover:opacity-80'
+          aria-label='Edit Budget Item'
         >
-          <Maximize2Icon className='size-4' />
+          <PencilIcon className='size-3' />
         </button>
       </div>
       {/* Amount */}

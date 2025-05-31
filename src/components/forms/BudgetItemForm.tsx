@@ -43,12 +43,23 @@ export default function BudgetItemForm({
   const [showNotes, setShowNotes] = useState(false);
 
   useEffect(() => {
-    if (description) setShowDescription(true);
-    if (notes) setShowNotes(true);
+    if (description.length > 0) {
+      setShowDescription(true);
+    }
+    if (notes.length > 0) {
+      setShowNotes(true);
+    }
   }, [description, notes]);
 
   const handleClose = () => {
     setSearchParams({});
+  };
+
+  const handleSave = () => {
+    if (onSave) {
+      onSave();
+      handleClose();
+    }
   };
 
   return (
@@ -86,7 +97,6 @@ export default function BudgetItemForm({
             className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
             value={description}
             onChange={(e) => onFieldChange('description', e.target.value)}
-            placeholder='Optional'
           />
         </div>
       )}
@@ -99,8 +109,15 @@ export default function BudgetItemForm({
             min={0}
             step='0.01'
             className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-            value={amount}
-            onChange={(e) => onFieldChange('amount', Number(e.target.value))}
+            value={amount === 0 ? '' : amount}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === '') {
+                onFieldChange('amount', 0);
+              } else {
+                onFieldChange('amount', Number(val));
+              }
+            }}
             placeholder='0.00'
           />
           <span className='text-gray-700 dark:text-gray-200'>
@@ -175,7 +192,7 @@ export default function BudgetItemForm({
         <button
           type='button'
           className='btn btn-primary'
-          onClick={onSave}
+          onClick={handleSave}
           disabled={saveButtonDisabled}
         >
           Save
