@@ -1,4 +1,4 @@
-export const BaseIncomeCategories = [
+export const BaseIncomeTypes = [
   'Salary',
   'Bonus',
   'Freelance',

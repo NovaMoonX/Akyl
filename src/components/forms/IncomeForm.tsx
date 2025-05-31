@@ -12,7 +12,7 @@ export default function IncomeForm() {
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<Income>();
   const incomeItemId = searchParams.get(URL_PARAM_ID);
-  const { incomesMap, incomeSources, incomeCategories } = useBudget();
+  const { incomesMap, incomeSources, incomeTypes } = useBudget();
   const { addIncome, updateIncome } = useSpace();
 
   const sourceOptions = useMemo(() => {
@@ -22,12 +22,12 @@ export default function IncomeForm() {
     }));
   }, [incomeSources]);
 
-  const categoryOptions = useMemo(() => {
-    return incomeCategories.map((cat) => ({
+  const typeOptions = useMemo(() => {
+    return incomeTypes.map((cat) => ({
       value: cat,
       label: cat,
     }));
-  }, [incomeCategories]);
+  }, [incomeTypes]);
 
   useEffect(() => {
     const defaultIncome: Income = {
@@ -36,7 +36,7 @@ export default function IncomeForm() {
       description: '',
       amount: 0,
       source: '',
-      category: 'Salary',
+      type: 'Salary',
       cadence: {
         type: 'month',
         interval: 1,
@@ -71,7 +71,7 @@ export default function IncomeForm() {
     !formData?.amount ||
     formData?.amount <= 0 ||
     !formData?.source ||
-    !formData?.category;
+    !formData?.type;
 
   return (
     <BudgetItemForm
@@ -100,17 +100,17 @@ export default function IncomeForm() {
         />
       </div>
 
-      {/* Category */}
+      {/* Type */}
       <div>
-        <label className='font-medium'>Category</label>
+        <label className='font-medium'>Type</label>
         <Combobox
-          value={formData?.category ?? ''}
-          options={categoryOptions}
+          value={formData?.type ?? ''}
+          options={typeOptions}
           onChange={(val) => {
-            handleFieldChange('category', val);
+            handleFieldChange('type', val);
           }}
           allowAdd={true}
-          placeholder='Select or add category...'
+          placeholder='Select or add type...'
         />
       </div>
     </BudgetItemForm>

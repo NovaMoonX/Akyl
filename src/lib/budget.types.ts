@@ -11,7 +11,7 @@ export interface Income {
   description: string;
   amount: number;
   source: string; // i.e. Company name, freelance job, friends/family, etc.
-  category: string;
+  type: string;
   cadence: BudgetItemCadence;
   notes: string;
 }

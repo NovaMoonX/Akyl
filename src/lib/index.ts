@@ -10,7 +10,7 @@ export {
 export { formatCurrency, getCurrencySymbol } from './budget.actions';
 export {
   BaseExpenseCategories,
-  BaseIncomeCategories,
+  BaseIncomeTypes,
 } from './budget.constants';
 export type {
   BudgetItemCadence,

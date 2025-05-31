@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import {
   BaseExpenseCategories,
-  BaseIncomeCategories,
+  BaseIncomeTypes,
   type Expense,
   type Income,
 } from '../lib';
@@ -76,14 +76,14 @@ export default function useBudget() {
     return map;
   }, [expenses]);
 
-  const incomeCategories = useMemo(() => {
-    const categories = new Set<string>(BaseIncomeCategories);
+  const incomeTypes = useMemo(() => {
+    const types = new Set<string>(BaseIncomeTypes);
     for (const income of [...incomes, ...demoIncomes]) {
-      if (income.category) {
-        categories.add(income.category);
+      if (income.type) {
+        types.add(income.type);
       }
     }
-    return Array.from(categories).sort();
+    return Array.from(types).sort();
   }, [incomes]);
 
   const expenseCategories = useMemo(() => {
@@ -160,7 +160,7 @@ export default function useBudget() {
     getBudgetItem,
     incomeSources,
     expenseSubCategoriesMap,
-    incomeCategories,
+    incomeTypes,
     expenseCategories,
   };
 }
