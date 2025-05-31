@@ -7,6 +7,10 @@ import {
   BUCKET_SPACING_X,
   CURRENT_APP_VERSION,
   CURRENT_FILE_VERSION,
+  EXPENSE_BUCKET_Y,
+  EXPENSE_ITEM_Y,
+  INCOME_BUCKET_Y,
+  INCOME_ITEM_Y,
   SpaceAccentColors,
 } from './space.constants';
 import type { Space } from './space.types';
@@ -70,8 +74,6 @@ export function duplicateSpace(spaceId: string) {
 export function generateIncomeNodesAndEdges(
   incomeBySource: Record<string, { total: number; items: Income[] }>,
 ) {
-  const bucketY = -200;
-  const itemY = -400;
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
@@ -100,7 +102,7 @@ export function generateIncomeNodesAndEdges(
       type: 'budget',
       position: {
         x: budgetStartX + i * BUCKET_SPACING_X,
-        y: itemY,
+        y: INCOME_ITEM_Y,
       },
       data: { budgetItemId: income.id },
       draggable: false,
@@ -121,7 +123,7 @@ export function generateIncomeNodesAndEdges(
       type: 'L1',
       position: {
         x: bucketNodeX,
-        y: bucketY,
+        y: INCOME_BUCKET_Y,
       },
       data: { label: source, amount: total, type: 'income' },
       draggable: false,
@@ -161,8 +163,6 @@ export function generateIncomeNodesAndEdges(
 export function generateExpenseNodesAndEdges(
   expenseByCategory: Record<string, { total: number; items: Expense[] }>,
 ) {
-  const bucketY = 300;
-  const itemY = 500;
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
@@ -192,7 +192,7 @@ export function generateExpenseNodesAndEdges(
       type: 'budget',
       position: {
         x: budgetStartX + i * budgetSpacing,
-        y: itemY,
+        y: EXPENSE_ITEM_Y,
       },
       data: { budgetItemId: expense.id },
       draggable: false,
@@ -214,7 +214,7 @@ export function generateExpenseNodesAndEdges(
       type: 'L1',
       position: {
         x: bucketNodeX,
-        y: bucketY,
+        y: EXPENSE_BUCKET_Y,
       },
       data: { label: category, amount: total, type: 'expense' },
       draggable: false,
