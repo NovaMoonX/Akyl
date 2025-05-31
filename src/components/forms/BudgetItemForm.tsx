@@ -43,8 +43,12 @@ export default function BudgetItemForm({
   const [showNotes, setShowNotes] = useState(false);
 
   useEffect(() => {
-    if (description) setShowDescription(true);
-    if (notes) setShowNotes(true);
+    if (description.length > 0) {
+      setShowDescription(true);
+    }
+    if (notes.length > 0) {
+      setShowNotes(true);
+    }
   }, [description, notes]);
 
   const handleClose = () => {
@@ -93,7 +97,6 @@ export default function BudgetItemForm({
             className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
             value={description}
             onChange={(e) => onFieldChange('description', e.target.value)}
-            placeholder='Optional'
           />
         </div>
       )}
