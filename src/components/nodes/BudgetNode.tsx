@@ -48,7 +48,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
   };
 
   return (
-    <div className='bg-surface-light dark:bg-surface-dark border-node-border relative flex max-w-[220px] min-w-[140px] flex-col rounded-lg border p-0 shadow-md'>
+    <div className='bg-surface-light dark:bg-surface-dark border-node-border relative flex max-w-[180px] min-w-[140px] flex-col rounded-lg border p-0 shadow-md'>
       {/* Super Text */}
       <small className='absolute top-0 left-0 line-clamp-2 max-w-[210px] -translate-y-full opacity-80'>
         {getBudgetSuperText()}
