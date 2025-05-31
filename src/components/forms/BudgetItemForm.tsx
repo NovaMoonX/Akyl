@@ -51,6 +51,13 @@ export default function BudgetItemForm({
     setSearchParams({});
   };
 
+  const handleSave = () => {
+    if (onSave) {
+      onSave();
+      handleClose();
+    }
+  };
+
   return (
     <div className='flex flex-col gap-4'>
       <h2 className='text-xl font-bold'>{title}</h2>
@@ -175,7 +182,7 @@ export default function BudgetItemForm({
         <button
           type='button'
           className='btn btn-primary'
-          onClick={onSave}
+          onClick={handleSave}
           disabled={saveButtonDisabled}
         >
           Save
