@@ -1,6 +1,11 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
-import type { Expense, Income } from '../lib';
+import {
+  BaseExpenseCategories,
+  BaseIncomeCategories,
+  type Expense,
+  type Income,
+} from '../lib';
 import type { BudgetType } from '../lib/node.types';
 import { useSpace } from '../store';
 
@@ -54,6 +59,42 @@ export default function useBudget() {
       .sort((a, b) => b[1] - a[1])
       .map(([source]) => source);
   }, [incomes]);
+
+  const expenseSubCategoriesMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    for (const expense of [...expenses, ...demoExpenses]) {
+      if (expense.category && expense.subCategory) {
+        if (!map[expense.category]) {
+          map[expense.category] = [];
+        }
+        // Only add if not already present
+        if (!map[expense.category].includes(expense.subCategory)) {
+          map[expense.category].push(expense.subCategory);
+        }
+      }
+    }
+    return map;
+  }, [expenses]);
+
+  const incomeCategories = useMemo(() => {
+    const categories = new Set<string>(BaseIncomeCategories);
+    for (const income of [...incomes, ...demoIncomes]) {
+      if (income.category) {
+        categories.add(income.category);
+      }
+    }
+    return Array.from(categories).sort();
+  }, [incomes]);
+
+  const expenseCategories = useMemo(() => {
+    const categories = new Set<string>(BaseExpenseCategories);
+    for (const expense of [...expenses, ...demoExpenses]) {
+      if (expense.category) {
+        categories.add(expense.category);
+      }
+    }
+    return Array.from(categories).sort();
+  }, [expenses]);
 
   const incomesMap = useMemo(() => {
     return [...incomes, ...demoIncomes].reduce(
@@ -118,5 +159,8 @@ export default function useBudget() {
     expensesTotal,
     getBudgetItem,
     incomeSources,
+    expenseSubCategoriesMap,
+    incomeCategories,
+    expenseCategories,
   };
 }

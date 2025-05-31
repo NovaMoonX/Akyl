@@ -13,7 +13,6 @@ export interface ComboboxProps {
   onChange: (value: string) => void;
   placeholder?: string;
   allowAdd?: boolean;
-  onAddOption?: (value: string) => void;
   className?: string;
 }
 
@@ -23,35 +22,41 @@ export function Combobox({
   onChange,
   placeholder = 'Select...',
   allowAdd = false,
-  onAddOption,
   className = '',
 }: ComboboxProps) {
   const comboboxId = useId();
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [filtered, setFiltered] = useState<Option[]>(options);
+  const [addedOption, setAddedOption] = useState<Option | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const allOptions = useMemo(
+    () => [...(addedOption ? [addedOption] : []), ...options],
+    [options, addedOption],
+  );
 
   const showAdd = useMemo(
     () =>
       allowAdd &&
       inputValue.trim() &&
-      !options.some(
+      !allOptions.some(
         (opt) => opt.label.toLowerCase() === inputValue.trim().toLowerCase(),
       ),
-    [allowAdd, inputValue, options],
+    [allowAdd, inputValue, allOptions],
   );
 
   useEffect(() => {
-    setFiltered(
-      options.filter((opt) =>
+    const filteredOptions = allOptions
+      .filter((opt) =>
         opt.label.toLowerCase().includes(inputValue.toLowerCase()),
-      ),
-    );
+      )
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    setFiltered(filteredOptions);
     setHighlightedIndex(0);
-  }, [inputValue, options]);
+  }, [inputValue, allOptions]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -76,6 +81,18 @@ export function Combobox({
     }
   }, [highlightedIndex, isOpen, filtered.length, showAdd, comboboxId]);
 
+  // On load, set highlighted index to the current value's index if it exists
+  useEffect(() => {
+    if (inputValue) {
+      return;
+    }
+
+    const valueIndex = options.findIndex((opt) => opt.value === value);
+    if (valueIndex !== -1) {
+      setHighlightedIndex(valueIndex);
+    }
+  }, [inputValue, value, options]);
+
   const handleSelect = (val: string) => {
     onChange(val);
     setInputValue('');
@@ -83,11 +100,13 @@ export function Combobox({
   };
 
   const handleAdd = () => {
-    if (onAddOption) {
-      onAddOption(inputValue);
-      setInputValue('');
-      setIsOpen(false);
-    }
+    const newValue = inputValue.trim();
+    if (!newValue) return;
+    const newOption: Option = { label: newValue, value: newValue };
+    setAddedOption(newOption);
+    onChange(newValue);
+    setInputValue('');
+    setIsOpen(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -117,7 +136,7 @@ export function Combobox({
     }
   };
 
-  const selectedLabel = options.find((opt) => opt.value === value)?.label;
+  const selectedLabel = allOptions.find((opt) => opt.value === value)?.label;
 
   return (
     <div ref={containerRef} className={join('relative w-full', className)}>

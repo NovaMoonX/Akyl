@@ -6,6 +6,7 @@ import {
   type BudgetType,
 } from '../../lib';
 import { useSpace } from '../../store';
+import ExpenseForm from '../forms/ExpenseForm';
 import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
 
@@ -65,6 +66,7 @@ export default function HeaderBar() {
         closeOnOverlayClick={false}
       >
         {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}
+        {searchParams.get(URL_PARAM_FORM) === 'expense' && <ExpenseForm />}
       </Dropdown>
     </>
   );

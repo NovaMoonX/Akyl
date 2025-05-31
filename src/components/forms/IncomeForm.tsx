@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useBudget } from '../../hooks';
-import { IncomeCategories, URL_PARAM_ID } from '../../lib';
+import { URL_PARAM_ID } from '../../lib';
 import type { Income } from '../../lib/budget.types';
 import { useSpace } from '../../store';
 import { generateId } from '../../utils';
@@ -12,8 +12,22 @@ export default function IncomeForm() {
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<Income>();
   const incomeItemId = searchParams.get(URL_PARAM_ID);
-  const { incomesMap, incomeSources } = useBudget();
+  const { incomesMap, incomeSources, incomeCategories } = useBudget();
   const { addIncome, updateIncome } = useSpace();
+
+  const sourceOptions = useMemo(() => {
+    return incomeSources.map((src) => ({
+      value: src,
+      label: src,
+    }));
+  }, [incomeSources]);
+
+  const categoryOptions = useMemo(() => {
+    return incomeCategories.map((cat) => ({
+      value: cat,
+      label: cat,
+    }));
+  }, [incomeCategories]);
 
   useEffect(() => {
     const defaultIncome: Income = {
@@ -23,7 +37,6 @@ export default function IncomeForm() {
       amount: 0,
       source: '',
       category: 'Salary',
-      otherCategory: '',
       cadence: {
         type: 'month',
         interval: 1,
@@ -73,31 +86,16 @@ export default function IncomeForm() {
       }
       saveButtonDisabled={isSaveDisabled}
       onSave={handleSave}
+      nameInputPlaceholder='e.g. Paycheck, Bonus, etc.'
     >
       {/* Source */}
       <div>
         <label className='font-medium'>Source</label>
         <Combobox
           value={formData?.source ?? ''}
-          options={[
-            // Add custom source if it exists
-            ...(formData?.source
-              ? [
-                  {
-                    value: formData.source,
-                    label: formData.source,
-                  },
-                ]
-              : []),
-            // Include all existing income sources from the budget
-            ...incomeSources.map((src) => ({
-              value: src,
-              label: src,
-            })),
-          ]}
+          options={sourceOptions}
           onChange={(val) => handleFieldChange('source', val)}
           allowAdd={true}
-          onAddOption={(val) => handleFieldChange('source', val)}
           placeholder='Select or add source...'
         />
       </div>
@@ -106,38 +104,12 @@ export default function IncomeForm() {
       <div>
         <label className='font-medium'>Category</label>
         <Combobox
-          value={
-            formData?.category === 'Other'
-              ? (formData?.otherCategory ?? '')
-              : (formData?.category ?? '')
-          }
-          options={[
-            // Add custom category if it exists
-            ...(formData?.otherCategory
-              ? [
-                  {
-                    value: formData.otherCategory,
-                    label: formData.otherCategory,
-                  },
-                ]
-              : []),
-            // Include all existing income categories from the budget
-            ...IncomeCategories.filter((cat) => cat !== 'Other').map(
-              (source) => ({
-                value: source,
-                label: source,
-              }),
-            ),
-          ]}
+          value={formData?.category ?? ''}
+          options={categoryOptions}
           onChange={(val) => {
             handleFieldChange('category', val);
-            handleFieldChange('otherCategory', '');
           }}
           allowAdd={true}
-          onAddOption={(val) => {
-            handleFieldChange('otherCategory', val);
-            handleFieldChange('category', 'Other');
-          }}
           placeholder='Select or add category...'
         />
       </div>
