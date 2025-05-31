@@ -1,10 +1,13 @@
 import { Handle, Position } from '@xyflow/react';
 import { Maximize2Icon } from 'lucide-react';
 import { memo } from 'react';
+import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
 import {
   formatCurrency,
+  URL_PARAM_FORM,
+  URL_PARAM_ID,
   type BudgetData,
   type Expense,
   type Income,
@@ -23,9 +26,13 @@ function BudgetNode({ data }: BudgetNodeProps) {
   );
   const { getBudgetItem } = useBudget();
   const { item: budgetItem, type } = getBudgetItem(budgetItemId);
+  const [, setSearchParams] = useSearchParams();
 
   const handleOnExpand = () => {
-    console.log('Expand button clicked');
+    setSearchParams({
+      [URL_PARAM_FORM]: type,
+      [URL_PARAM_ID]: budgetItemId,
+    });
   };
 
   if (!budgetItem) {
