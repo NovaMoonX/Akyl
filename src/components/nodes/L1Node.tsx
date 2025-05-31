@@ -16,7 +16,7 @@ function L1Node({ data }: L1NodeProps) {
   );
 
   return (
-    <div className='bg-surface-light dark:bg-surface-dark border-node-border flex max-w-[200px] min-w-[120px] flex-col items-center gap-1 rounded-lg border p-4 shadow-md'>
+    <div className='bg-surface-light dark:bg-surface-dark border-node-border flex max-w-[160px] min-w-[120px] flex-col items-center gap-1 rounded-lg border p-4 shadow-md'>
       <p className='text-center text-lg leading-snug font-semibold'>{label}</p>
       <span
         className={join(

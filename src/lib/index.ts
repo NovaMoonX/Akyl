@@ -8,10 +8,7 @@ export {
 
 // Budget
 export { formatCurrency, getCurrencySymbol } from './budget.actions';
-export {
-  BaseExpenseCategories,
-  BaseIncomeCategories,
-} from './budget.constants';
+export { BaseExpenseCategories, BaseIncomeTypes } from './budget.constants';
 export type {
   BudgetItemCadence,
   BudgetItemCadenceType,
@@ -38,7 +35,12 @@ export type {
 } from './node.types';
 
 // Space
-export { createNewSpace, duplicateSpace } from './space.actions';
+export {
+  createNewSpace,
+  duplicateSpace,
+  generateExpenseNodesAndEdges,
+  generateIncomeNodesAndEdges,
+} from './space.actions';
 export {
   CashFlowVerbiagePairs,
   CURRENT_APP_VERSION,

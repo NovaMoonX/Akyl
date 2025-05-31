@@ -41,3 +41,12 @@ export const SpaceAccentColors = {
 };
 
 export const NO_BACKGROUND_VARIANT = '';
+
+// Diagram
+export const BUCKET_SPACING_X = 200;
+
+export const INCOME_BUCKET_Y = -200;
+export const INCOME_ITEM_Y = -400;
+
+export const EXPENSE_BUCKET_Y = 300;
+export const EXPENSE_ITEM_Y = 500;
