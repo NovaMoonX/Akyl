@@ -77,6 +77,7 @@ export default function ExpenseForm() {
       }
       saveButtonDisabled={isSaveDisabled}
       onSave={handleSave}
+      nameInputPlaceholder='e.g. Rent, Groceries, etc.'
     >
       {/* Category */}
       <div>

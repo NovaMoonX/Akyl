@@ -73,6 +73,7 @@ export default function IncomeForm() {
       }
       saveButtonDisabled={isSaveDisabled}
       onSave={handleSave}
+      nameInputPlaceholder='e.g. Paycheck, Bonus, etc.'
     >
       {/* Source */}
       <div>

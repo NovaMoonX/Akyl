@@ -19,6 +19,7 @@ export interface BudgetItemFormProps {
   children?: React.ReactNode;
   saveButtonDisabled?: boolean;
   onSave?: () => void;
+  nameInputPlaceholder?: string;
 }
 
 export default function BudgetItemForm({
@@ -32,6 +33,7 @@ export default function BudgetItemForm({
   children,
   saveButtonDisabled = false,
   onSave,
+  nameInputPlaceholder,
 }: BudgetItemFormProps) {
   const currency = useSpace(
     useShallow((state) => state.space?.config?.currency || 'USD'),
@@ -59,7 +61,7 @@ export default function BudgetItemForm({
           className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
           value={label}
           onChange={(e) => onFieldChange('label', e.target.value)}
-          placeholder='e.g. Paycheck'
+          placeholder={nameInputPlaceholder}
           autoFocus={true}
         />
 
@@ -144,7 +146,7 @@ export default function BudgetItemForm({
       {children}
 
       {!showNotes && (
-        <div className='flex justify-end mb-4'>
+        <div className='mb-4 flex justify-end'>
           <button
             type='button'
             className='mt-1 ml-auto text-sm underline opacity-70 hover:opacity-85'
