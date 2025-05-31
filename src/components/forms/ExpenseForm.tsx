@@ -19,27 +19,14 @@ export default function ExpenseForm() {
 
   // Category options: only add custom category if not already present
   const categoryOptions = useMemo(() => {
-    if (!formData) return [];
-    const custom =
-      formData.otherCategory &&
-      !expenseCategories.includes(formData.otherCategory)
-        ? [{ value: formData.otherCategory, label: formData.otherCategory }]
-        : [];
-    const base = expenseCategories.map((cat) => ({ value: cat, label: cat }));
-    return [...custom, ...base];
-  }, [formData, expenseCategories]);
+    return expenseCategories.map((cat) => ({ value: cat, label: cat }));
+  }, [expenseCategories]);
 
   // Subcategory options: only add custom subcategory if not already present
   const subCategoryOptions = useMemo(() => {
-    if (!formData) return [];
-    const category = formData.category ?? '';
+    const category = formData?.category ?? '';
     const subCategories = expenseSubCategoriesMap[category] ?? [];
-    const custom =
-      formData.subCategory && !subCategories.includes(formData.subCategory)
-        ? [{ value: formData.subCategory, label: formData.subCategory }]
-        : [];
-    const base = subCategories.map((sub) => ({ value: sub, label: sub }));
-    return [...custom, ...base];
+    return subCategories.map((sub) => ({ value: sub, label: sub }));
   }, [formData, expenseSubCategoriesMap]);
 
   useEffect(() => {
@@ -49,7 +36,6 @@ export default function ExpenseForm() {
       description: '',
       amount: 0,
       category: 'Housing',
-      otherCategory: '',
       subCategory: '',
       cadence: {
         type: 'month',
@@ -108,21 +94,12 @@ export default function ExpenseForm() {
       <div>
         <label className='font-medium'>Category</label>
         <Combobox
-          value={
-            formData?.category === 'Other'
-              ? (formData?.otherCategory ?? '')
-              : (formData?.category ?? '')
-          }
+          value={formData?.category ?? ''}
           options={categoryOptions}
           onChange={(val) => {
             handleFieldChange('category', val);
-            handleFieldChange('otherCategory', '');
           }}
           allowAdd={true}
-          onAddOption={(val) => {
-            handleFieldChange('otherCategory', val);
-            handleFieldChange('category', 'Other');
-          }}
           placeholder='Select or add category...'
         />
 
@@ -147,7 +124,6 @@ export default function ExpenseForm() {
             options={subCategoryOptions}
             onChange={(val) => handleFieldChange('subCategory', val)}
             allowAdd={true}
-            onAddOption={(val) => handleFieldChange('subCategory', val)}
             placeholder='Select or add subcategory...'
           />
         </div>

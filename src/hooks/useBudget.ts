@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import {
-  ExpenseCategories,
-  IncomeCategories,
+  BaseExpenseCategories,
+  BaseIncomeCategories,
   type Expense,
   type Income,
 } from '../lib';
@@ -77,7 +77,7 @@ export default function useBudget() {
   }, [expenses]);
 
   const incomeCategories = useMemo(() => {
-    const categories = new Set<string>(IncomeCategories);
+    const categories = new Set<string>(BaseIncomeCategories);
     for (const income of [...incomes, ...demoIncomes]) {
       if (income.category) {
         categories.add(income.category);
@@ -87,7 +87,7 @@ export default function useBudget() {
   }, [incomes]);
 
   const expenseCategories = useMemo(() => {
-    const categories = new Set<string>(ExpenseCategories);
+    const categories = new Set<string>(BaseExpenseCategories);
     for (const expense of [...expenses, ...demoExpenses]) {
       if (expense.category) {
         categories.add(expense.category);

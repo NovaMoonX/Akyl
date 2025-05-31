@@ -16,43 +16,18 @@ export default function IncomeForm() {
   const { addIncome, updateIncome } = useSpace();
 
   const sourceOptions = useMemo(() => {
-    const formSource = formData?.source || '';
-    const sourceIndex = incomeSources.indexOf(formSource);
-
-    // If the source is not in the list, add it
-    if (sourceIndex === -1 && formSource) {
-      return [
-        {
-          value: formSource,
-          label: formSource,
-        },
-        ...incomeSources.map((src) => ({
-          value: src,
-          label: src,
-        })),
-      ];
-    }
-
-    // If the source is already in the list, just return the existing sources
     return incomeSources.map((src) => ({
       value: src,
       label: src,
     }));
-  }, [formData?.source, incomeSources]);
+  }, [incomeSources]);
 
   const categoryOptions = useMemo(() => {
-    // Only add custom category if it is not already in the list
-    const customCategory =
-      formData?.otherCategory &&
-      !incomeCategories.includes(formData.otherCategory)
-        ? [{ value: formData.otherCategory, label: formData.otherCategory }]
-        : [];
-    const baseCategories = incomeCategories.map((cat) => ({
+    return incomeCategories.map((cat) => ({
       value: cat,
       label: cat,
     }));
-    return [...customCategory, ...baseCategories];
-  }, [formData?.otherCategory, incomeCategories]);
+  }, [incomeCategories]);
 
   useEffect(() => {
     const defaultIncome: Income = {
@@ -62,7 +37,6 @@ export default function IncomeForm() {
       amount: 0,
       source: '',
       category: 'Salary',
-      otherCategory: '',
       cadence: {
         type: 'month',
         interval: 1,
@@ -122,7 +96,6 @@ export default function IncomeForm() {
           options={sourceOptions}
           onChange={(val) => handleFieldChange('source', val)}
           allowAdd={true}
-          onAddOption={(val) => handleFieldChange('source', val)}
           placeholder='Select or add source...'
         />
       </div>
@@ -131,21 +104,12 @@ export default function IncomeForm() {
       <div>
         <label className='font-medium'>Category</label>
         <Combobox
-          value={
-            formData?.category === 'Other'
-              ? (formData?.otherCategory ?? '')
-              : (formData?.category ?? '')
-          }
+          value={formData?.category ?? ''}
           options={categoryOptions}
           onChange={(val) => {
             handleFieldChange('category', val);
-            handleFieldChange('otherCategory', '');
           }}
           allowAdd={true}
-          onAddOption={(val) => {
-            handleFieldChange('otherCategory', val);
-            handleFieldChange('category', 'Other');
-          }}
           placeholder='Select or add category...'
         />
       </div>
