@@ -11,6 +11,7 @@ import BudgetItemForm from './BudgetItemForm';
 export default function ExpenseForm() {
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<Expense>();
+  const [showSubcategory, setShowSubcategory] = useState(false);
   const expenseItemId = searchParams.get(URL_PARAM_ID);
   const { expensesMap, expenseSubCategoriesMap, expenseCategories } =
     useBudget();
@@ -35,6 +36,10 @@ export default function ExpenseForm() {
     const existingExpense = expensesMap[expenseItemId || ''] ?? {};
     const expense: Expense = { ...defaultExpense, ...existingExpense };
     setFormData(expense);
+
+    if (expense?.subCategory) {
+      setShowSubcategory(true);
+    }
   }, [expenseItemId, expensesMap]);
 
   const handleFieldChange = (field: keyof Expense, val: unknown) => {
@@ -107,25 +112,38 @@ export default function ExpenseForm() {
           }}
           placeholder='Select or add category...'
         />
+
+        {!showSubcategory && (
+          <div className='flex justify-end'>
+            <button
+              type='button'
+              className='mt-1 ml-auto text-sm underline opacity-70 hover:opacity-85'
+              onClick={() => setShowSubcategory(true)}
+            >
+              Add subcategory
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Subcategory */}
-      <div>
-        <label className='font-medium'>Subcategory</label>
-        <Combobox
-          value={formData?.subCategory ?? ''}
-          options={
-            expenseSubCategoriesMap[formData?.category ?? '']?.map((sub) => ({
-              value: sub,
-              label: sub,
-            })) ?? []
-          }
-          onChange={(val) => handleFieldChange('subCategory', val)}
-          allowAdd={true}
-          onAddOption={(val) => handleFieldChange('subCategory', val)}
-          placeholder='Select or add subcategory...'
-        />
-      </div>
+      {showSubcategory && (
+        <div>
+          <label className='font-medium'>Subcategory</label>
+          <Combobox
+            value={formData?.subCategory ?? ''}
+            options={
+              expenseSubCategoriesMap[formData?.category ?? '']?.map((sub) => ({
+                value: sub,
+                label: sub,
+              })) ?? []
+            }
+            onChange={(val) => handleFieldChange('subCategory', val)}
+            allowAdd={true}
+            onAddOption={(val) => handleFieldChange('subCategory', val)}
+            placeholder='Select or add subcategory...'
+          />
+        </div>
+      )}
     </BudgetItemForm>
   );
 }
