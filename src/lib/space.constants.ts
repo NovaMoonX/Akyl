@@ -41,3 +41,6 @@ export const SpaceAccentColors = {
 };
 
 export const NO_BACKGROUND_VARIANT = '';
+
+// Diagram
+export const BUCKET_SPACING_X = 200;

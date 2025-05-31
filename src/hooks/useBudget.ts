@@ -47,7 +47,7 @@ export default function useBudget() {
 
   const incomeSources = useMemo(() => {
     const sourceCount = new Map<string, number>();
-    for (const income of [...incomes, ...demoIncomes]) {
+    for (const income of [...(incomes ?? []), ...demoIncomes]) {
       if (income.source) {
         sourceCount.set(
           income.source,
@@ -62,7 +62,7 @@ export default function useBudget() {
 
   const expenseSubCategoriesMap = useMemo(() => {
     const map: Record<string, string[]> = {};
-    for (const expense of [...expenses, ...demoExpenses]) {
+    for (const expense of [...(expenses ?? []), ...demoExpenses]) {
       if (expense.category && expense.subCategory) {
         if (!map[expense.category]) {
           map[expense.category] = [];
@@ -78,7 +78,7 @@ export default function useBudget() {
 
   const incomeTypes = useMemo(() => {
     const types = new Set<string>(BaseIncomeTypes);
-    for (const income of [...incomes, ...demoIncomes]) {
+    for (const income of [...(incomes ?? []), ...demoIncomes]) {
       if (income.type) {
         types.add(income.type);
       }
@@ -88,7 +88,7 @@ export default function useBudget() {
 
   const expenseCategories = useMemo(() => {
     const categories = new Set<string>(BaseExpenseCategories);
-    for (const expense of [...expenses, ...demoExpenses]) {
+    for (const expense of [...(expenses ?? []), ...demoExpenses]) {
       if (expense.category) {
         categories.add(expense.category);
       }
@@ -97,7 +97,7 @@ export default function useBudget() {
   }, [expenses]);
 
   const incomesMap = useMemo(() => {
-    return [...incomes, ...demoIncomes].reduce(
+    return [...(incomes ?? []), ...demoIncomes].reduce(
       (acc, income) => {
         acc[income.id] = income;
         return acc;
@@ -107,7 +107,7 @@ export default function useBudget() {
   }, [incomes]);
 
   const expensesMap = useMemo(() => {
-    return [...expenses, ...demoExpenses].reduce(
+    return [...(expenses ?? []), ...demoExpenses].reduce(
       (acc, expense) => {
         acc[expense.id] = expense;
         return acc;
@@ -116,15 +116,71 @@ export default function useBudget() {
     );
   }, [expenses]);
 
+  // Group incomes by source and calculate totals
+  // Sort sources by total amount descending
+  const incomeBySource = useMemo(() => {
+    const map = [...(incomes ?? []), ...demoIncomes].reduce(
+      (acc, income) => {
+        if (income.source) {
+          if (!acc[income.source]) {
+            acc[income.source] = { total: 0, items: [] };
+          }
+          acc[income.source].items.push(income);
+          acc[income.source].total += income.amount;
+        }
+        return acc;
+      },
+      {} as Record<string, { total: number; items: Income[] }>,
+    );
+
+    return Object.entries(map)
+      .sort((a, b) => b[1].total - a[1].total)
+      .reduce(
+        (acc, [source, data]) => {
+          acc[source] = data;
+          return acc;
+        },
+        {} as Record<string, { total: number; items: Income[] }>,
+      );
+  }, [incomes]);
+
+  // Group expenses by category and calculate totals
+  // Sort categories by total amount descending
+  const expenseByCategory = useMemo(() => {
+    const map = [...(expenses ?? []), ...demoExpenses].reduce(
+      (acc, expense) => {
+        if (expense.category) {
+          if (!acc[expense.category]) {
+            acc[expense.category] = { total: 0, items: [] };
+          }
+          acc[expense.category].items.push(expense);
+          acc[expense.category].total += expense.amount;
+        }
+        return acc;
+      },
+      {} as Record<string, { total: number; items: Expense[] }>,
+    );
+
+    return Object.entries(map)
+      .sort((a, b) => b[1].total - a[1].total)
+      .reduce(
+        (acc, [category, data]) => {
+          acc[category] = data;
+          return acc;
+        },
+        {} as Record<string, { total: number; items: Expense[] }>,
+      );
+  }, [expenses]);
+
   const incomesTotal = useMemo(() => {
-    return [...incomes, ...demoIncomes].reduce(
+    return [...(incomes ?? []), ...demoIncomes].reduce(
       (total, income) => total + income.amount,
       0,
     );
   }, [incomes]);
 
   const expensesTotal = useMemo(() => {
-    return [...expenses, ...demoExpenses].reduce(
+    return [...(expenses ?? []), ...demoExpenses].reduce(
       (total, expense) => total + expense.amount,
       0,
     );
@@ -162,5 +218,7 @@ export default function useBudget() {
     expenseSubCategoriesMap,
     incomeTypes,
     expenseCategories,
+    incomeBySource,
+    expenseByCategory,
   };
 }
