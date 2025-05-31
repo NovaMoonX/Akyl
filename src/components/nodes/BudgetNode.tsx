@@ -68,7 +68,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
           type='button'
           onClick={handleEdit}
           className='shrink-0 translate-x-0.5 -translate-y-0.5 opacity-60 hover:opacity-80'
-          aria-label='Expand Budget Item'
+          aria-label='Edit Budget Item'
         >
           <PencilIcon className='size-3' />
         </button>
