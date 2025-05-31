@@ -106,8 +106,15 @@ export default function BudgetItemForm({
             min={0}
             step='0.01'
             className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-            value={amount}
-            onChange={(e) => onFieldChange('amount', Number(e.target.value))}
+            value={amount === 0 ? '' : amount}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === '') {
+                onFieldChange('amount', 0);
+              } else {
+                onFieldChange('amount', Number(val));
+              }
+            }}
             placeholder='0.00'
           />
           <span className='text-gray-700 dark:text-gray-200'>
