@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useBudget } from '../../hooks';
 import { URL_PARAM_ID } from '../../lib';
@@ -14,6 +14,45 @@ export default function IncomeForm() {
   const incomeItemId = searchParams.get(URL_PARAM_ID);
   const { incomesMap, incomeSources, incomeCategories } = useBudget();
   const { addIncome, updateIncome } = useSpace();
+
+  const sourceOptions = useMemo(() => {
+    const formSource = formData?.source || '';
+    const sourceIndex = incomeSources.indexOf(formSource);
+
+    // If the source is not in the list, add it
+    if (sourceIndex === -1 && formSource) {
+      return [
+        {
+          value: formSource,
+          label: formSource,
+        },
+        ...incomeSources.map((src) => ({
+          value: src,
+          label: src,
+        })),
+      ];
+    }
+
+    // If the source is already in the list, just return the existing sources
+    return incomeSources.map((src) => ({
+      value: src,
+      label: src,
+    }));
+  }, [formData?.source, incomeSources]);
+
+  const categoryOptions = useMemo(() => {
+    // Only add custom category if it is not already in the list
+    const customCategory =
+      formData?.otherCategory &&
+      !incomeCategories.includes(formData.otherCategory)
+        ? [{ value: formData.otherCategory, label: formData.otherCategory }]
+        : [];
+    const baseCategories = incomeCategories.map((cat) => ({
+      value: cat,
+      label: cat,
+    }));
+    return [...customCategory, ...baseCategories];
+  }, [formData?.otherCategory, incomeCategories]);
 
   useEffect(() => {
     const defaultIncome: Income = {
@@ -80,22 +119,7 @@ export default function IncomeForm() {
         <label className='font-medium'>Source</label>
         <Combobox
           value={formData?.source ?? ''}
-          options={[
-            // Add custom source if it exists
-            ...(formData?.source
-              ? [
-                  {
-                    value: formData.source,
-                    label: formData.source,
-                  },
-                ]
-              : []),
-            // Include all existing income sources from the budget
-            ...incomeSources.map((src) => ({
-              value: src,
-              label: src,
-            })),
-          ]}
+          options={sourceOptions}
           onChange={(val) => handleFieldChange('source', val)}
           allowAdd={true}
           onAddOption={(val) => handleFieldChange('source', val)}
@@ -112,22 +136,7 @@ export default function IncomeForm() {
               ? (formData?.otherCategory ?? '')
               : (formData?.category ?? '')
           }
-          options={[
-            // Add custom category if it exists
-            ...(formData?.otherCategory
-              ? [
-                  {
-                    value: formData.otherCategory,
-                    label: formData.otherCategory,
-                  },
-                ]
-              : []),
-            // Include all existing income categories from the budget
-            ...incomeCategories.map((cat) => ({
-              value: cat,
-              label: cat,
-            })),
-          ]}
+          options={categoryOptions}
           onChange={(val) => {
             handleFieldChange('category', val);
             handleFieldChange('otherCategory', '');

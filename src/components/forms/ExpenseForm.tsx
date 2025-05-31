@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useBudget } from '../../hooks';
 import { URL_PARAM_ID } from '../../lib';
@@ -16,6 +16,31 @@ export default function ExpenseForm() {
   const { expensesMap, expenseSubCategoriesMap, expenseCategories } =
     useBudget();
   const { addExpense, updateExpense } = useSpace();
+
+  // Category options: only add custom category if not already present
+  const categoryOptions = useMemo(() => {
+    if (!formData) return [];
+    const custom =
+      formData.otherCategory &&
+      !expenseCategories.includes(formData.otherCategory)
+        ? [{ value: formData.otherCategory, label: formData.otherCategory }]
+        : [];
+    const base = expenseCategories.map((cat) => ({ value: cat, label: cat }));
+    return [...custom, ...base];
+  }, [formData, expenseCategories]);
+
+  // Subcategory options: only add custom subcategory if not already present
+  const subCategoryOptions = useMemo(() => {
+    if (!formData) return [];
+    const category = formData.category ?? '';
+    const subCategories = expenseSubCategoriesMap[category] ?? [];
+    const custom =
+      formData.subCategory && !subCategories.includes(formData.subCategory)
+        ? [{ value: formData.subCategory, label: formData.subCategory }]
+        : [];
+    const base = subCategories.map((sub) => ({ value: sub, label: sub }));
+    return [...custom, ...base];
+  }, [formData, expenseSubCategoriesMap]);
 
   useEffect(() => {
     const defaultExpense: Expense = {
@@ -88,20 +113,7 @@ export default function ExpenseForm() {
               ? (formData?.otherCategory ?? '')
               : (formData?.category ?? '')
           }
-          options={[
-            ...(formData?.otherCategory
-              ? [
-                  {
-                    value: formData.otherCategory,
-                    label: formData.otherCategory,
-                  },
-                ]
-              : []),
-            ...expenseCategories.map((cat) => ({
-              value: cat,
-              label: cat,
-            })),
-          ]}
+          options={categoryOptions}
           onChange={(val) => {
             handleFieldChange('category', val);
             handleFieldChange('otherCategory', '');
@@ -132,12 +144,7 @@ export default function ExpenseForm() {
           <label className='font-medium'>Subcategory</label>
           <Combobox
             value={formData?.subCategory ?? ''}
-            options={
-              expenseSubCategoriesMap[formData?.category ?? '']?.map((sub) => ({
-                value: sub,
-                label: sub,
-              })) ?? []
-            }
+            options={subCategoryOptions}
             onChange={(val) => handleFieldChange('subCategory', val)}
             allowAdd={true}
             onAddOption={(val) => handleFieldChange('subCategory', val)}
