@@ -76,6 +76,18 @@ export function Combobox({
     }
   }, [highlightedIndex, isOpen, filtered.length, showAdd, comboboxId]);
 
+  // On load, set highlighted index to the current value's index if it exists
+  useEffect(() => {
+    if (inputValue) {
+      return;
+    }
+
+    const valueIndex = options.findIndex((opt) => opt.value === value);
+    if (valueIndex !== -1) {
+      setHighlightedIndex(valueIndex);
+    }
+  }, [inputValue, value, options]);
+
   const handleSelect = (val: string) => {
     onChange(val);
     setInputValue('');
