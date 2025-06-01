@@ -20,6 +20,7 @@ export default function useBrowserSpaces() {
         if (!key) continue;
         try {
           const value = localStorage.getItem(key);
+          console.log('value', value); // REMOVE
           if (!value) continue;
           const parsed = JSON.parse(value);
           // Check for required Space properties
@@ -61,5 +62,6 @@ export default function useBrowserSpaces() {
     };
   }, []);
 
+  console.log('spaces', spaces); // REMOVE
   return { spaces, limitMet: spaces.length >= 3 };
 }
