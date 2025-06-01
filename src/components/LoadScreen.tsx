@@ -101,7 +101,7 @@ export default function LoadScreen() {
                     if (isDisabled) return;
                     handleClick(item.label);
                   }}
-                  className='flex w-full flex-row items-center gap-1.5 px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
+                  className='flex w-full flex-row items-center gap-1.5 px-4 py-2 text-left text-gray-500 enabled:hover:bg-black/5 enabled:hover:text-gray-900 disabled:cursor-not-allowed enabled:hover:dark:bg-white/5 enabled:hover:dark:text-gray-100'
                 >
                   <Icon size={14} />
                   {item.label}
