@@ -9,7 +9,11 @@ export {
 } from './app.constants';
 
 // Budget
-export { formatCurrency, getCurrencySymbol } from './budget.actions';
+export {
+  formatCurrency,
+  getBudgetItemWindowAmount,
+  getCurrencySymbol,
+} from './budget.actions';
 export { BaseExpenseCategories, BaseIncomeTypes } from './budget.constants';
 export type {
   BudgetItemCadence,
