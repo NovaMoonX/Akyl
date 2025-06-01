@@ -3,6 +3,8 @@ import { useShallow } from 'zustand/shallow';
 import {
   BaseExpenseCategories,
   BaseIncomeTypes,
+  DEFAULT_TIME_WINDOW,
+  getBudgetItemWindowAmount,
   type Expense,
   type Income,
 } from '../lib';
@@ -10,17 +12,43 @@ import type { BudgetType } from '../lib/node.types';
 import { useSpace } from '../store';
 
 export default function useBudget() {
-  const [incomesInSpace, expensesInSpace] = useSpace(
-    useShallow((state) => [state?.space?.incomes, state?.space?.expenses]),
+  const [incomesInSpace, expensesInSpace, spaceTimeWindow] = useSpace(
+    useShallow((state) => [
+      state?.space?.incomes,
+      state?.space?.expenses,
+      state?.space?.config?.timeWindow,
+    ]),
   );
 
+  const timeWindow = useMemo(() => {
+    return spaceTimeWindow ?? DEFAULT_TIME_WINDOW;
+  }, [spaceTimeWindow]);
+
   const incomes = useMemo(() => {
-    return incomesInSpace ?? [];
-  }, [incomesInSpace]);
+    const items = incomesInSpace ?? [];
+    const itemsAdjustedAmount = items.map((income) => {
+      const adjustedAmount = getBudgetItemWindowAmount(
+        income.amount,
+        income.cadence,
+        timeWindow,
+      );
+      return { ...income, amount: adjustedAmount };
+    });
+    return itemsAdjustedAmount;
+  }, [incomesInSpace, timeWindow]);
 
   const expenses = useMemo(() => {
-    return expensesInSpace ?? [];
-  }, [expensesInSpace]);
+    const items = expensesInSpace ?? [];
+    const itemsAdjustedAmount = items.map((expense) => {
+      const adjustedAmount = getBudgetItemWindowAmount(
+        expense.amount,
+        expense.cadence,
+        timeWindow,
+      );
+      return { ...expense, amount: adjustedAmount };
+    });
+    return itemsAdjustedAmount;
+  }, [expensesInSpace, timeWindow]);
 
   const incomeSources = useMemo(() => {
     const sourceCount = new Map<string, number>();
