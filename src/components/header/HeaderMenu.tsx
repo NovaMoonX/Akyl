@@ -7,17 +7,23 @@ import {
   SettingsIcon,
   ShieldQuestionIcon,
   SquarePlusIcon,
+  TrashIcon,
 } from 'lucide-react';
 import { useState } from 'react';
-import { createNewSpace, importFile } from '../../lib';
+import { useShallow } from 'zustand/shallow';
+import useBrowserSpaces from '../../hooks/useBrowserSpaces';
+import { APP_SPACE_LIMIT_REACHED, createNewSpace, importFile } from '../../lib';
+import { useSpaceStore } from '../../store/config';
 import DreamTrigger from '../DreamTrigger';
 import ConfigModal from '../modals/ConfigModal';
 import ConfirmationModal from '../modals/ConfirmationModal';
+import DeleteSpaceModal from '../modals/DeleteSpaceModal';
 import DuplicateSpaceModal from '../modals/DuplicateSpaceModal';
 import HelpModal from '../modals/HelpModal';
 import SaveModal from '../modals/SaveModal';
 import Dropdown from '../ui/Dropdown';
 import ThemeToggle from '../ui/ThemeToggle';
+import Tooltip from '../ui/Tooltip';
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -46,6 +52,10 @@ const items: MenuItem[] = [
     label: 'Duplicate',
   },
   {
+    icon: <TrashIcon />,
+    label: 'Delete',
+  },
+  {
     icon: <ShieldQuestionIcon />,
     label: 'Help',
   },
@@ -70,6 +80,9 @@ export default function HeaderMenu() {
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
+  const spaceId = useSpaceStore(useShallow((state) => state?.space?.id));
+  const { limitMet } = useBrowserSpaces();
 
   const handleMenuItemClick = (label: string) => {
     switch (label) {
@@ -96,6 +109,9 @@ export default function HeaderMenu() {
         break;
       case 'Duplicate':
         setIsDuplicateModalOpen(true);
+        break;
+      case 'Delete':
+        setDeleteSpaceId(spaceId);
         break;
       case 'Help':
         setIsHelpModalOpen(true);
@@ -125,17 +141,26 @@ export default function HeaderMenu() {
       >
         {items.map((item, index) => {
           const Icon = (item.icon as React.ReactElement).type;
+          const isDisabled = item.label === 'New Space' && limitMet;
           return (
-            <button
+            <Tooltip
               key={index}
-              onClick={() => {
-                handleMenuItemClick(item.label);
-              }}
-              className='hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark flex w-full flex-row items-center gap-1 px-4 py-2 text-left text-gray-500 hover:text-gray-900 hover:dark:text-gray-100'
+              title={APP_SPACE_LIMIT_REACHED}
+              disabled={!isDisabled}
             >
-              <Icon size={16} />
-              {item.label}
-            </button>
+              <button
+                key={index}
+                disabled={isDisabled}
+                onClick={() => {
+                  if (isDisabled) return;
+                  handleMenuItemClick(item.label);
+                }}
+                className='enabled:hover:bg-surface-hover-light enabled:hover:dark:bg-surface-hover-dark flex w-full flex-row items-center gap-1 px-4 py-2 text-left text-gray-500 enabled:hover:text-gray-900 disabled:!cursor-not-allowed enabled:hover:dark:text-gray-100'
+              >
+                <Icon size={16} />
+                {item.label}
+              </button>
+            </Tooltip>
           );
         })}
         <div className='h-0.5 w-full bg-gray-200 dark:bg-gray-700' />
@@ -179,6 +204,12 @@ export default function HeaderMenu() {
       <ConfigModal
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
+      />
+
+      <DeleteSpaceModal
+        isOpen={Boolean(deleteSpaceId)}
+        onClose={() => setDeleteSpaceId(undefined)}
+        spaceId={deleteSpaceId}
       />
     </>
   );
