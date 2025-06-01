@@ -111,7 +111,7 @@ export default function LoadScreen() {
           })}
 
           {spaces.filter((s) => !deletedSpaceIds.has(s.id)).length > 0 && (
-            <div className='absolute -bottom-8 -left-2 w-full translate-y-full'>
+            <div className='absolute -bottom-8 -left-3 w-52 translate-y-full'>
               <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
                 Previous Spaces
               </h2>
@@ -131,7 +131,7 @@ export default function LoadScreen() {
                         <ChevronRightIcon className='size-4' />
                         <span
                           className={join(
-                            'truncate',
+                            'w-32 truncate',
                             space.title.length === 0 && 'opacity-70',
                           )}
                         >
@@ -139,8 +139,8 @@ export default function LoadScreen() {
                         </span>
                       </a>
                       <TrashIcon
-                        type='button'
-                        className='ml-2 size-4 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
+                        role='button'
+                        className='ml-2 size-4 shrink-0 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
                         aria-label='Delete Space'
                         onClick={() => setDeleteSpaceId(space.id)}
                       />
