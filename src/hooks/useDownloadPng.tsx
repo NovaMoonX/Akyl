@@ -72,8 +72,8 @@ export default function useDownloadPng() {
       width: imageWidth,
       height: imageHeight,
       style: {
-        width: String(imageWidth),
-        height: String(imageHeight),
+        width: `${imageWidth}px`,
+        height: `${imageHeight}px`,
         transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
       },
     }).then((url) => downloadImage(url, title, timeWindow));
