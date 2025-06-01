@@ -1,6 +1,8 @@
 // App
 export {
   APP_SLOGAN,
+  APP_SPACE_LIMIT,
+  APP_SPACE_LIMIT_REACHED,
   SUPPORT_EMAIL,
   URL_PARAM_FORM,
   URL_PARAM_ID,
@@ -40,6 +42,7 @@ export {
   duplicateSpace,
   generateExpenseNodesAndEdges,
   generateIncomeNodesAndEdges,
+  removeLocalSpace,
 } from './space.actions';
 export {
   CashFlowVerbiagePairs,

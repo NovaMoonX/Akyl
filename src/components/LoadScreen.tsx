@@ -6,11 +6,17 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import useBrowserSpaces from '../hooks/useBrowserSpaces';
-import { APP_SLOGAN, createNewSpace, importFile } from '../lib';
+import {
+  APP_SLOGAN,
+  APP_SPACE_LIMIT_REACHED,
+  createNewSpace,
+  importFile,
+} from '../lib';
 import { join } from '../utils';
 import DreamTrigger from './DreamTrigger';
 import HelpModal from './modals/HelpModal';
 import ThemeToggle2 from './ui/ThemeToggle2';
+import Tooltip from './ui/Tooltip';
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -37,7 +43,7 @@ const items: MenuItem[] = [
 ];
 export default function LoadScreen() {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
-  const { spaces } = useBrowserSpaces();
+  const { spaces, limitMet } = useBrowserSpaces();
 
   const handleClick = (label: string) => {
     switch (label) {
@@ -75,20 +81,31 @@ export default function LoadScreen() {
 
           {items.map((item, index) => {
             const Icon = (item.icon as React.ReactElement).type;
+            const isDisabled = item.label === 'New Space' && limitMet;
             return (
-              <button
+              <Tooltip
                 key={index}
-                onClick={() => handleClick(item.label)}
-                className='flex w-full flex-row items-center gap-1.5 px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
+                title={APP_SPACE_LIMIT_REACHED}
+                disabled={!isDisabled}
               >
-                <Icon size={14} />
-                {item.label}
-              </button>
+                <button
+                  type='button'
+                  disabled={isDisabled}
+                  onClick={() => {
+                    if (isDisabled) return;
+                    handleClick(item.label);
+                  }}
+                  className='flex w-full flex-row items-center gap-1.5 px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
+                >
+                  <Icon size={14} />
+                  {item.label}
+                </button>
+              </Tooltip>
             );
           })}
 
           {spaces.length > 0 && (
-            <div className='absolute -bottom-full -left-2 w-full'>
+            <div className='absolute -bottom-8 -left-2 w-full translate-y-full'>
               <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
                 Previous Spaces
               </h2>
@@ -98,7 +115,7 @@ export default function LoadScreen() {
                     key={space.id}
                     role='button'
                     href={`/${space.id}`}
-                    className='flex w-full flex-row items-center rounded px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
+                    className='flex w-full flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
                   >
                     <ChevronRightIcon className='size-4' />
                     <span

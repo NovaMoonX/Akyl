@@ -70,6 +70,17 @@ export function duplicateSpace(spaceId: string) {
   window.location.href = `/${newSpaceId}`;
 }
 
+export function removeLocalSpace(spaceId: string, redirect = true) {
+  if (!spaceId) return;
+
+  if (localStorage.getItem(spaceId)) {
+    localStorage.removeItem(spaceId);
+    if (redirect) {
+      window.location.href = '/';
+    }
+  }
+}
+
 // Refactored to create all level 0 (budget) nodes first, then all level 1 (bucket) nodes, both equally spaced
 export function generateIncomeNodesAndEdges(
   incomeBySource: Record<string, { total: number; items: Income[] }>,

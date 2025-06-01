@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Space } from '../lib';
+import { APP_SPACE_LIMIT, type Space } from '../lib';
 
 /**
  * Custom hook to fetch and manage browser-stored spaces from localStorage.
@@ -62,6 +62,5 @@ export default function useBrowserSpaces() {
     };
   }, []);
 
-  console.log('spaces', spaces); // REMOVE
-  return { spaces, limitMet: spaces.length >= 3 };
+  return { spaces, limitMet: spaces.length >= APP_SPACE_LIMIT };
 }
