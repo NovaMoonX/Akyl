@@ -55,7 +55,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
   };
 
   return (
-    <div className='bg-surface-light dark:bg-surface-dark border-node-border relative flex max-w-[180px] min-w-[140px] flex-col rounded-lg border p-0 shadow-md'>
+    <div className='bg-surface-light group dark:bg-surface-dark border-node-border relative flex max-w-[180px] min-w-[140px] flex-col rounded-lg border p-0 shadow-md'>
       {/* Super Text */}
       <small className='absolute top-0 left-0 line-clamp-2 max-w-full -translate-y-full opacity-80'>
         {getBudgetSuperText()}
@@ -67,7 +67,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
         <button
           type='button'
           onClick={handleEdit}
-          className='shrink-0 translate-x-0.5 -translate-y-0.5 opacity-60 hover:opacity-80'
+          className='shrink-0 translate-x-0.5 -translate-y-0.5 opacity-0 group-hover:opacity-70 hover:opacity-90'
           aria-label='Edit Budget Item'
         >
           <PencilIcon className='size-3' />
