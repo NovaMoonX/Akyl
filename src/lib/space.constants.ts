@@ -1,3 +1,5 @@
+import type { BudgetItemCadence } from './budget.types';
+
 export const CURRENT_FILE_VERSION = '1.0.0';
 export const CURRENT_APP_VERSION = '1.0.0';
 
@@ -34,6 +36,11 @@ export const CashFlowVerbiagePairs = {
     out: CashFlowOutVerbiages.MoneyOut,
   },
 } as const;
+
+export const DEFAULT_TIME_WINDOW: BudgetItemCadence = {
+  type: 'month',
+  interval: 1,
+};
 
 // Colors
 export const SpaceAccentColors = {
