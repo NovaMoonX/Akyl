@@ -1,5 +1,6 @@
 import {
   CopyPlusIcon,
+  FileImageIcon,
   FolderIcon,
   HomeIcon,
   MenuIcon,
@@ -12,6 +13,7 @@ import {
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import useBrowserSpaces from '../../hooks/useBrowserSpaces';
+import useDownloadPng from '../../hooks/useDownloadPng';
 import { APP_SPACE_LIMIT_REACHED, createNewSpace, importFile } from '../../lib';
 import { useSpaceStore } from '../../store/config';
 import DreamTrigger from '../DreamTrigger';
@@ -46,6 +48,10 @@ const items: MenuItem[] = [
   {
     icon: <SaveIcon />,
     label: 'Save',
+  },
+  {
+    icon: <FileImageIcon />,
+    label: 'Download Image',
   },
   {
     icon: <CopyPlusIcon />,
@@ -83,6 +89,7 @@ export default function HeaderMenu() {
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
   const spaceId = useSpaceStore(useShallow((state) => state?.space?.id));
   const { limitMet } = useBrowserSpaces();
+  const { download } = useDownloadPng();
 
   const handleMenuItemClick = (label: string) => {
     switch (label) {
@@ -106,6 +113,9 @@ export default function HeaderMenu() {
         break;
       case 'Save':
         setIsSaveModalOpen(true);
+        break;
+      case 'Download Image':
+        download();
         break;
       case 'Duplicate':
         setIsDuplicateModalOpen(true);
