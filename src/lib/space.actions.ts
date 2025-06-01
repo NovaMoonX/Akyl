@@ -75,7 +75,9 @@ export function removeLocalSpace(spaceId: string, redirect = true) {
 
   if (localStorage.getItem(spaceId)) {
     localStorage.removeItem(spaceId);
-    if (redirect) {
+
+    const isHome = window.location.pathname === '/';
+    if (!isHome && redirect) {
       window.location.href = '/';
     }
   }

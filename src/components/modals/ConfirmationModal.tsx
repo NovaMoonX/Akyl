@@ -1,6 +1,6 @@
 import Modal from '../ui/Modal';
 
-interface ConfirmationModalProps {
+export interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;

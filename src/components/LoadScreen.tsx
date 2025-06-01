@@ -3,6 +3,7 @@ import {
   FolderIcon,
   ShieldQuestionIcon,
   SquarePlusIcon,
+  TrashIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import useBrowserSpaces from '../hooks/useBrowserSpaces';
@@ -14,6 +15,7 @@ import {
 } from '../lib';
 import { join } from '../utils';
 import DreamTrigger from './DreamTrigger';
+import DeleteSpaceModal from './modals/DeleteSpaceModal';
 import HelpModal from './modals/HelpModal';
 import ThemeToggle2 from './ui/ThemeToggle2';
 import Tooltip from './ui/Tooltip';
@@ -43,6 +45,10 @@ const items: MenuItem[] = [
 ];
 export default function LoadScreen() {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
+  const [deletedSpaceIds, setDeletedSpaceIds] = useState<Set<string>>(
+    new Set(),
+  );
   const { spaces, limitMet } = useBrowserSpaces();
 
   const handleClick = (label: string) => {
@@ -104,30 +110,42 @@ export default function LoadScreen() {
             );
           })}
 
-          {spaces.length > 0 && (
+          {spaces.filter((s) => !deletedSpaceIds.has(s.id)).length > 0 && (
             <div className='absolute -bottom-8 -left-2 w-full translate-y-full'>
               <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
                 Previous Spaces
               </h2>
               <div>
-                {spaces.map((space) => (
-                  <a
-                    key={space.id}
-                    role='button'
-                    href={`/${space.id}`}
-                    className='flex w-full flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
-                  >
-                    <ChevronRightIcon className='size-4' />
-                    <span
-                      className={join(
-                        'truncate',
-                        space.title.length === 0 && 'opacity-70',
-                      )}
+                {spaces
+                  .filter((s) => !deletedSpaceIds.has(s.id))
+                  .map((space) => (
+                    <div
+                      key={space.id}
+                      className='group relative flex w-full flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
                     >
-                      {space.title || 'Untitled Space'}
-                    </span>
-                  </a>
-                ))}
+                      <a
+                        role='button'
+                        href={`/${space.id}`}
+                        className='flex flex-1 flex-row items-center gap-1'
+                      >
+                        <ChevronRightIcon className='size-4' />
+                        <span
+                          className={join(
+                            'truncate',
+                            space.title.length === 0 && 'opacity-70',
+                          )}
+                        >
+                          {space.title || 'Untitled Space'}
+                        </span>
+                      </a>
+                      <TrashIcon
+                        type='button'
+                        className='ml-2 size-4 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
+                        aria-label='Delete Space'
+                        onClick={() => setDeleteSpaceId(space.id)}
+                      />
+                    </div>
+                  ))}
               </div>
             </div>
           )}
@@ -141,6 +159,15 @@ export default function LoadScreen() {
       <HelpModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
+      />
+
+      <DeleteSpaceModal
+        isOpen={Boolean(deleteSpaceId)}
+        onClose={() => setDeleteSpaceId(undefined)}
+        spaceId={deleteSpaceId}
+        onDelete={(id) => {
+          setDeletedSpaceIds((prev) => new Set(prev).add(id));
+        }}
       />
     </>
   );

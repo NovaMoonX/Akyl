@@ -20,7 +20,6 @@ export default function useBrowserSpaces() {
         if (!key) continue;
         try {
           const value = localStorage.getItem(key);
-          console.log('value', value); // REMOVE
           if (!value) continue;
           const parsed = JSON.parse(value);
           // Check for required Space properties
