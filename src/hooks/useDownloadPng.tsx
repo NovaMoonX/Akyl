@@ -5,13 +5,25 @@ import {
 } from '@xyflow/react';
 import { toPng } from 'html-to-image';
 import { useCallback } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { useTheme } from '../contexts/ThemeContext';
+import type { BudgetItemCadence } from '../lib';
 import { useSpace } from '../store';
 
-function downloadImage(dataUrl: string, title: string) {
+function downloadImage(
+  dataUrl: string,
+  title: string,
+  timeWindow: BudgetItemCadence,
+) {
   const a = document.createElement('a');
 
-  a.setAttribute('download', `${title.toLowerCase().replace(/\s+/g, '-')}.png`);
+  const formattedTitle = (title || 'Untitled Space')
+    .trim()
+    .replace(/\s+/g, '-')
+    .toLowerCase();
+  const formattedTimeWindow = `${timeWindow.interval}${timeWindow.type}${timeWindow.interval > 1 ? 's' : ''}`;
+
+  a.setAttribute('download', `${formattedTitle}-${formattedTimeWindow}.png`);
   a.setAttribute('href', dataUrl);
   a.click();
 }
@@ -25,7 +37,12 @@ const padding = 1;
 // REF: https://reactflow.dev/examples/misc/download-image
 export default function useDownloadPng() {
   const { getNodes } = useReactFlow();
-  const title = useSpace((state) => state?.space?.title);
+  const [title, timeWindow] = useSpace(
+    useShallow((state) => [
+      state?.space?.title,
+      state?.space?.config?.timeWindow,
+    ]),
+  );
   const { theme } = useTheme();
 
   const download = useCallback(() => {
@@ -59,8 +76,8 @@ export default function useDownloadPng() {
         height: String(imageHeight),
         transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
       },
-    }).then((url) => downloadImage(url, title));
-  }, [getNodes, theme, title]);
+    }).then((url) => downloadImage(url, title, timeWindow));
+  }, [getNodes, theme, title, timeWindow]);
 
   return {
     download,
