@@ -1,5 +1,5 @@
 import type { BackgroundVariant } from '@xyflow/react';
-import type { Expense, Income } from './budget.types';
+import type { BudgetItemCadence, Expense, Income } from './budget.types';
 import {
   CashFlowVerbiagePairs,
   NO_BACKGROUND_VARIANT,
@@ -29,6 +29,7 @@ export interface Config {
   accentColor: string;
   currency: Currency;
   cashFlowVerbiage: CashFlowVerbiage;
+  timeWindow: BudgetItemCadence
 }
 
 export interface Space {

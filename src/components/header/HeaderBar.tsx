@@ -9,6 +9,7 @@ import { useSpace } from '../../store';
 import ExpenseForm from '../forms/ExpenseForm';
 import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
+import HeaderBarTimeWindow from './HeaderBarTimeWindow';
 
 export default function HeaderBar() {
   const [title, cashFlowVerbiage] = useSpace(
@@ -43,7 +44,9 @@ export default function HeaderBar() {
           placeholder='Space Title'
           className='text-surface-hover-dark dark:text-surface-hover-light w-96 text-xl font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
         />
-        <div className='flex gap-3 text-sm'>
+        <div className='flex gap-3 text-sm items-center'>
+          <HeaderBarTimeWindow />
+          <span className='h-6 w-px bg-surface-hover-dark dark:bg-surface-hover-light mx-1' />
           <button
             onClick={() => handleOpenForm('income')}
             className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-4 py-2.5 transition'

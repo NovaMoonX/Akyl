@@ -52,6 +52,7 @@ export {
   CashFlowVerbiagePairs,
   CURRENT_APP_VERSION,
   CURRENT_FILE_VERSION,
+  DEFAULT_TIME_WINDOW,
   NO_BACKGROUND_VARIANT,
   SpaceAccentColors,
 } from './space.constants';

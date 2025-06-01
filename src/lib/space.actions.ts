@@ -7,6 +7,7 @@ import {
   BUCKET_SPACING_X,
   CURRENT_APP_VERSION,
   CURRENT_FILE_VERSION,
+  DEFAULT_TIME_WINDOW,
   EXPENSE_BUCKET_Y,
   EXPENSE_ITEM_Y,
   INCOME_BUCKET_Y,
@@ -41,6 +42,7 @@ export function createNewSpace() {
       accentColor: SpaceAccentColors.default,
       currency: 'USD',
       cashFlowVerbiage: 'default',
+      timeWindow: DEFAULT_TIME_WINDOW,
     },
   };
   localStorage.setItem(id, JSON.stringify(space));
