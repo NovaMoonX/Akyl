@@ -7,12 +7,16 @@ import {
   SettingsIcon,
   ShieldQuestionIcon,
   SquarePlusIcon,
+  TrashIcon,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { createNewSpace, importFile } from '../../lib';
+import { useSpaceStore } from '../../store/config';
 import DreamTrigger from '../DreamTrigger';
 import ConfigModal from '../modals/ConfigModal';
 import ConfirmationModal from '../modals/ConfirmationModal';
+import DeleteSpaceModal from '../modals/DeleteSpaceModal';
 import DuplicateSpaceModal from '../modals/DuplicateSpaceModal';
 import HelpModal from '../modals/HelpModal';
 import SaveModal from '../modals/SaveModal';
@@ -46,6 +50,10 @@ const items: MenuItem[] = [
     label: 'Duplicate',
   },
   {
+    icon: <TrashIcon />,
+    label: 'Delete',
+  },
+  {
     icon: <ShieldQuestionIcon />,
     label: 'Help',
   },
@@ -70,6 +78,8 @@ export default function HeaderMenu() {
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
+  const spaceId = useSpaceStore(useShallow((state) => state?.space?.id));
 
   const handleMenuItemClick = (label: string) => {
     switch (label) {
@@ -96,6 +106,9 @@ export default function HeaderMenu() {
         break;
       case 'Duplicate':
         setIsDuplicateModalOpen(true);
+        break;
+      case 'Delete':
+        setDeleteSpaceId(spaceId);
         break;
       case 'Help':
         setIsHelpModalOpen(true);
@@ -179,6 +192,12 @@ export default function HeaderMenu() {
       <ConfigModal
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
+      />
+
+      <DeleteSpaceModal
+        isOpen={Boolean(deleteSpaceId)}
+        onClose={() => setDeleteSpaceId(undefined)}
+        spaceId={deleteSpaceId}
       />
     </>
   );
