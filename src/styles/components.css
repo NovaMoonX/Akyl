@@ -10,4 +10,8 @@
   .btn-secondary {
     @apply border-surface-dark enabled:hover:bg-surface-hover-light dark:border-surface-light enabled:hover:dark:bg-surface-hover-dark border disabled:border-gray-600 disabled:opacity-60;
   }
+
+  .btn-danger {
+    @apply border border-red-600 text-red-600 bg-transparent enabled:hover:bg-red-50 dark:border-red-500 dark:text-red-500 enabled:hover:dark:bg-red-900 disabled:border-gray-500 disabled:text-gray-500;
+  }
 }

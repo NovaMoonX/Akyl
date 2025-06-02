@@ -186,6 +186,9 @@ export default function BudgetItemForm({
       )}
 
       <div className='flex justify-end gap-2'>
+        <button className='btn btn-danger mr-auto' onClick={handleClose}>
+          Delete
+        </button>
         <button className='btn btn-secondary' onClick={handleClose}>
           Cancel
         </button>
