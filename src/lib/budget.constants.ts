@@ -13,4 +13,5 @@ export const BaseExpenseCategories = [
   'Entertainment',
   'Healthcare',
   'Personal Spending',
+  'Savings'
 ];
