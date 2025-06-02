@@ -1,55 +1,25 @@
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
 # Akyl
+
+<img width="1200" alt="image" src="https://github.com/user-attachments/assets/3b6b7f94-e7e2-4cae-9104-8ebaf46fe7e9" />
+
+
+## About the Project
+This web application helps you understand your personal finances in a clear, visual way. Instead of just numbers, you'll build a dynamic flowchart that shows how your money flows from your income sources to various spending categories and savings goals.
+
+## Background
+If you're anything like me, you sometimes you have to stop and ask yourself: where does the money go? It's a question of budget, and there are many ways to go about it: spreadsheets, apps (i.e. YNAB), envelope system, handwritten notes, or even just purely by memory. Each approach has its upsides and drawbacks. And for a person such as myself who does a budget every once in a while and doesn't need the thoroughness of an app, having all of my income and expense "buckets" in place is perfect. To see it visually (rather than just text in a doc)? Now that's fantastic.
+
+## Key Features:
+- **Top-to-Bottom Flowchart:** Visually map your income and expenses.
+- **Period Views:** See your financial overview during any general period (i.e weekly, monthly, annually)
+- **Private and Safe:** Your information is stored entirely in your browser, so it is 100% private. 
+- **Save & Load Progress:** Download your budget as a file _or_ image. Files can be uploaded to resume planning.
+
+<img width="981" alt="image" src="https://github.com/user-attachments/assets/cdf66dc6-16f1-4bb4-9e8b-f43cf0efed6f" />
+
+
+## Technologies
+Built using React TS, Vite, and Tailwind CSS. Other key technologies include:
+- **@xyflow/react:** A powerful library for creating interactive node-based editors and flowcharts. [See here.](https://reactflow.dev/)
+- **html-to-image:** An npm package that converts HTML elements into image formats like PNG, JPEG, and SVG. [See here.](https://www.npmjs.com/package/html-to-image)
+- **Zustand:** A fast and minimal state management library for React. [See here.](https://zustand-demo.pmnd.rs/)
