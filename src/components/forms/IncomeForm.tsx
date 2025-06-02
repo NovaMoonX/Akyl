@@ -75,6 +75,7 @@ export default function IncomeForm() {
 
   return (
     <BudgetItemForm
+      type='income'
       title={incomeItemId ? 'Edit Income' : 'Add Income'}
       label={formData?.label}
       description={formData?.description}
