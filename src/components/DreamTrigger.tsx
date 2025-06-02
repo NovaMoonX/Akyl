@@ -35,6 +35,16 @@ export default function DreamTrigger() {
             that helps you see the bigger picture.
           </p>
           <p className='text-right'>- Nova</p>
+
+          <small className='block pt-1 leading-snug opacity-80'>
+            <span className='font-semibold'>Akyl (ah-cull)</span>
+            {' — '}
+            <span className='font-light'>
+              derived from the name of the largest river in Greek mythology,
+              Achelous River. Fitting for a tool that allows you to visualize
+              your budget cash flow.
+            </span>
+          </small>
         </div>
       </Modal>
     </>

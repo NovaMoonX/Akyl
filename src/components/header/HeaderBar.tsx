@@ -1,5 +1,7 @@
+import { ArrowUpIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
+import { useBudget } from '../../hooks';
 import {
   CashFlowVerbiagePairs,
   URL_PARAM_FORM,
@@ -19,6 +21,7 @@ export default function HeaderBar() {
     ]),
   );
   const { updateSpace } = useSpace();
+  const { incomes, expenses } = useBudget();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,16 +40,16 @@ export default function HeaderBar() {
 
   return (
     <>
-      <div className='bg-surface-light dark:bg-surface-dark flex w-full flex-grow items-center justify-between rounded-lg px-4 py-2.5 shadow-md'>
+      <div className='bg-surface-light dark:bg-surface-dark relative flex w-full flex-grow items-center justify-between rounded-lg px-4 py-2.5 shadow-md'>
         <input
           value={title || ''}
           onChange={handleTextChange}
           placeholder='Space Title'
           className='text-surface-hover-dark dark:text-surface-hover-light w-96 text-xl font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
         />
-        <div className='flex gap-3 text-sm items-center'>
+        <div className='flex items-center gap-3 text-sm'>
           <HeaderBarTimeWindow />
-          <span className='h-6 w-px bg-surface-hover-dark dark:bg-surface-hover-light mx-1' />
+          <span className='bg-surface-hover-dark dark:bg-surface-hover-light mx-1 h-6 w-px' />
           <button
             onClick={() => handleOpenForm('income')}
             className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-4 py-2.5 transition'
@@ -60,6 +63,15 @@ export default function HeaderBar() {
             add {CashFlowVerbiagePairs[cashFlowVerbiage].out}
           </button>
         </div>
+
+        {[...incomes, ...expenses].length === 0 && (
+          <div className='absolute right-8 -bottom-20 flex animate-pulse flex-col items-center'>
+            <ArrowUpIcon />
+            <span className='rounded-lg px-4 py-2 text-sm font-medium'>
+              add your first budget item~
+            </span>
+          </div>
+        )}
       </div>
 
       <Dropdown
