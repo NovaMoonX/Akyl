@@ -100,9 +100,15 @@ export function generateIncomeNodesAndEdges(
   }[] = [];
   const sources = Object.keys(incomeBySource);
 
+  // Build a map of source to its income items' indices (for X positioning)
+  const sourceIncomeIndices: Record<string, number[]> = {};
+  let incomeItemIndex = 0;
   sources.forEach((source, bucketIndex) => {
+    sourceIncomeIndices[source] = [];
     incomeBySource[source].items.forEach((income) => {
       allIncomeItems.push({ income, source, bucketIndex });
+      sourceIncomeIndices[source].push(incomeItemIndex);
+      incomeItemIndex++;
     });
   });
 
@@ -124,15 +130,16 @@ export function generateIncomeNodesAndEdges(
     });
   });
 
-  // Calculate spacing for bucket nodes (level 1)
-  const totalBuckets = sources.length;
-  const bucketStartX = -((totalBuckets - 1) * BUCKET_SPACING_X) / 2;
-
-  // Add all bucket nodes (level 1)
-  sources.forEach((source, bucketIndex) => {
+  // Add all bucket nodes (level 1), centered above their income items
+  sources.forEach((source) => {
     const bucketId = generateId('budget');
     const { total, items } = incomeBySource[source];
-    const bucketNodeX = bucketStartX + bucketIndex * BUCKET_SPACING_X;
+    const indices = sourceIncomeIndices[source];
+    if (indices.length === 0) return;
+    // Find the center X of this source's income items
+    const firstX = budgetStartX + indices[0] * BUCKET_SPACING_X;
+    const lastX = budgetStartX + indices[indices.length - 1] * BUCKET_SPACING_X;
+    const bucketNodeX = (firstX + lastX) / 2;
     nodes.push({
       id: bucketId,
       type: 'L1',
@@ -189,16 +196,21 @@ export function generateExpenseNodesAndEdges(
   }[] = [];
   const categories = Object.keys(expenseByCategory);
 
+  // Build a map of category to its expense items' indices (for X positioning)
+  const categoryExpenseIndices: Record<string, number[]> = {};
+  let expenseItemIndex = 0;
   categories.forEach((category, bucketIndex) => {
+    categoryExpenseIndices[category] = [];
     expenseByCategory[category].items.forEach((expense) => {
       allExpenseItems.push({ expense, category, bucketIndex });
+      categoryExpenseIndices[category].push(expenseItemIndex);
+      expenseItemIndex++;
     });
   });
 
   // Calculate spacing for budget nodes (level 0)
   const totalBudgetNodes = allExpenseItems.length;
-  const budgetSpacing = BUCKET_SPACING_X;
-  const budgetStartX = -((totalBudgetNodes - 1) * budgetSpacing) / 2;
+  const budgetStartX = -((totalBudgetNodes - 1) * BUCKET_SPACING_X) / 2;
 
   // Add all budget nodes (level 0)
   allExpenseItems.forEach(({ expense }, i) => {
@@ -206,7 +218,7 @@ export function generateExpenseNodesAndEdges(
       id: expense.id,
       type: 'budget',
       position: {
-        x: budgetStartX + i * budgetSpacing,
+        x: budgetStartX + i * BUCKET_SPACING_X,
         y: EXPENSE_ITEM_Y,
       },
       data: { budgetItemId: expense.id },
@@ -214,16 +226,16 @@ export function generateExpenseNodesAndEdges(
     });
   });
 
-  // Calculate spacing for bucket nodes (level 1)
-  const totalBuckets = categories.length;
-  const bucketSpacing = BUCKET_SPACING_X;
-  const bucketStartX = -((totalBuckets - 1) * bucketSpacing) / 2;
-
-  // Add all bucket nodes (level 1)
-  categories.forEach((category, bucketIndex) => {
+  // Add all bucket nodes (level 1), centered above their expense items
+  categories.forEach((category) => {
     const bucketId = generateId('budget');
     const { total, items } = expenseByCategory[category];
-    const bucketNodeX = bucketStartX + bucketIndex * bucketSpacing;
+    const indices = categoryExpenseIndices[category];
+    if (indices.length === 0) return;
+    // Find the center X of this category's expense items
+    const firstX = budgetStartX + indices[0] * BUCKET_SPACING_X;
+    const lastX = budgetStartX + indices[indices.length - 1] * BUCKET_SPACING_X;
+    const bucketNodeX = (firstX + lastX) / 2;
     nodes.push({
       id: bucketId,
       type: 'L1',
