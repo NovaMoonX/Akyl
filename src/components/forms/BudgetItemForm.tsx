@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
-import { getCurrencySymbol, URL_PARAM_ID, type BudgetType } from '../../lib';
+import {
+  CashFlowVerbiagePairs,
+  getCurrencySymbol,
+  URL_PARAM_ID,
+  type BudgetType,
+} from '../../lib';
 import type { BudgetItemCadence } from '../../lib/budget.types';
 import { useSpace } from '../../store';
 import ConfirmationModal from '../modals/ConfirmationModal';
 
 export interface BudgetItemFormProps {
   type: BudgetType;
-  title: string;
   label?: string;
   description?: string;
   amount?: number;
@@ -26,7 +30,6 @@ export interface BudgetItemFormProps {
 
 export default function BudgetItemForm({
   type,
-  title,
   label = '',
   description = '',
   amount = 0,
@@ -40,6 +43,9 @@ export default function BudgetItemForm({
 }: BudgetItemFormProps) {
   const currency = useSpace(
     useShallow((state) => state.space?.config?.currency || 'USD'),
+  );
+  const cashFlowVerbiage = useSpace(
+    useShallow((state) => state?.space.config?.cashFlowVerbiage),
   );
   const { removeExpense, removeIncome } = useSpace();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -82,7 +88,12 @@ export default function BudgetItemForm({
   return (
     <>
       <div className='flex flex-col gap-4'>
-        <h2 className='text-xl font-bold'>{title}</h2>
+        <h2 className='text-xl font-bold capitalize'>
+          {itemId ? 'edit' : 'add'}{' '}
+          {type === 'income'
+            ? CashFlowVerbiagePairs[cashFlowVerbiage].in
+            : CashFlowVerbiagePairs[cashFlowVerbiage].out}{' '}
+        </h2>
         <div>
           <label className='font-medium'>Name</label>
           <input
