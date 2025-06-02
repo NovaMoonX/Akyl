@@ -14,6 +14,7 @@ import { useInitSpace, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
 import { AnimatedInflowEdge, AnimatedOutflowEdge } from './edges';
+import { HiddenNodeEdge } from './edges/HiddenNodeEdge';
 import LoadScreen from './LoadScreen';
 import BudgetNode from './nodes/BudgetNode';
 import CoreNode from './nodes/CoreNode';
@@ -28,6 +29,7 @@ const nodeTypes = {
 const edgeTypes = {
   inflow: AnimatedInflowEdge,
   outflow: AnimatedOutflowEdge,
+  hidden: HiddenNodeEdge,
 };
 
 const DEFAULT_BACKGROUND = BackgroundVariant.Cross;
