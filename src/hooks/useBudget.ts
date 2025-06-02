@@ -133,7 +133,7 @@ export default function useBudget() {
           acc[income.source].items.push(income);
           acc[income.source].completeTotal += income.amount;
           if (!income.hidden) {
-            // Skip hidden incomes
+            // only include non-hidden incomes
             acc[income.source].total += income.amount;
           }
         }
@@ -168,7 +168,7 @@ export default function useBudget() {
           acc[expense.category].items.push(expense);
           acc[expense.category].completeTotal += expense.amount;
           if (!expense.hidden) {
-            // Skip hidden expenses
+            // only include non-hidden expenses
             acc[expense.category].total += expense.amount;
           }
         }
@@ -197,7 +197,7 @@ export default function useBudget() {
   const incomesTotal = useMemo(() => {
     return incomes.reduce((total, income) => {
       if (income.hidden) {
-        return total; // Skip hidden incomes
+        return total; // only include non-hidden incomes
       }
       return total + income.amount;
     }, 0);
@@ -206,7 +206,7 @@ export default function useBudget() {
   const expensesTotal = useMemo(() => {
     return expenses.reduce((total, expense) => {
       if (expense.hidden) {
-        return total; // Skip hidden expenses
+        return total; // only include non-hidden expenses
       }
       return total + expense.amount;
     }, 0);
