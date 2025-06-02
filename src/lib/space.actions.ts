@@ -125,7 +125,7 @@ export function generateIncomeNodesAndEdges(
         x: budgetStartX + i * BUCKET_SPACING_X,
         y: INCOME_ITEM_Y,
       },
-      data: { budgetItemId: income.id },
+      data: { budgetItemId: income.id, hidden: income.hidden },
       draggable: false,
     });
   });
@@ -162,19 +162,14 @@ export function generateIncomeNodesAndEdges(
 
     // For each income item under this source, find its index in allIncomeItems
     items.forEach((income) => {
-      const budgetNodeIndex = allIncomeItems.findIndex(
-        (item) => item.income.id === income.id,
-      );
-      if (budgetNodeIndex !== -1) {
-        // Edge from budget node to bucket
-        edges.push({
-          id: `${income.id}_to_${bucketId}`,
-          source: income.id,
-          target: bucketId,
-          type: 'inflow',
-          data: { animationTreeLevel: 0 },
-        });
-      }
+      const isHidden = income.hidden;
+      edges.push({
+        id: `${income.id}_to_${bucketId}`,
+        source: income.id,
+        target: bucketId,
+        type: isHidden ? 'hidden' : 'inflow',
+        ...(isHidden ? {} : { data: { animationTreeLevel: 0 } }),
+      });
     });
   });
 
@@ -221,7 +216,7 @@ export function generateExpenseNodesAndEdges(
         x: budgetStartX + i * BUCKET_SPACING_X,
         y: EXPENSE_ITEM_Y,
       },
-      data: { budgetItemId: expense.id },
+      data: { budgetItemId: expense.id, hidden: expense.hidden },
       draggable: false,
     });
   });
@@ -258,19 +253,14 @@ export function generateExpenseNodesAndEdges(
 
     // For each expense item under this category, find its index in allExpenseItems
     items.forEach((expense) => {
-      const budgetNodeIndex = allExpenseItems.findIndex(
-        (item) => item.expense.id === expense.id,
-      );
-      if (budgetNodeIndex !== -1) {
-        // Edge from bucket to budget node
-        edges.push({
-          id: `${bucketId}_to_${expense.id}`,
-          source: bucketId,
-          target: expense.id,
-          type: 'outflow',
-          data: { animationTreeLevel: 3 },
-        });
-      }
+      const isHidden = expense.hidden;
+      edges.push({
+        id: `${bucketId}_to_${expense.id}`,
+        source: bucketId,
+        target: expense.id,
+        type: isHidden ? 'hidden' : 'outflow',
+        ...(isHidden ? {} : { data: { animationTreeLevel: 3 } }),
+      });
     });
   });
 

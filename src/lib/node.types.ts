@@ -1,6 +1,6 @@
 export type BudgetType = 'income' | 'expense';
 export type NodeType = 'core' | 'L1' | 'L2' | 'budget';
-export type EdgeType = 'inflow' | 'outflow';
+export type EdgeType = 'inflow' | 'outflow' | 'hidden';
 
 export const CoreData = {};
 export interface L1Data {
@@ -11,6 +11,7 @@ export interface L1Data {
 }
 export interface BudgetData {
   budgetItemId: string;
+  hidden?: boolean; // For UI purposes, to hide/show budget items
   [key: string]: unknown;
 }
 

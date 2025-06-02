@@ -14,6 +14,7 @@ export interface Income {
   type: string;
   cadence: BudgetItemCadence;
   notes: string;
+  hidden?: boolean; // For UI purposes, to hide/show income items
 }
 
 export interface Expense {
@@ -25,4 +26,5 @@ export interface Expense {
   subCategory: string; // i.e. Water, Electricity, Gas -> Utilities
   cadence: BudgetItemCadence;
   notes: string;
+  hidden?: boolean; // For UI purposes, to hide/show expense items
 }
