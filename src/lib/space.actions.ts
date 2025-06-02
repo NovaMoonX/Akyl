@@ -125,7 +125,7 @@ export function generateIncomeNodesAndEdges(
         x: budgetStartX + i * BUCKET_SPACING_X,
         y: INCOME_ITEM_Y,
       },
-      data: { budgetItemId: income.id },
+      data: { budgetItemId: income.id, hidden: income.hidden },
       draggable: false,
     });
   });
@@ -221,7 +221,7 @@ export function generateExpenseNodesAndEdges(
         x: budgetStartX + i * BUCKET_SPACING_X,
         y: EXPENSE_ITEM_Y,
       },
-      data: { budgetItemId: expense.id },
+      data: { budgetItemId: expense.id, hidden: expense.hidden },
       draggable: false,
     });
   });

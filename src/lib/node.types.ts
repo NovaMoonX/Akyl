@@ -11,6 +11,7 @@ export interface L1Data {
 }
 export interface BudgetData {
   budgetItemId: string;
+  hidden?: boolean; // For UI purposes, to hide/show budget items
   [key: string]: unknown;
 }
 
