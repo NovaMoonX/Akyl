@@ -1,7 +1,8 @@
 # Akyl
 
-<img width="1200" alt="image" src="https://github.com/user-attachments/assets/3b6b7f94-e7e2-4cae-9104-8ebaf46fe7e9" />
+See at https://akyl.moondreams.dev/
 
+<img width="1200" alt="image" src="https://github.com/user-attachments/assets/3b6b7f94-e7e2-4cae-9104-8ebaf46fe7e9" />
 
 ## About the Project
 This web application helps you understand your personal finances in a clear, visual way. Instead of just numbers, you'll build a dynamic flowchart that shows how your money flows from your income sources to various spending categories and savings goals.
@@ -23,3 +24,8 @@ Built using React TS, Vite, and Tailwind CSS. Other key technologies include:
 - **@xyflow/react:** A powerful library for creating interactive node-based editors and flowcharts. [See here.](https://reactflow.dev/)
 - **html-to-image:** An npm package that converts HTML elements into image formats like PNG, JPEG, and SVG. [See here.](https://www.npmjs.com/package/html-to-image)
 - **Zustand:** A fast and minimal state management library for React. [See here.](https://zustand-demo.pmnd.rs/)
+
+---
+
+Moon Dreams Dev — A Realized Dream 🌙
+
