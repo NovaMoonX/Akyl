@@ -77,7 +77,7 @@ export default function ExpenseForm() {
 
   return (
     <BudgetItemForm
-      title={expenseItemId ? 'Edit Expense' : 'Add Expense'}
+      type='expense'
       label={formData?.label}
       description={formData?.description}
       amount={formData?.amount}
