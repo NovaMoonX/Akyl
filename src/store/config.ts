@@ -26,27 +26,49 @@ const useSpaceStore = create<SpaceStore>()(
     setSpace: (space) => set({ space }),
     updateSpace: (partial) =>
       set((state) => ({
-        space: state.space ? { ...state.space, ...partial } : initialSpace,
+        space: state.space
+          ? {
+              ...state.space,
+              ...partial,
+              metadata: {
+                ...state.space.metadata,
+                ...partial.metadata,
+                updatedAt: Date.now(),
+              },
+            }
+          : initialSpace,
       })),
     updateMetadata: (partial) =>
       set((state) => ({
         space: state.space
           ? {
               ...state.space,
-              metadata: { ...state.space.metadata, ...partial },
+              metadata: {
+                ...state.space.metadata,
+                updatedAt: Date.now(),
+                ...partial,
+              },
             }
           : initialSpace,
       })),
     updateConfig: (partial) =>
       set((state) => ({
         space: state.space
-          ? { ...state.space, config: { ...state.space.config, ...partial } }
+          ? {
+              ...state.space,
+              config: { ...state.space.config, ...partial },
+              metadata: { ...state.space.metadata, updatedAt: Date.now() },
+            }
           : initialSpace,
       })),
     addIncome: (income) =>
       set((state) => ({
         space: state.space
-          ? { ...state.space, incomes: [...state.space.incomes, income] }
+          ? {
+              ...state.space,
+              incomes: [...state.space.incomes, income],
+              metadata: { ...state.space.metadata, updatedAt: Date.now() },
+            }
           : initialSpace,
       })),
     updateIncome: (id, updates) =>
@@ -57,6 +79,7 @@ const useSpaceStore = create<SpaceStore>()(
               incomes: state.space.incomes.map((income) =>
                 income.id === id ? { ...income, ...updates } : income,
               ),
+              metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }
           : initialSpace,
       })),
@@ -66,13 +89,18 @@ const useSpaceStore = create<SpaceStore>()(
           ? {
               ...state.space,
               incomes: state.space.incomes.filter((income) => income.id !== id),
+              metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }
           : initialSpace,
       })),
     addExpense: (expense) =>
       set((state) => ({
         space: state.space
-          ? { ...state.space, expenses: [...state.space.expenses, expense] }
+          ? {
+              ...state.space,
+              expenses: [...state.space.expenses, expense],
+              metadata: { ...state.space.metadata, updatedAt: Date.now() },
+            }
           : initialSpace,
       })),
     updateExpense: (id, updates) =>
@@ -83,6 +111,7 @@ const useSpaceStore = create<SpaceStore>()(
               expenses: state.space.expenses.map((expense) =>
                 expense.id === id ? { ...expense, ...updates } : expense,
               ),
+              metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }
           : initialSpace,
       })),
@@ -94,6 +123,7 @@ const useSpaceStore = create<SpaceStore>()(
               expenses: state.space.expenses.filter(
                 (expense) => expense.id !== id,
               ),
+              metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }
           : initialSpace,
       })),
