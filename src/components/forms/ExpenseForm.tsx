@@ -11,10 +11,9 @@ import BudgetItemForm from './BudgetItemForm';
 export default function ExpenseForm() {
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<Expense>();
-  const [showSubcategory, setShowSubcategory] = useState(false);
+  const [, setShowSubcategory] = useState(false);
   const expenseItemId = searchParams.get(URL_PARAM_ID);
-  const { expensesMap, expenseSubCategoriesMap, expenseCategories } =
-    useBudget();
+  const { expensesMap, expenseCategories } = useBudget(); // expenseSubCategoriesMap
   const { addExpense, updateExpense } = useSpace();
 
   // Category options: only add custom category if not already present
@@ -22,12 +21,13 @@ export default function ExpenseForm() {
     return expenseCategories.map((cat) => ({ value: cat, label: cat }));
   }, [expenseCategories]);
 
+  // FUTURE: add feature for expense subcategories
   // Subcategory options: only add custom subcategory if not already present
-  const subCategoryOptions = useMemo(() => {
-    const category = formData?.category ?? '';
-    const subCategories = expenseSubCategoriesMap[category] ?? [];
-    return subCategories.map((sub) => ({ value: sub, label: sub }));
-  }, [formData, expenseSubCategoriesMap]);
+  // const subCategoryOptions = useMemo(() => {
+  //   const category = formData?.category ?? '';
+  //   const subCategories = expenseSubCategoriesMap[category] ?? [];
+  //   return subCategories.map((sub) => ({ value: sub, label: sub }));
+  // }, [formData, expenseSubCategoriesMap]);
 
   useEffect(() => {
     const defaultExpense: Expense = {
@@ -103,7 +103,7 @@ export default function ExpenseForm() {
           placeholder='Select or add category...'
         />
 
-        {!showSubcategory && (
+        {/* {!showSubcategory && (
           <div className='flex justify-end'>
             <button
               type='button'
@@ -113,10 +113,10 @@ export default function ExpenseForm() {
               Add subcategory
             </button>
           </div>
-        )}
+        )} */}
       </div>
 
-      {showSubcategory && (
+      {/* {showSubcategory && (
         <div>
           <label className='font-medium'>Subcategory</label>
           <Combobox
@@ -127,7 +127,7 @@ export default function ExpenseForm() {
             placeholder='Select or add subcategory...'
           />
         </div>
-      )}
+      )} */}
     </BudgetItemForm>
   );
 }

@@ -12,7 +12,7 @@ export default function IncomeForm() {
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<Income>();
   const incomeItemId = searchParams.get(URL_PARAM_ID);
-  const { incomesMap, incomeSources, incomeTypes } = useBudget();
+  const { incomesMap, incomeSources } = useBudget(); // incomeTypes
   const { addIncome, updateIncome } = useSpace();
 
   const sourceOptions = useMemo(() => {
@@ -22,12 +22,13 @@ export default function IncomeForm() {
     }));
   }, [incomeSources]);
 
-  const typeOptions = useMemo(() => {
-    return incomeTypes.map((cat) => ({
-      value: cat,
-      label: cat,
-    }));
-  }, [incomeTypes]);
+  // FUTURE: add feature for income types
+  // const typeOptions = useMemo(() => {
+  //   return incomeTypes.map((cat) => ({
+  //     value: cat,
+  //     label: cat,
+  //   }));
+  // }, [incomeTypes]);
 
   useEffect(() => {
     const defaultIncome: Income = {
@@ -101,7 +102,7 @@ export default function IncomeForm() {
       </div>
 
       {/* Type */}
-      <div>
+      {/* <div>
         <label className='font-medium'>Type</label>
         <Combobox
           value={formData?.type ?? ''}
@@ -112,7 +113,7 @@ export default function IncomeForm() {
           allowAdd={true}
           placeholder='Select or add type...'
         />
-      </div>
+      </div> */}
     </BudgetItemForm>
   );
 }
