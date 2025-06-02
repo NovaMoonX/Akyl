@@ -128,21 +128,28 @@ export default function useBudget() {
       (acc, income) => {
         if (income.source) {
           if (!acc[income.source]) {
-            acc[income.source] = { total: 0, items: [] };
+            acc[income.source] = { total: 0, items: [], completeTotal: 0 };
           }
           acc[income.source].items.push(income);
-          acc[income.source].total += income.amount;
+          acc[income.source].completeTotal += income.amount;
+          if (!income.hidden) {
+            // Skip hidden incomes
+            acc[income.source].total += income.amount;
+          }
         }
         return acc;
       },
-      {} as Record<string, { total: number; items: Income[] }>,
+      {} as Record<
+        string,
+        { total: number; items: Income[]; completeTotal: number }
+      >,
     );
 
     return Object.entries(map)
-      .sort((a, b) => b[1].total - a[1].total)
+      .sort((a, b) => b[1].completeTotal - a[1].completeTotal)
       .reduce(
         (acc, [source, data]) => {
-          acc[source] = data;
+          acc[source] = { total: data.total, items: data.items };
           return acc;
         },
         {} as Record<string, { total: number; items: Income[] }>,
@@ -156,21 +163,31 @@ export default function useBudget() {
       (acc, expense) => {
         if (expense.category) {
           if (!acc[expense.category]) {
-            acc[expense.category] = { total: 0, items: [] };
+            acc[expense.category] = { total: 0, items: [], completeTotal: 0 };
           }
           acc[expense.category].items.push(expense);
-          acc[expense.category].total += expense.amount;
+          acc[expense.category].completeTotal += expense.amount;
+          if (!expense.hidden) {
+            // Skip hidden expenses
+            acc[expense.category].total += expense.amount;
+          }
         }
         return acc;
       },
-      {} as Record<string, { total: number; items: Expense[] }>,
+      {} as Record<
+        string,
+        { total: number; items: Expense[]; completeTotal: number }
+      >,
     );
 
     return Object.entries(map)
-      .sort((a, b) => b[1].total - a[1].total)
+      .sort((a, b) => b[1].completeTotal - a[1].completeTotal)
       .reduce(
         (acc, [category, data]) => {
-          acc[category] = data;
+          acc[category] = {
+            total: data.total,
+            items: data.items,
+          };
           return acc;
         },
         {} as Record<string, { total: number; items: Expense[] }>,
@@ -178,11 +195,21 @@ export default function useBudget() {
   }, [expenses]);
 
   const incomesTotal = useMemo(() => {
-    return incomes.reduce((total, income) => total + income.amount, 0);
+    return incomes.reduce((total, income) => {
+      if (income.hidden) {
+        return total; // Skip hidden incomes
+      }
+      return total + income.amount;
+    }, 0);
   }, [incomes]);
 
   const expensesTotal = useMemo(() => {
-    return expenses.reduce((total, expense) => total + expense.amount, 0);
+    return expenses.reduce((total, expense) => {
+      if (expense.hidden) {
+        return total; // Skip hidden expenses
+      }
+      return total + expense.amount;
+    }, 0);
   }, [expenses]);
 
   const getBudgetItem = useCallback(
