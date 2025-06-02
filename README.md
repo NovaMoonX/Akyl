@@ -16,7 +16,11 @@ If you're anything like me, you sometimes you have to stop and ask yourself: whe
 - **Private and Safe:** Your information is stored entirely in your browser, so it is 100% private. 
 - **Save & Load Progress:** Download your budget as a file _or_ image. Files can be uploaded to resume planning.
 
+<img width="1091" alt="image" src="https://github.com/user-attachments/assets/4cb8adef-e9a0-426b-8a6d-beb05f7836e9" />
+
+<!-- Original Image
 <img width="981" alt="image" src="https://github.com/user-attachments/assets/cdf66dc6-16f1-4bb4-9e8b-f43cf0efed6f" />
+-->
 
 
 ## Technologies
