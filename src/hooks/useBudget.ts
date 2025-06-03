@@ -212,6 +212,28 @@ export default function useBudget() {
     }, 0);
   }, [expenses]);
 
+  // Source mapped to `true` if all items in that source are hidden
+  const incomesSourceHiddenMap = useMemo(() => {
+    const visibility: Record<string, boolean> = {};
+    for (const source in incomeBySource) {
+      const items = incomeBySource[source]?.items ?? [];
+      visibility[source] =
+        items.length > 0 && items.every((income) => income.hidden);
+    }
+    return visibility;
+  }, [incomeBySource]);
+
+  // Category mapped to `true` if all items in that category are hidden
+  const expensesCategoryHiddenMap = useMemo(() => {
+    const visibility: Record<string, boolean> = {};
+    for (const category in expenseByCategory) {
+      const items = expenseByCategory[category]?.items ?? [];
+      visibility[category] =
+        items.length > 0 && items.every((expense) => expense.hidden);
+    }
+    return visibility;
+  }, [expenseByCategory]);
+
   const getBudgetItem = useCallback(
     (
       id: string,
@@ -246,5 +268,7 @@ export default function useBudget() {
     expenseCategories,
     incomeBySource,
     expenseByCategory,
+    incomesSourceHiddenMap,
+    expensesCategoryHiddenMap,
   };
 }
