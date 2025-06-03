@@ -1,13 +1,10 @@
 import {
-  addEdge,
   Background,
   BackgroundVariant,
   Controls,
   ReactFlow,
-  type Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
-import { useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { Header } from '../components';
 import { useInitSpace, useSpaceFlow } from '../hooks';
@@ -54,14 +51,7 @@ export default function Flow() {
   const backgroundPattern = useSpace(
     useShallow((state) => state?.space?.config?.backgroundPattern),
   );
-  const { nodes, edges, onNodesChange, onEdgesChange, setEdges } =
-    useSpaceFlow();
-
-  // TASK: is this onConnect function necessary?
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
-  );
+  const { nodes, edges, onNodesChange, onEdgesChange } = useSpaceFlow();
 
   return (
     <div id='app' className='relative h-screen w-screen'>
@@ -70,7 +60,6 @@ export default function Flow() {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView={true}
