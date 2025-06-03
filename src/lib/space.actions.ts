@@ -88,6 +88,7 @@ export function removeLocalSpace(spaceId: string, redirect = true) {
 // Refactored to create all level 0 (budget) nodes first, then all level 1 (bucket) nodes, both equally spaced
 export function generateIncomeNodesAndEdges(
   incomeBySource: Record<string, { total: number; items: Income[] }>,
+  incomesSourceHiddenMap: Record<string, boolean>,
 ) {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -152,12 +153,13 @@ export function generateIncomeNodesAndEdges(
     });
 
     // Edge from bucket to core
+    const isSourceHidden = incomesSourceHiddenMap[source];
     edges.push({
       id: `${bucketId}_to_${NODE_CORE_ID}`,
       source: bucketId,
       target: NODE_CORE_ID,
-      type: 'inflow',
-      data: { animationTreeLevel: 1 },
+      type: isSourceHidden ? 'hidden' : 'inflow',
+      ...(isSourceHidden ? {} : { data: { animationTreeLevel: 1 } }),
     });
 
     // For each income item under this source, find its index in allIncomeItems
@@ -179,6 +181,7 @@ export function generateIncomeNodesAndEdges(
 // Refactored to create all level 0 (budget) nodes first, then all level 1 (bucket) nodes, both equally spaced
 export function generateExpenseNodesAndEdges(
   expenseByCategory: Record<string, { total: number; items: Expense[] }>,
+  expensesCategoryHiddenMap: Record<string, boolean>,
 ) {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -243,12 +246,13 @@ export function generateExpenseNodesAndEdges(
     });
 
     // Edge from core to bucket
+    const isCategoryHidden = expensesCategoryHiddenMap[category];
     edges.push({
       id: `core_to_${bucketId}`,
       source: NODE_CORE_ID,
       target: bucketId,
-      type: 'outflow',
-      data: { animationTreeLevel: 2 },
+      type: isCategoryHidden ? 'hidden' : 'outflow',
+      ...(isCategoryHidden ? {} : { data: { animationTreeLevel: 2 } }),
     });
 
     // For each expense item under this category, find its index in allExpenseItems
