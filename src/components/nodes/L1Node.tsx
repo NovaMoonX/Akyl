@@ -34,7 +34,6 @@ function L1Node({ data }: L1NodeProps) {
   const toggleHide = () => {
     const nowHidden = isHidden ? false : true;
 
-    // For incomes
     if (type === 'income') {
       const sourceIncomes = incomeBySource[label]?.items ?? [];
       sourceIncomes.forEach((income) => {
@@ -43,7 +42,6 @@ function L1Node({ data }: L1NodeProps) {
       return;
     }
 
-    // For expenses
     const categoryExpenses = expenseByCategory[label]?.items ?? [];
     categoryExpenses.forEach((expense) => {
       updateExpense(expense.id, { hidden: nowHidden });
@@ -59,7 +57,7 @@ function L1Node({ data }: L1NodeProps) {
     >
       <div
         className={join(
-          'group bg-surface-light dark:bg-surface-dark border-node-border flex max-w-[160px] min-w-[120px] flex-col items-center gap-1 rounded-lg border p-4 shadow-md',
+          'group bg-surface-light dark:bg-surface-dark border-node-border relative flex max-w-[160px] min-w-[120px] flex-col items-center gap-1 rounded-lg border p-4 shadow-md',
           isHidden && 'opacity-40',
         )}
       >
