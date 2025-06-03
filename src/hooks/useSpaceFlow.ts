@@ -22,7 +22,12 @@ export default function useSpaceFlow() {
   const { showLoadScreen } = useInitSpace();
   const [, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const { incomeBySource, expenseByCategory } = useBudget();
+  const {
+    incomeBySource,
+    expenseByCategory,
+    incomesSourceHiddenMap,
+    expensesCategoryHiddenMap,
+  } = useBudget();
 
   const coreNodes = useMemo(() => {
     if (showLoadScreen) {
@@ -38,8 +43,8 @@ export default function useSpaceFlow() {
         incomeEdges: [],
       };
     }
-    return generateIncomeNodesAndEdges(incomeBySource);
-  }, [incomeBySource, showLoadScreen]);
+    return generateIncomeNodesAndEdges(incomeBySource, incomesSourceHiddenMap);
+  }, [incomeBySource, incomesSourceHiddenMap, showLoadScreen]);
 
   const { expenseNodes, expenseEdges } = useMemo(() => {
     if (showLoadScreen) {
@@ -48,8 +53,11 @@ export default function useSpaceFlow() {
         expenseEdges: [],
       };
     }
-    return generateExpenseNodesAndEdges(expenseByCategory);
-  }, [expenseByCategory, showLoadScreen]);
+    return generateExpenseNodesAndEdges(
+      expenseByCategory,
+      expensesCategoryHiddenMap,
+    );
+  }, [expenseByCategory, expensesCategoryHiddenMap, showLoadScreen]);
 
   return {
     nodes: [...coreNodes, ...incomeNodes, ...expenseNodes],
