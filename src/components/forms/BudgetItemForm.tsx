@@ -79,15 +79,23 @@ export default function BudgetItemForm({
   };
 
   const handleSave = () => {
-    if (onSave) {
+    if (onSave && !saveButtonDisabled) {
       onSave();
       handleClose();
     }
   };
 
+  // use form to save on enter key
+
   return (
     <>
-      <div className='flex flex-col gap-4'>
+      <form
+        className='flex flex-col gap-4'
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSave();
+        }}
+      >
         <h2 className='text-xl font-bold capitalize'>
           {itemId ? 'edit' : 'add'}{' '}
           {type === 'income'
@@ -163,13 +171,19 @@ export default function BudgetItemForm({
                 min={1}
                 className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
                 aria-description='Enter the frequency interval for this budget item'
-                value={cadence?.interval}
-                onChange={(e) =>
-                  onFieldChange('cadence', {
-                    ...cadence,
-                    interval: Number(e.target.value),
-                  })
-                }
+                value={cadence?.interval === 0 ? '' : cadence?.interval}
+                placeholder='1'
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    onFieldChange('cadence', { ...cadence, interval: 0 });
+                  } else {
+                    onFieldChange('cadence', {
+                      ...cadence,
+                      interval: Math.max(1, Number(e.target.value)),
+                    });
+                  }
+                }}
               />
             </div>
             <select
@@ -232,7 +246,7 @@ export default function BudgetItemForm({
             Cancel
           </button>
           <button
-            type='button'
+            type='submit'
             className='btn btn-primary'
             onClick={handleSave}
             disabled={saveButtonDisabled}
@@ -240,7 +254,7 @@ export default function BudgetItemForm({
             Save
           </button>
         </div>
-      </div>
+      </form>
 
       <ConfirmationModal
         title='Delete Budget Item'

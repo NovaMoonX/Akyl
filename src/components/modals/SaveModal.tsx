@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { exportFile, FILE_EXTENSION } from '../../lib';
 import { useSpace } from '../../store';
-import Checkbox from '../ui/Checkbox';
+import { toKebabCase } from '../../utils';
 import Modal from '../ui/Modal';
 
 interface SaveModalProps {
@@ -11,10 +11,12 @@ interface SaveModalProps {
 
 export default function SaveModal({ isOpen, onClose }: SaveModalProps) {
   const { space } = useSpace();
-  const [fileName, setFileName] = useState(
-    (space.title || '').replace(/\s+/g, '-').toLowerCase(), // Convert to kebab-case
-  );
-  const [continuous, setContinuous] = useState(false);
+  const [fileName, setFileName] = useState('');
+
+  useEffect(() => {
+    const kebabCaseTitle = toKebabCase(space.title || '');
+    setFileName(kebabCaseTitle);
+  }, [space.title]);
 
   const handleSave = () => {
     exportFile(fileName, space);
@@ -38,13 +40,14 @@ export default function SaveModal({ isOpen, onClose }: SaveModalProps) {
           </div>
         </div>
 
-        <Checkbox
+        {/* FUTURE: allow continuous saving */}
+        {/* <Checkbox
           isChecked={continuous}
           onChange={setContinuous}
           label='Continuously save changes'
           description='Automatically save future changes to the file.'
           className='ml-1'
-        />
+        /> */}
         <div className='flex justify-end gap-2'>
           <button onClick={onClose} className='btn btn-secondary'>
             Cancel

@@ -34,6 +34,7 @@ export default function useBudget() {
       );
       return { ...income, amount: adjustedAmount };
     });
+    itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
   }, [incomesInSpace, timeWindow]);
 
@@ -47,6 +48,7 @@ export default function useBudget() {
       );
       return { ...expense, amount: adjustedAmount };
     });
+    itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
   }, [expensesInSpace, timeWindow]);
 
