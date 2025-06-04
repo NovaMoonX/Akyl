@@ -89,6 +89,7 @@ export function removeLocalSpace(spaceId: string, redirect = true) {
 export function generateIncomeNodesAndEdges(
   incomeBySource: Record<string, { total: number; items: Income[] }>,
   incomesSourceHiddenMap: Record<string, boolean>,
+  hideSources: boolean = false,
 ) {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -124,14 +125,28 @@ export function generateIncomeNodesAndEdges(
       type: 'budget',
       position: {
         x: budgetStartX + i * BUCKET_SPACING_X,
-        y: INCOME_ITEM_Y,
+        y: hideSources ? INCOME_BUCKET_Y : INCOME_ITEM_Y,
       },
       data: { budgetItemId: income.id, hidden: income.hidden },
       draggable: false,
     });
+
+    if (hideSources) {
+      edges.push({
+        id: `${income.id}_to_${NODE_CORE_ID}`,
+        source: income.id,
+        target: NODE_CORE_ID,
+        type: income.hidden ? 'hidden' : 'inflow',
+        ...(income.hidden ? {} : { data: { animationTreeLevel: 0 } }),
+      });
+    }
   });
 
-  // Add all bucket nodes (level 1), centered above their income items
+  // If sources are hidden, we don't create bucket nodes
+  if (hideSources) {
+    return { incomeNodes: nodes, incomeEdges: edges };
+  }
+
   sources.forEach((source) => {
     const bucketId = generateId('budget');
     const { total, items } = incomeBySource[source];
@@ -182,6 +197,7 @@ export function generateIncomeNodesAndEdges(
 export function generateExpenseNodesAndEdges(
   expenseByCategory: Record<string, { total: number; items: Expense[] }>,
   expensesCategoryHiddenMap: Record<string, boolean>,
+  hideCategories: boolean = false,
 ) {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -217,12 +233,27 @@ export function generateExpenseNodesAndEdges(
       type: 'budget',
       position: {
         x: budgetStartX + i * BUCKET_SPACING_X,
-        y: EXPENSE_ITEM_Y,
+        y: hideCategories ? EXPENSE_BUCKET_Y : EXPENSE_ITEM_Y,
       },
       data: { budgetItemId: expense.id, hidden: expense.hidden },
       draggable: false,
     });
+
+    if (hideCategories) {
+      edges.push({
+        id: `${expense.id}_to_${NODE_CORE_ID}`,
+        source: NODE_CORE_ID,
+        target: expense.id,
+        type: expense.hidden ? 'hidden' : 'inflow',
+        ...(expense.hidden ? {} : { data: { animationTreeLevel: 1 } }),
+      });
+    }
   });
+
+  // If categories are hidden, we don't create bucket nodes
+  if (hideCategories) {
+    return { expenseNodes: nodes, expenseEdges: edges };
+  }
 
   // Add all bucket nodes (level 1), centered above their expense items
   categories.forEach((category) => {

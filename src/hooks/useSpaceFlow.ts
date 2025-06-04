@@ -1,5 +1,6 @@
 import { useEdgesState, useNodesState } from '@xyflow/react';
 import { useMemo } from 'react';
+import { useShallow } from 'zustand/shallow';
 import {
   generateExpenseNodesAndEdges,
   generateIncomeNodesAndEdges,
@@ -7,6 +8,7 @@ import {
   type Edge,
   type Node,
 } from '../lib';
+import { useSpace } from '../store';
 import useBudget from './useBudget';
 import useInitSpace from './useInitSpace';
 
@@ -28,6 +30,12 @@ export default function useSpaceFlow() {
     incomesSourceHiddenMap,
     expensesCategoryHiddenMap,
   } = useBudget();
+  const [hideSources, hideCategories] = useSpace(
+    useShallow((state) => [
+      state?.space?.config?.hideSources,
+      state?.space?.config?.hideCategories,
+    ]),
+  );
 
   const coreNodes = useMemo(() => {
     if (showLoadScreen) {
@@ -43,8 +51,12 @@ export default function useSpaceFlow() {
         incomeEdges: [],
       };
     }
-    return generateIncomeNodesAndEdges(incomeBySource, incomesSourceHiddenMap);
-  }, [incomeBySource, incomesSourceHiddenMap, showLoadScreen]);
+    return generateIncomeNodesAndEdges(
+      incomeBySource,
+      incomesSourceHiddenMap,
+      hideSources,
+    );
+  }, [incomeBySource, incomesSourceHiddenMap, showLoadScreen, hideSources]);
 
   const { expenseNodes, expenseEdges } = useMemo(() => {
     if (showLoadScreen) {
@@ -56,8 +68,14 @@ export default function useSpaceFlow() {
     return generateExpenseNodesAndEdges(
       expenseByCategory,
       expensesCategoryHiddenMap,
+      hideCategories,
     );
-  }, [expenseByCategory, expensesCategoryHiddenMap, showLoadScreen]);
+  }, [
+    expenseByCategory,
+    expensesCategoryHiddenMap,
+    showLoadScreen,
+    hideCategories,
+  ]);
 
   return {
     nodes: [...coreNodes, ...incomeNodes, ...expenseNodes],
