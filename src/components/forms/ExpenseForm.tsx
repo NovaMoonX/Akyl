@@ -73,7 +73,8 @@ export default function ExpenseForm() {
     !formData?.label ||
     !formData?.amount ||
     formData?.amount <= 0 ||
-    !formData?.category;
+    !formData?.category ||
+    !formData?.cadence?.interval;
 
   return (
     <BudgetItemForm
