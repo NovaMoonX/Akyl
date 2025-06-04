@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { exportFile, FILE_EXTENSION } from '../../lib';
 import { useSpace } from '../../store';
+import { toKebabCase } from '../../utils';
 import Modal from '../ui/Modal';
 
 interface SaveModalProps {
@@ -10,9 +11,12 @@ interface SaveModalProps {
 
 export default function SaveModal({ isOpen, onClose }: SaveModalProps) {
   const { space } = useSpace();
-  const [fileName, setFileName] = useState(
-    (space.title || '').replace(/\s+/g, '-').toLowerCase(), // Convert to kebab-case
-  );
+  const [fileName, setFileName] = useState('');
+
+  useEffect(() => {
+    const kebabCaseTitle = toKebabCase(space.title || '');
+    setFileName(kebabCaseTitle);
+  }, [space.title]);
 
   const handleSave = () => {
     exportFile(fileName, space);

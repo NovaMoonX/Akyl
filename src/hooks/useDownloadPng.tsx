@@ -9,6 +9,7 @@ import { useShallow } from 'zustand/shallow';
 import { useTheme } from '../contexts/ThemeContext';
 import type { BudgetItemCadence } from '../lib';
 import { useSpace } from '../store';
+import { toKebabCase } from '../utils';
 
 function downloadImage(
   dataUrl: string,
@@ -17,10 +18,7 @@ function downloadImage(
 ) {
   const a = document.createElement('a');
 
-  const formattedTitle = (title || 'Untitled Space')
-    .trim()
-    .replace(/\s+/g, '-')
-    .toLowerCase();
+  const formattedTitle = toKebabCase(title || 'Untitled Space');
   const formattedTimeWindow = `${timeWindow.interval}${timeWindow.type}${timeWindow.interval > 1 ? 's' : ''}`;
 
   a.setAttribute('download', `${formattedTitle}-${formattedTimeWindow}.png`);
