@@ -198,6 +198,7 @@ export function generateExpenseNodesAndEdges(
   expenseByCategory: Record<string, { total: number; items: Expense[] }>,
   expensesCategoryHiddenMap: Record<string, boolean>,
   hideCategories: boolean = false,
+  hideSources: boolean = false,
 ) {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -244,8 +245,10 @@ export function generateExpenseNodesAndEdges(
         id: `${expense.id}_to_${NODE_CORE_ID}`,
         source: NODE_CORE_ID,
         target: expense.id,
-        type: expense.hidden ? 'hidden' : 'inflow',
-        ...(expense.hidden ? {} : { data: { animationTreeLevel: 1 } }),
+        type: expense.hidden ? 'hidden' : 'outflow',
+        ...(expense.hidden
+          ? {}
+          : { data: { animationTreeLevel: hideSources ? 1 : 2 } }),
       });
     }
   });

@@ -69,12 +69,14 @@ export default function useSpaceFlow() {
       expenseByCategory,
       expensesCategoryHiddenMap,
       hideCategories,
+      hideSources,
     );
   }, [
     expenseByCategory,
     expensesCategoryHiddenMap,
     showLoadScreen,
     hideCategories,
+    hideSources,
   ]);
 
   return {
