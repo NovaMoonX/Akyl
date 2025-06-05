@@ -29,7 +29,7 @@ function CoreNode({ id }: CoreNodeProps) {
   const totalDiff = incomesTotal - expensesTotal;
 
   return (
-    <div>
+    <div className='relative'>
       <div className='bg-surface-light dark:bg-surface-dark border-node-border relative z-10 flex h-48 w-40 items-center justify-end rounded-full border shadow-md'>
         {/* Dashed Divider */}
         <div className='border-node-border/70 absolute top-1/2 right-2 left-2 z-0 -translate-y-[1px] border-t-2 border-dashed' />
