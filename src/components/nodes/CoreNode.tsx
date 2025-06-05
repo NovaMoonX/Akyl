@@ -26,7 +26,7 @@ function CoreNode({ id }: CoreNodeProps) {
 
   const inflowLabel = CashFlowVerbiagePairs[cashFlowVerbiage].in;
   const outflowLabel = CashFlowVerbiagePairs[cashFlowVerbiage].out;
-  const totalDiff = incomesTotal - expensesTotal;
+  const totalDiff = Math.round((incomesTotal - expensesTotal) * 100) / 100; // round to 2 decimal places
 
   return (
     <div className='relative'>
