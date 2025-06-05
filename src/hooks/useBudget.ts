@@ -32,7 +32,7 @@ export default function useBudget() {
         income.cadence,
         timeWindow,
       );
-      return { ...income, amount: adjustedAmount };
+      return { ...income, amount: adjustedAmount, originalAmount: income.amount };
     });
     itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
@@ -46,7 +46,7 @@ export default function useBudget() {
         expense.cadence,
         timeWindow,
       );
-      return { ...expense, amount: adjustedAmount };
+      return { ...expense, amount: adjustedAmount, originalAmount: expense.amount };
     });
     itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
