@@ -3,10 +3,24 @@ import type { BudgetItemCadence, BudgetItemCadenceType } from './budget.types';
 
 export function formatCurrency(amount: number, currency: string): string {
   const locale = getUserLocale();
-  return new Intl.NumberFormat(locale, {
+  const formatted = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
   }).format(amount);
+
+  const negativeZero = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+  }).format(-0);
+  const positiveZero = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+  }).format(0);
+
+  if (formatted === negativeZero) {
+    return positiveZero;
+  }
+  return formatted;
 }
 
 export function getCurrencySymbol(currency: string): string {
