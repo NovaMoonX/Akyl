@@ -29,7 +29,9 @@ export interface Config {
   accentColor: string;
   currency: Currency;
   cashFlowVerbiage: CashFlowVerbiage;
-  timeWindow: BudgetItemCadence
+  timeWindow: BudgetItemCadence;
+  hideSources?: boolean;
+  hideCategories?: boolean;
 }
 
 export interface Space {

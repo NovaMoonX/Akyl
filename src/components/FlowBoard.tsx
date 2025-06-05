@@ -10,6 +10,7 @@ import { Header } from '../components';
 import { useInitSpace, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
+import BottomActions from './BottomActions';
 import { AnimatedInflowEdge, AnimatedOutflowEdge } from './edges';
 import { HiddenNodeEdge } from './edges/HiddenNodeEdge';
 import LoadScreen from './LoadScreen';
@@ -71,6 +72,8 @@ export default function Flow() {
             <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-4xl font-black'>
               Akyl
             </h1>
+
+            <BottomActions />
             <Controls position='bottom-right' showInteractive={false} />
           </>
         )}
