@@ -46,7 +46,11 @@ export default function IncomeForm() {
     };
 
     const existingIncome = incomesMap[incomeItemId || ''] ?? {};
-    const income: Income = { ...defaultIncome, ...existingIncome };
+    const income: Income = {
+      ...defaultIncome,
+      ...existingIncome,
+      amount: existingIncome.originalAmount || 0,
+    };
     setFormData(income);
   }, [incomeItemId, incomesMap]);
 

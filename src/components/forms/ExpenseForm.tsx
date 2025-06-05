@@ -45,7 +45,11 @@ export default function ExpenseForm() {
     };
 
     const existingExpense = expensesMap[expenseItemId || ''] ?? {};
-    const expense: Expense = { ...defaultExpense, ...existingExpense };
+    const expense: Expense = {
+      ...defaultExpense,
+      ...existingExpense,
+      amount: existingExpense.originalAmount || 0,
+    };
     setFormData(expense);
 
     if (expense?.subCategory) {
