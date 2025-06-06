@@ -64,6 +64,9 @@ export default function Flow() {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView={true}
+        panOnScroll={true}
+        selectionOnDrag={true}
+        panOnScrollSpeed={1}
       >
         {showLoadScreen && <LoadScreen />}
         {!showLoadScreen && (
