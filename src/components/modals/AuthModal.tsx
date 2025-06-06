@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { authWithGoogle } from '../../firebase';
 import AuthForm from '../forms/AuthForm';
 import Modal from '../ui/Modal';
 
@@ -17,6 +18,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setShowEmailVerificationNotice(true);
     } else {
       onClose();
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    const { result, error } = await authWithGoogle();
+    if (result?.user?.emailVerified) {
+      onClose();
+    } else if (!error) {
+      setShowEmailVerificationNotice(true);
     }
   };
 
@@ -58,7 +68,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           {/* Google Auth Button */}
           <button
             className='flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 font-medium shadow-sm transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:hover:bg-gray-800'
-            // onClick={handleGoogleAuth} // TODO: implement auth logic
+            onClick={handleGoogleAuth}
             type='button'
           >
             <svg className='h-5 w-5' viewBox='0 0 48 48'>
