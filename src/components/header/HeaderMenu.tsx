@@ -3,6 +3,8 @@ import {
   FileImageIcon,
   FolderIcon,
   HomeIcon,
+  LogInIcon,
+  LogOutIcon,
   MenuIcon,
   SaveIcon,
   SettingsIcon,
@@ -10,13 +12,16 @@ import {
   SquarePlusIcon,
   TrashIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { useAuth } from '../../contexts/AuthContext';
+import { signOutUser } from '../../firebase';
 import useBrowserSpaces from '../../hooks/useBrowserSpaces';
 import useDownloadPng from '../../hooks/useDownloadPng';
 import { APP_SPACE_LIMIT_REACHED, createNewSpace, importFile } from '../../lib';
 import { useSpaceStore } from '../../store/config';
 import DreamTrigger from '../DreamTrigger';
+import AuthModal from '../modals/AuthModal';
 import ConfigModal from '../modals/ConfigModal';
 import ConfirmationModal from '../modals/ConfirmationModal';
 import DeleteSpaceModal from '../modals/DeleteSpaceModal';
@@ -32,7 +37,7 @@ interface MenuItem {
   label: string;
 }
 
-const items: MenuItem[] = [
+const DEFAULT_ITEMS: MenuItem[] = [
   {
     icon: <HomeIcon />,
     label: 'Home',
@@ -76,6 +81,7 @@ const items: MenuItem[] = [
 ];
 
 export default function HeaderMenu() {
+  const { currentUser } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<{
     title?: string;
@@ -86,10 +92,31 @@ export default function HeaderMenu() {
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
   const spaceId = useSpaceStore(useShallow((state) => state?.space?.id));
   const { limitMet } = useBrowserSpaces();
   const { download } = useDownloadPng();
+
+  const items = useMemo(() => {
+    if (currentUser) {
+      return [
+        ...DEFAULT_ITEMS,
+        {
+          icon: <LogOutIcon />,
+          label: 'Sign Out',
+        },
+      ];
+    }
+
+    return [
+      ...DEFAULT_ITEMS,
+      {
+        icon: <LogInIcon />,
+        label: 'Login',
+      },
+    ];
+  }, [currentUser]);
 
   const handleMenuItemClick = (label: string) => {
     switch (label) {
@@ -128,6 +155,12 @@ export default function HeaderMenu() {
         break;
       case 'Configurations':
         setIsConfigModalOpen(true);
+        break;
+      case 'Login':
+        setIsAuthModalOpen(true);
+        break;
+      case 'Sign Out':
+        signOutUser();
         break;
       default:
         break;
@@ -220,6 +253,11 @@ export default function HeaderMenu() {
         isOpen={Boolean(deleteSpaceId)}
         onClose={() => setDeleteSpaceId(undefined)}
         spaceId={deleteSpaceId}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </>
   );
