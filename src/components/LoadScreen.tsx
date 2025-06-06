@@ -1,6 +1,7 @@
 import {
   ChevronRightIcon,
   FolderIcon,
+  LogInIcon,
   ShieldQuestionIcon,
   SquarePlusIcon,
   TrashIcon,
@@ -15,6 +16,7 @@ import {
 } from '../lib';
 import { join } from '../utils';
 import DreamTrigger from './DreamTrigger';
+import AuthModal from './modals/AuthModal';
 import DeleteSpaceModal from './modals/DeleteSpaceModal';
 import HelpModal from './modals/HelpModal';
 import ThemeToggle2 from './ui/ThemeToggle2';
@@ -38,13 +40,14 @@ const items: MenuItem[] = [
     icon: <ShieldQuestionIcon />,
     label: 'Help',
   },
-  // {
-  //   icon: <LogInIcon />,
-  //   label: 'Login',
-  // },
+  {
+    icon: <LogInIcon />,
+    label: 'Login',
+  },
 ];
 export default function LoadScreen() {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
   const [deletedSpaceIds, setDeletedSpaceIds] = useState<Set<string>>(
     new Set(),
@@ -61,6 +64,9 @@ export default function LoadScreen() {
         break;
       case 'Help':
         setIsHelpModalOpen(true);
+        break;
+      case 'Login':
+        setIsAuthModalOpen(true);
         break;
       default:
         break;
@@ -172,6 +178,11 @@ export default function LoadScreen() {
         onDelete={(id) => {
           setDeletedSpaceIds((prev) => new Set(prev).add(id));
         }}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </>
   );
