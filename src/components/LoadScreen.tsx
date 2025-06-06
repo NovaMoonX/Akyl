@@ -2,11 +2,14 @@ import {
   ChevronRightIcon,
   FolderIcon,
   LogInIcon,
+  LogOutIcon,
   ShieldQuestionIcon,
   SquarePlusIcon,
   TrashIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { signOutUser } from '../firebase';
 import useBrowserSpaces from '../hooks/useBrowserSpaces';
 import {
   APP_SLOGAN,
@@ -27,7 +30,7 @@ interface MenuItem {
   label: string;
 }
 
-const items: MenuItem[] = [
+const DEFAULT_ITEMS: MenuItem[] = [
   {
     icon: <SquarePlusIcon />,
     label: 'New Space',
@@ -40,12 +43,9 @@ const items: MenuItem[] = [
     icon: <ShieldQuestionIcon />,
     label: 'Help',
   },
-  {
-    icon: <LogInIcon />,
-    label: 'Login',
-  },
 ];
 export default function LoadScreen() {
+  const { currentUser } = useAuth();
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
@@ -53,6 +53,26 @@ export default function LoadScreen() {
     new Set(),
   );
   const { spaces, limitMet } = useBrowserSpaces();
+
+  const items = useMemo(() => {
+    if (currentUser) {
+      return [
+        ...DEFAULT_ITEMS,
+        {
+          icon: <LogOutIcon />,
+          label: 'Sign Out',
+        },
+      ];
+    }
+
+    return [
+      ...DEFAULT_ITEMS,
+      {
+        icon: <LogInIcon />,
+        label: 'Login',
+      },
+    ];
+  }, [currentUser]);
 
   const handleClick = (label: string) => {
     switch (label) {
@@ -67,6 +87,9 @@ export default function LoadScreen() {
         break;
       case 'Login':
         setIsAuthModalOpen(true);
+        break;
+      case 'Sign Out':
+        signOutUser();
         break;
       default:
         break;
