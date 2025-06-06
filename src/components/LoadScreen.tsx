@@ -1,11 +1,15 @@
 import {
   ChevronRightIcon,
   FolderIcon,
+  LogInIcon,
+  LogOutIcon,
   ShieldQuestionIcon,
   SquarePlusIcon,
   TrashIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { signOutUser } from '../firebase';
 import useBrowserSpaces from '../hooks/useBrowserSpaces';
 import {
   APP_SLOGAN,
@@ -15,6 +19,7 @@ import {
 } from '../lib';
 import { join } from '../utils';
 import DreamTrigger from './DreamTrigger';
+import AuthModal from './modals/AuthModal';
 import DeleteSpaceModal from './modals/DeleteSpaceModal';
 import HelpModal from './modals/HelpModal';
 import ThemeToggle2 from './ui/ThemeToggle2';
@@ -25,7 +30,7 @@ interface MenuItem {
   label: string;
 }
 
-const items: MenuItem[] = [
+const DEFAULT_ITEMS: MenuItem[] = [
   {
     icon: <SquarePlusIcon />,
     label: 'New Space',
@@ -38,18 +43,36 @@ const items: MenuItem[] = [
     icon: <ShieldQuestionIcon />,
     label: 'Help',
   },
-  // {
-  //   icon: <LogInIcon />,
-  //   label: 'Login',
-  // },
 ];
 export default function LoadScreen() {
+  const { currentUser } = useAuth();
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
   const [deletedSpaceIds, setDeletedSpaceIds] = useState<Set<string>>(
     new Set(),
   );
   const { spaces, limitMet } = useBrowserSpaces();
+
+  const items = useMemo(() => {
+    if (currentUser) {
+      return [
+        ...DEFAULT_ITEMS,
+        {
+          icon: <LogOutIcon />,
+          label: 'Sign Out',
+        },
+      ];
+    }
+
+    return [
+      ...DEFAULT_ITEMS,
+      {
+        icon: <LogInIcon />,
+        label: 'Login',
+      },
+    ];
+  }, [currentUser]);
 
   const handleClick = (label: string) => {
     switch (label) {
@@ -61,6 +84,12 @@ export default function LoadScreen() {
         break;
       case 'Help':
         setIsHelpModalOpen(true);
+        break;
+      case 'Login':
+        setIsAuthModalOpen(true);
+        break;
+      case 'Sign Out':
+        signOutUser();
         break;
       default:
         break;
@@ -172,6 +201,11 @@ export default function LoadScreen() {
         onDelete={(id) => {
           setDeletedSpaceIds((prev) => new Set(prev).add(id));
         }}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </>
   );

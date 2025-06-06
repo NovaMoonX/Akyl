@@ -10,6 +10,7 @@ interface ModalProps {
   children: React.ReactNode;
   contentOnly?: boolean;
   centerTitle?: boolean;
+  hideCloseButton?: boolean;
 }
 
 export default function Modal({
@@ -19,6 +20,7 @@ export default function Modal({
   children,
   contentOnly = false,
   centerTitle = false,
+  hideCloseButton = false,
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -42,7 +44,7 @@ export default function Modal({
                 contentOnly && '!bg-transparent !shadow-none',
               )}
             >
-              {!contentOnly && (
+              {!contentOnly && (title || !hideCloseButton) && (
                 <div className='mb-4 flex items-center justify-between'>
                   {title && (
                     <h1
@@ -54,12 +56,14 @@ export default function Modal({
                       {title}
                     </h1>
                   )}
-                  <button
-                    onClick={onClose}
-                    className='rounded-md p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  >
-                    <X className='size-5 text-gray-500 2xl:size-6 dark:text-gray-400' />
-                  </button>
+                  {!hideCloseButton && (
+                    <button
+                      onClick={onClose}
+                      className='rounded-md p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    >
+                      <X className='size-5 text-gray-500 2xl:size-6 dark:text-gray-400' />
+                    </button>
+                  )}
                 </div>
               )}
               {children}
