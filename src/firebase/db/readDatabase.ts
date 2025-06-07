@@ -1,20 +1,19 @@
 import { FirebaseError } from '@firebase/util';
-import { ref, set } from 'firebase/database';
-import type { Space } from '../../lib';
+import { get, ref } from 'firebase/database';
 import { timeoutAsyncFunction } from '../../utils';
 import { db } from '../config';
 
-interface UpdateDatabaseParams {
-  space: Space;
+interface ReadDatabaseParams {
+  spaceId: string;
   testing?: boolean;
   userId?: string;
 }
 
-export default async function updateDatabase({
-  space,
+export default async function readDatabase<T>({
+  spaceId,
   userId,
   testing = false,
-}: UpdateDatabaseParams) {
+}: ReadDatabaseParams) {
   let result = null,
     error = null;
 
@@ -25,13 +24,11 @@ export default async function updateDatabase({
     return;
   }
 
-  const { id } = space;
-
   try {
-    const pathRef = ref(db, `${path}/${userSegment}/${id}`);
-    console.log('Updating DB for ', id); // REMOVE
-    await timeoutAsyncFunction(() => set(pathRef, space));
-    result = 'success';
+    const pathRef = ref(db, `${path}/${userSegment}/${spaceId}`);
+    console.log('Reading DB for ', spaceId); // REMOVE
+    const snapshot = await timeoutAsyncFunction(() => get(pathRef));
+    result = snapshot.val() as T;
   } catch (e) {
     error = e as FirebaseError;
   }
