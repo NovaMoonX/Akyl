@@ -9,6 +9,7 @@ import {
   type BudgetType,
 } from '../../lib';
 import { useSpace } from '../../store';
+import { setTabTitle } from '../../utils';
 import ExpenseForm from '../forms/ExpenseForm';
 import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
@@ -29,7 +30,7 @@ export default function HeaderBar() {
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
     updateSpace({ title: newTitle });
-    document.title = newTitle ? `Akyl - ${newTitle}` : 'Akyl';
+    setTabTitle(newTitle);
   };
 
   const handleOpenForm = (type: BudgetType) => {
@@ -77,7 +78,7 @@ export default function HeaderBar() {
 
         {currentUser?.email && (
           <small className='absolute bottom-0 left-0 translate-y-full'>
-            <span className='text-gray-500 dark:text-gray-400 mr-1 font-light'>
+            <span className='mr-1 font-light text-gray-500 dark:text-gray-400'>
               Logged in as
             </span>
             <span>{currentUser?.email}</span>

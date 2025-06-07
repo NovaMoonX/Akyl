@@ -32,19 +32,19 @@ export default function usePersistLocally() {
       },
     };
 
-    const saveLocally = () => {
+    const saveChanges = () => {
       localStorage.setItem(urlSpaceId, JSON.stringify(spaceToSave));
       lastSavedAt.current = Date.now();
     };
 
     // Save changes once it has been THROTTLE_TIME since the last save
-    if (lastSavedAt.current - Date.now() < THROTTLE_TIME) {
+    if (Date.now() - lastSavedAt.current < THROTTLE_TIME) {
       timeout = setTimeout(
-        saveLocally,
+        saveChanges,
         THROTTLE_TIME - (Date.now() - lastSavedAt.current),
       );
     } else {
-      saveLocally();
+      saveChanges();
     }
 
     return () => {
