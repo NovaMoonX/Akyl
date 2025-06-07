@@ -29,7 +29,6 @@ export default async function updateDatabase({
 
   try {
     const pathRef = ref(db, `${path}/${userSegment}/${id}`);
-    console.log('Updating DB for ', id); // REMOVE
     await timeoutAsyncFunction(() => set(pathRef, space));
     result = 'success';
   } catch (e) {

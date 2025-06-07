@@ -26,7 +26,6 @@ export default async function readDatabase<T>({
 
   try {
     const pathRef = ref(db, `${path}/${userSegment}/${spaceId}`);
-    console.log('Reading DB for ', spaceId); // REMOVE
     const snapshot = await timeoutAsyncFunction(() => get(pathRef));
     result = snapshot.val() as T;
   } catch (e) {

@@ -28,11 +28,9 @@ export default function usePersistCloud() {
     }
 
     const readAndUpdate = async () => {
-      // TASK: remove testing flag
       const response = await readDatabase<Space>({
         spaceId: space.id,
         userId: currentUser.uid,
-        testing: true,
       });
 
       if (response?.result) {
@@ -73,11 +71,9 @@ export default function usePersistCloud() {
     let timeout: NodeJS.Timeout;
 
     const saveChanges = () => {
-      // TASK: remove testing flag
       updateDatabase({
         space,
         userId: currentUser.uid,
-        testing: true,
       });
     };
 

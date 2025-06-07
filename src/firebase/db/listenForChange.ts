@@ -25,7 +25,6 @@ export default function listenForChanges({
     `${path}/${userSegment}/${spaceId}/metadata/updatedAt`,
   );
 
-  console.log('Listening for changes in ', spaceId); // REMOVE
   return onValue(spaceUpdateAtRef, (snapshot) => {
     const data = snapshot.val();
     onChange?.(Number(data));

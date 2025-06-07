@@ -25,11 +25,9 @@ export default function useLastCloudSync() {
       return;
     }
 
-    // TASK: remove testing flag
     const unsubscribe = listenForChanges({
       spaceId,
       userId: currentUser.uid,
-      testing: true,
       onChange: setLastSpaceSync,
     });
 
