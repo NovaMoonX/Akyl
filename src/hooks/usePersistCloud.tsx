@@ -7,7 +7,7 @@ import { setTabTitle } from '../utils';
 import useLastCloudSync from './useLastCloudSync';
 import useURL from './useURL';
 
-const CLOUD_THROTTLE_TIME = 1500; // 1.5 seconds
+const CLOUD_THROTTLE_TIME = 3000; // 3 seconds
 
 export default function usePersistCloud() {
   const { currentUser } = useAuth();
@@ -50,7 +50,13 @@ export default function usePersistCloud() {
     };
 
     readAndUpdate();
-  }, [lastSpaceSync, space, currentUser?.uid, setSpace]);
+  }, [
+    lastSpaceSync,
+    space?.id,
+    space?.metadata?.updatedAt,
+    currentUser?.uid,
+    setSpace,
+  ]);
 
   // Save space to cloud if there are local changes
   useEffect(() => {
@@ -76,7 +82,7 @@ export default function usePersistCloud() {
     };
 
     // Save changes once it has been CLOUD_THROTTLE_TIME since the last save
-    if (lastSpaceSync - Date.now() < CLOUD_THROTTLE_TIME) {
+    if (Date.now() - lastSpaceSync < CLOUD_THROTTLE_TIME) {
       timeout = setTimeout(
         saveChanges,
         CLOUD_THROTTLE_TIME - (Date.now() - lastSpaceSync),

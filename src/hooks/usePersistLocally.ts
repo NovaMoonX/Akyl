@@ -38,7 +38,7 @@ export default function usePersistLocally() {
     };
 
     // Save changes once it has been THROTTLE_TIME since the last save
-    if (lastSavedAt.current - Date.now() < THROTTLE_TIME) {
+    if (Date.now() - lastSavedAt.current < THROTTLE_TIME) {
       timeout = setTimeout(
         saveChanges,
         THROTTLE_TIME - (Date.now() - lastSavedAt.current),
