@@ -37,9 +37,16 @@ export default function usePersistCloud() {
 
       if (response?.result) {
         const fetchedSpace = response.result;
-        setSpace(fetchedSpace);
-        const newTitle = fetchedSpace?.title;
-        setTabTitle(newTitle);      }
+        const filledInSpace: Space = {
+          ...fetchedSpace,
+          title: fetchedSpace?.title || '',
+          incomes: fetchedSpace?.incomes || [],
+          expenses: fetchedSpace?.expenses || [],
+        };
+        setSpace(filledInSpace);
+        const newTitle = filledInSpace?.title;
+        setTabTitle(newTitle);
+      }
     };
 
     readAndUpdate();
