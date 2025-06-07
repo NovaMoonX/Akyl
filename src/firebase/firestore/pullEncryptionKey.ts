@@ -28,7 +28,7 @@ export default async function pullEncryptionKey({
         jwk,
         { name: 'AES-GCM' },
         true,
-        ['decrypt'],
+        ['decrypt', 'encrypt'],
       );
     }
   } catch (e) {

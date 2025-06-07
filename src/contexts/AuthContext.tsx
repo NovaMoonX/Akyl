@@ -11,7 +11,7 @@ import { getUserCryptoKey } from '../lib';
 
 type AuthContextType = {
   currentUser: User | null;
-  cryptoKey?: CryptoKey | null;
+  cryptoKey: CryptoKey | null;
 };
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);

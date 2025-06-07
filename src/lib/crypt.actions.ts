@@ -21,7 +21,11 @@ export async function getUserCryptoKey(
     return pullResponse.result;
   }
 
-  console.warn('No crypto key found for user:', userId, 'generating a new key.');
+  console.warn(
+    'No crypto key found for user:',
+    userId,
+    'generating a new key.',
+  );
   const key = await generateEncryptionKey();
   const pushResult = await pushEncryptionKey({ key, userId, testing });
 
@@ -34,17 +38,23 @@ export async function getUserCryptoKey(
 }
 
 export async function encryptData(data: object, key: CryptoKey) {
-  const iv = crypto.getRandomValues(new Uint8Array(12)); // Initialization vector
-  const encodedData = new TextEncoder().encode(JSON.stringify(data));
-  const encryptedData = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    encodedData,
-  );
-  // Convert ArrayBuffer and IV to Base64 strings for storage
-  const encryptedDataBase64 = arrayBufferToBase64(encryptedData);
-  const ivBase64 = arrayBufferToBase64(iv);
-  return { iv: ivBase64, encryptedData: encryptedDataBase64 };
+  try {
+    const iv = crypto.getRandomValues(new Uint8Array(12)); // Initialization vector
+    const encodedData = new TextEncoder().encode(JSON.stringify(data));
+    const encryptedData = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      encodedData,
+    );
+    console.log('encryptedData (X)', encryptedData); // REMOVE
+    // Convert ArrayBuffer and IV to Base64 strings for storage
+    const encryptedDataBase64 = arrayBufferToBase64(encryptedData);
+    const ivBase64 = arrayBufferToBase64(iv);
+    return { iv: ivBase64, encryptedData: encryptedDataBase64 };
+  } catch (error) {
+    console.error('Encryption failed:', error);
+    throw new Error('Encryption failed');
+  }
 }
 
 export async function decryptData(
@@ -52,15 +62,20 @@ export async function decryptData(
   key: CryptoKey,
   ivBase64: string,
 ) {
-  // Convert Base64 strings back to ArrayBuffer/Uint8Array
-  const encryptedData = base64ToArrayBuffer(encryptedDataBase64);
-  const iv = new Uint8Array(base64ToArrayBuffer(ivBase64));
-  const decryptedData = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    encryptedData,
-  );
-  return JSON.parse(new TextDecoder().decode(decryptedData));
+  try {
+    // Convert Base64 strings back to ArrayBuffer/Uint8Array
+    const encryptedData = base64ToArrayBuffer(encryptedDataBase64);
+    const iv = new Uint8Array(base64ToArrayBuffer(ivBase64));
+    const decryptedData = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      encryptedData,
+    );
+    return JSON.parse(new TextDecoder().decode(decryptedData));
+  } catch (error) {
+    console.error('Decryption failed:', error);
+    throw new Error('Decryption failed');
+  }
 }
 
 // Helper functions for Base64 conversion
