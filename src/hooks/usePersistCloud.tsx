@@ -75,11 +75,21 @@ export default function usePersistCloud() {
 
     let timeout: NodeJS.Timeout;
 
-    const saveChanges = () => {
-      updateDatabase({
+    const saveChanges = async () => {
+      const response = await updateDatabase({
         space,
         userId: currentUser.uid,
       });
+
+      if (response?.result) {
+        const spaceCreatedBy = space?.metadata?.createdBy;
+        if (!spaceCreatedBy) {
+          setSpace({
+            ...space,
+            metadata: { ...space.metadata, createdBy: currentUser.uid },
+          });
+        }
+      }
     };
 
     // Save changes once it has been CLOUD_THROTTLE_TIME since the last save
@@ -97,5 +107,5 @@ export default function usePersistCloud() {
         clearTimeout(timeout);
       }
     };
-  }, [space, currentUser?.uid, urlSpaceId, lastSpaceSync]);
+  }, [space, currentUser?.uid, urlSpaceId, lastSpaceSync, setSpace]);
 }
