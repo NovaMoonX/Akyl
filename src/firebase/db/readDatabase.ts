@@ -1,6 +1,6 @@
 import { FirebaseError } from '@firebase/util';
 import { get, ref } from 'firebase/database';
-import { decryptData } from '../../lib';
+import { decryptData, type Space } from '../../lib';
 import { timeoutAsyncFunction } from '../../utils';
 import { db } from '../config';
 
@@ -11,7 +11,7 @@ interface ReadDatabaseParams {
   userId?: string;
 }
 
-export default async function readDatabase<T>({
+export default async function readDatabase({
   spaceId,
   cryptoKey,
   userId,
@@ -27,7 +27,6 @@ export default async function readDatabase<T>({
     return;
   }
 
-  console.log('reading DB'); // REMOVE
   try {
     const pathRef = ref(db, `${path}/${userSegment}/${spaceId}`);
     const snapshot = await timeoutAsyncFunction(() => get(pathRef));
@@ -35,7 +34,12 @@ export default async function readDatabase<T>({
       iv: string;
       encryptedData: string;
     };
-    result = (await decryptData(encryptedData, cryptoKey, iv)) as T;
+    const decryptedData = (await decryptData(
+      encryptedData,
+      cryptoKey,
+      iv,
+    )) as Space;
+    result = decryptedData;
   } catch (e) {
     error = e as FirebaseError;
   }

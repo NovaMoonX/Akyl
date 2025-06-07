@@ -37,7 +37,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       getUserCryptoKey(user.uid, true)
         .then((key) => {
           if (key) {
-            console.log('key', key); // REMOVE
             setCryptoKey(key);
           } else {
             console.error('Failed to retrieve crypto key for user:', user.email);

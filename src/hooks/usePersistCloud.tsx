@@ -28,11 +28,10 @@ export default function usePersistCloud() {
     }
 
     const readAndUpdate = async () => {
-      const response = await readDatabase<Space>({
+      const response = await readDatabase({
         spaceId: space.id,
         userId: currentUser.uid,
         cryptoKey,
-        testing: true, // REMOVE
       });
 
       if (response?.result) {
@@ -83,7 +82,6 @@ export default function usePersistCloud() {
         space,
         userId: currentUser.uid,
         cryptoKey,
-        testing: true, // REMOVE
       });
 
       if (response?.result) {

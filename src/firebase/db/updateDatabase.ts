@@ -29,12 +29,16 @@ export default async function updateDatabase({
 
   const { id } = space;
 
-  console.log('updating DB'); // REMOVE
   try {
     const pathRef = ref(db, `${path}/${userSegment}/${id}`);
     const encryptedData = await encryptData(space, cryptoKey);
-    console.log('encryptedData', encryptedData); // REMOVE
-    await timeoutAsyncFunction(() => set(pathRef, encryptedData));
+    const dataWithMeta = {
+      ...encryptedData,
+      metadata: {
+        updatedAt: space?.metadata?.updatedAt || Date.now(),
+      },
+    };
+    await timeoutAsyncFunction(() => set(pathRef, dataWithMeta));
     result = 'success';
   } catch (e) {
     error = e as FirebaseError;

@@ -46,7 +46,6 @@ export async function encryptData(data: object, key: CryptoKey) {
       key,
       encodedData,
     );
-    console.log('encryptedData (X)', encryptedData); // REMOVE
     // Convert ArrayBuffer and IV to Base64 strings for storage
     const encryptedDataBase64 = arrayBufferToBase64(encryptedData);
     const ivBase64 = arrayBufferToBase64(iv);
