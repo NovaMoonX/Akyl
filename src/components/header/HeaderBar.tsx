@@ -1,6 +1,7 @@
 import { ArrowUpIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
+import { useAuth } from '../../contexts/AuthContext';
 import { useBudget } from '../../hooks';
 import {
   CashFlowVerbiagePairs,
@@ -14,6 +15,7 @@ import Dropdown from '../ui/Dropdown';
 import HeaderBarTimeWindow from './HeaderBarTimeWindow';
 
 export default function HeaderBar() {
+  const { currentUser } = useAuth();
   const [title, cashFlowVerbiage] = useSpace(
     useShallow((state) => [
       state.space.title,
@@ -71,6 +73,15 @@ export default function HeaderBar() {
               add your first budget item~
             </span>
           </div>
+        )}
+
+        {currentUser?.email && (
+          <small className='absolute bottom-0 left-0 translate-y-full'>
+            <span className='text-gray-500 dark:text-gray-400 mr-1 font-light'>
+              Logged in as
+            </span>
+            <span>{currentUser?.email}</span>
+          </small>
         )}
       </div>
 

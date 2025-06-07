@@ -51,7 +51,7 @@ export default function Dropdown({
     <div
       ref={dropdownRef}
       className={join(
-        'bg-surface-light dark:bg-surface-dark animate-slide-down absolute top-full mt-2 w-48 origin-top transform rounded-md py-1 shadow-lg transition-transform duration-1000 ease-out',
+        'bg-surface-light dark:bg-surface-dark animate-slide-down z-20 absolute top-full mt-2 w-48 origin-top transform rounded-md py-1 shadow-lg transition-transform duration-1000 ease-out',
         className,
       )}
     >

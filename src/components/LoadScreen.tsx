@@ -139,6 +139,16 @@ export default function LoadScreen() {
             );
           })}
 
+          {currentUser?.email && (
+            <small className='block min-w-full text-center whitespace-nowrap'>
+              <span className='mr-1 font-light text-gray-500 dark:text-gray-400'>
+                Logged in as
+              </span>
+              <br />
+              <span>{currentUser?.email}</span>
+            </small>
+          )}
+
           {spaces.filter((s) => !deletedSpaceIds.has(s.id)).length > 0 && (
             <div className='absolute -bottom-8 -left-1/2 w-96 translate-y-full'>
               <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
