@@ -29,8 +29,8 @@ export default function HeaderSave() {
         onMouseOver={() => setIsDropdownOpen(true)}
         onMouseLeave={handleMouseLeave}
       >
-        {!showCloudSync && <EarthIcon className='size-6 2xl:size-7' />}
-        {showCloudSync && <CloudIcon className='size-6 2xl:size-7' />}
+        {!showCloudSync && <EarthIcon className='size-7 2xl:size-8' />}
+        {showCloudSync && <CloudIcon className='size-7 2xl:size-8' />}
         <small className='text-xs'>saved</small>
       </div>
 
