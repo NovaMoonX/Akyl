@@ -18,7 +18,7 @@ export default function usePersistCloud() {
   // Update space from cloud if there are changes
   useEffect(() => {
     const spaceUpdatedAt = space?.metadata?.updatedAt;
-    if (!currentUser?.uid || !spaceUpdatedAt || !lastSpaceSync) {
+    if (!currentUser?.uid || !spaceUpdatedAt || lastSpaceSync === null) {
       return;
     }
 
@@ -59,7 +59,12 @@ export default function usePersistCloud() {
   // Save space to cloud if there are local changes
   useEffect(() => {
     const spaceUpdatedAt = space?.metadata?.updatedAt;
-    if (!currentUser?.uid || !urlSpaceId || !lastSpaceSync || !spaceUpdatedAt) {
+    if (
+      !currentUser?.uid ||
+      !urlSpaceId ||
+      lastSpaceSync === null ||
+      !spaceUpdatedAt
+    ) {
       return;
     }
 
