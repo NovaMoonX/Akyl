@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { readDatabase, updateDatabase } from '../firebase';
 import type { Space } from '../lib';
 import { useSpace } from '../store';
+import { setTabTitle } from '../utils';
 import useLastCloudSync from './useLastCloudSync';
 import useURL from './useURL';
 
@@ -37,7 +38,8 @@ export default function usePersistCloud() {
       if (response?.result) {
         const fetchedSpace = response.result;
         setSpace(fetchedSpace);
-      }
+        const newTitle = fetchedSpace?.title;
+        setTabTitle(newTitle);      }
     };
 
     readAndUpdate();

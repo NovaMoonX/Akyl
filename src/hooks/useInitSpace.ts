@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Space } from '../lib';
 import { useSpace } from '../store';
 import useURL from './useURL';
+import { setTabTitle } from '../utils';
 
 export default function useInitSpace() {
   const { setSpace } = useSpace();
@@ -29,7 +30,7 @@ export default function useInitSpace() {
       setShowLoadScreen(false);
 
       if (space.title) {
-        document.title = `Akyl - ${space.title}`;
+        setTabTitle(space.title);
       }
     }
   }, [urlSpaceId, setSpace]);
