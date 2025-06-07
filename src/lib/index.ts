@@ -1,5 +1,4 @@
 // App
-export { decryptData, encryptData, generateEncryptionKey } from './app.actions';
 export {
   APP_SLOGAN,
   APP_SPACE_LIMIT,
@@ -22,6 +21,9 @@ export type {
   Expense,
   Income,
 } from './budget.types';
+
+// Cryptography
+export { decryptData, encryptData, getUserCryptoKey } from './crypt.actions';
 
 // File
 export { exportFile, importFile } from './file.actions';
