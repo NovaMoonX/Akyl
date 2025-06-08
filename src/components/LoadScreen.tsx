@@ -64,13 +64,20 @@ export default function LoadScreen() {
       chosenSpaces = syncedSpaces;
 
       // Add in any local spaces that are not synced yet
+      /* This serves two purposes:
+       * 1. It allows users to see their local spaces that haven't been synced yet.
+       * 2. It ensures that all synced spaces that were saved locally when app mounts
+       *   are still visible, as they will not be fetched again in `useSyncAllSpaces`
+       *   (due to `fetchAllSpacesAndUploadToLocalStorage` only being called when local
+       *   and server timestamps for `ALL_SPACES_LAST_SYNC_KEY` do not match).
+       */
       localSpaces.forEach((localSpace) => {
         if (!syncedSpacesMap[localSpace.id]) {
           chosenSpaces.push(localSpace);
         }
       });
     } else {
-      chosenSpaces = localSpaces.filter(space => !space.metadata?.createdBy);
+      chosenSpaces = localSpaces.filter((space) => !space.metadata?.createdBy);
     }
 
     const filteredSpaces = chosenSpaces.filter(

@@ -30,7 +30,6 @@ export default function useBrowserSpaces() {
             typeof parsed.title === 'string' &&
             parsed.metadata &&
             parsed.config &&
-            parsed.metadata?.createdBy === '' &&
             Array.isArray(parsed.incomes) &&
             Array.isArray(parsed.expenses)
           ) {
