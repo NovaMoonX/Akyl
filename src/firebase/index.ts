@@ -1,4 +1,5 @@
 // Database
+export { default as deleteDatabaseItem } from './db/deleteDatabaseItem';
 export { default as listenForChanges } from './db/listenForChange';
 export { default as readDatabase } from './db/readDatabase';
 export { default as updateDatabase } from './db/updateDatabase';

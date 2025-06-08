@@ -58,7 +58,7 @@ export {
   duplicateSpace,
   generateExpenseNodesAndEdges,
   generateIncomeNodesAndEdges,
-  removeLocalSpace,
+  deleteSpace,
 } from './space.actions';
 export {
   CashFlowVerbiagePairs,

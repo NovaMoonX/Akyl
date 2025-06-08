@@ -1,4 +1,5 @@
-import { removeLocalSpace } from '../../lib';
+import { useAuth } from '../../contexts/AuthContext';
+import { deleteSpace } from '../../lib';
 import ConfirmationModal, {
   type ConfirmationModalProps,
 } from './ConfirmationModal';
@@ -17,9 +18,10 @@ export default function DeleteSpaceModal({
   onDelete,
   ...confirmationModalProps
 }: DeleteSpaceModalProps) {
-  const handleConfirm = () => {
+  const { currentUser } = useAuth();
+  const handleConfirm = async () => {
     if (spaceId) {
-      removeLocalSpace(spaceId);
+      await deleteSpace(spaceId, currentUser?.uid);
       confirmationModalProps.onClose();
       onDelete?.(spaceId);
     }
