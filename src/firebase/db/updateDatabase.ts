@@ -1,56 +1,48 @@
 import { FirebaseError } from '@firebase/util';
 import { ref, set } from 'firebase/database';
-import { encryptData, type Space } from '../../lib';
 import { timeoutAsyncFunction } from '../../utils';
 import { db } from '../config';
 
 interface UpdateDatabaseParams {
-  space: Space;
-  cryptoKey: CryptoKey | null;
-  testing?: boolean;
+  data: unknown;
   userId?: string;
+  itemPath: string;
 }
 
 export default async function updateDatabase({
-  space,
-  cryptoKey,
+  data,
   userId,
-  testing = false,
+  itemPath,
 }: UpdateDatabaseParams) {
   let result = null,
     error = null;
 
-  const path = testing ? 'test' : 'users';
-  const userSegment = testing ? 'test_user' : userId;
-
-  if (!userSegment) {
+  if (!data) {
     return {
       result,
-      error: new FirebaseError(
-        '',
-        'userSegment is required to update database',
-      ),
-    };
-  }
-  if (!cryptoKey) {
-    return {
-      result,
-      error: new FirebaseError('', 'cryptoKey is required to update database'),
+      error: new FirebaseError('', 'data is required to update database'),
     };
   }
 
-  const { id } = space;
+  if (!userId) {
+    return {
+      result,
+      error: new FirebaseError('', 'userId is required to update database'),
+    };
+  }
+
+  if (!itemPath) {
+    return {
+      result,
+      error: new FirebaseError('', 'itemPath is required to update database'),
+    };
+  }
 
   try {
-    const pathRef = ref(db, `${path}/${userSegment}/${id}`);
-    const encryptedData = await encryptData(space, cryptoKey);
-    const dataWithMeta = {
-      ...encryptedData,
-      metadata: {
-        updatedAt: space?.metadata?.updatedAt || Date.now(),
-      },
-    };
-    await timeoutAsyncFunction(() => set(pathRef, dataWithMeta));
+    // Update space in the database
+    const pathRef = ref(db, `users/${userId}/${itemPath}`);
+    console.log('updating DB'); // REMOVE
+    await timeoutAsyncFunction(() => set(pathRef, data));
     result = 'success';
   } catch (e) {
     error = e as FirebaseError;

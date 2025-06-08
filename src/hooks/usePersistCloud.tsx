@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { readDatabase, updateDatabase } from '../firebase';
-import type { Space } from '../lib';
+import { readDatabase } from '../firebase';
+import { syncSpace, type Space } from '../lib';
 import { useSpace } from '../store';
 import { setTabTitle } from '../utils';
 import useLastSpaceCloudSync from './useLastSpaceCloudSync';
@@ -84,13 +84,12 @@ export default function usePersistCloud() {
     let timeout: NodeJS.Timeout;
 
     const saveChanges = async () => {
-      const response = await updateDatabase({
+      syncSpace({
         space,
-        userId: currentUser.uid,
         cryptoKey,
-      });
-
-      if (response?.result) {
+        userId: currentUser.uid,
+      }).then(() => {
+        // Set createdBy metadata if it doesn't exist. It represents if the space is synced.
         const spaceCreatedBy = space?.metadata?.createdBy;
         if (!spaceCreatedBy) {
           setSpace({
@@ -98,7 +97,7 @@ export default function usePersistCloud() {
             metadata: { ...space.metadata, createdBy: currentUser.uid },
           });
         }
-      }
+      });
     };
 
     // Save changes once it has been CLOUD_THROTTLE_TIME since the last save
