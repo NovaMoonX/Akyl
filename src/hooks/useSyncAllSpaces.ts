@@ -1,15 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { listenForChanges } from '../firebase';
 import {
   ALL_SPACES_LAST_SYNC_KEY,
   fetchAllSpacesAndUploadToLocalStorage,
+  type Space,
 } from '../lib';
 import useURL from './useURL';
 
 export default function useSyncAllSpaces() {
   const { currentUser, cryptoKey } = useAuth();
   const { spaceId: urlSpaceId } = useURL();
+  const [spaces, setSpaces] = useState<Space[]>();
+  // TASK: add loading state
 
   useEffect(() => {
     if (!currentUser?.uid) {
@@ -34,7 +37,7 @@ export default function useSyncAllSpaces() {
         userId: currentUser.uid,
         cryptoKey,
       });
-      console.log('allFetchedSpaces', fetchedSpaces); // REMOVE
+      setSpaces(fetchedSpaces);
     };
 
     const unsubscribe = listenForChanges({
@@ -49,4 +52,13 @@ export default function useSyncAllSpaces() {
       }
     };
   }, [currentUser, urlSpaceId, cryptoKey]);
+
+  const spacesMap = useMemo(() => {
+    return (spaces ?? []).reduce<Record<string, Space>>((map, space) => {
+      map[space.id] = space;
+      return map;
+    }, {});
+  }, [spaces]);
+
+  return { spaces: spaces ?? [], spacesMap };
 }

@@ -11,11 +11,13 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { signOutUser } from '../firebase';
 import useBrowserSpaces from '../hooks/useBrowserSpaces';
+import useSyncAllSpaces from '../hooks/useSyncAllSpaces';
 import {
   APP_SLOGAN,
   APP_SPACE_LIMIT_REACHED,
   createNewSpace,
   importFile,
+  type Space,
 } from '../lib';
 import { join } from '../utils';
 import DreamTrigger from './DreamTrigger';
@@ -52,7 +54,46 @@ export default function LoadScreen() {
   const [deletedSpaceIds, setDeletedSpaceIds] = useState<Set<string>>(
     new Set(),
   );
-  const { spaces, limitMet } = useBrowserSpaces();
+  const { spaces: localSpaces, limitMet } = useBrowserSpaces();
+  const { spaces: syncedSpaces, spacesMap: syncedSpacesMap } =
+    useSyncAllSpaces();
+
+  const spaces = useMemo(() => {
+    let chosenSpaces: Space[] = [];
+    if (currentUser?.uid) {
+      chosenSpaces = syncedSpaces;
+
+      // Add in any local spaces that are not synced yet and created by the current user
+      localSpaces.forEach((localSpace) => {
+        const createdByUser =
+          localSpace?.metadata?.createdBy === currentUser.uid;
+        if (!syncedSpacesMap[localSpace.id] && createdByUser) {
+          chosenSpaces.push(localSpace);
+        }
+      });
+    } else {
+      chosenSpaces = localSpaces;
+    }
+
+    const filteredSpaces = chosenSpaces.filter(
+      (s) => !deletedSpaceIds.has(s.id),
+    );
+    const sortedSpaces = filteredSpaces.sort((a, b) => {
+      const aUpdated = a.metadata?.updatedAt ?? 0;
+      const bUpdated = b.metadata?.updatedAt ?? 0;
+      if (bUpdated !== aUpdated) {
+        return bUpdated - aUpdated;
+      }
+      return a.title.localeCompare(b.title);
+    });
+    return sortedSpaces;
+  }, [
+    localSpaces,
+    syncedSpaces,
+    syncedSpacesMap,
+    currentUser?.uid,
+    deletedSpaceIds,
+  ]);
 
   const items = useMemo(() => {
     if (currentUser) {
@@ -149,7 +190,7 @@ export default function LoadScreen() {
             </small>
           )}
 
-          {spaces.filter((s) => !deletedSpaceIds.has(s.id)).length > 0 && (
+          {spaces.length > 0 && (
             <div className='absolute -bottom-8 -left-1/2 w-96 translate-y-full'>
               <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
                 Previous Spaces
@@ -157,36 +198,34 @@ export default function LoadScreen() {
               <div>
                 <div className='max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
                   <div className='grid grid-cols-2 gap-1'>
-                    {spaces
-                      .filter((s) => !deletedSpaceIds.has(s.id))
-                      .map((space) => (
-                        <div
-                          key={space.id}
-                          className='group relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
+                    {spaces.map((space) => (
+                      <div
+                        key={space.id}
+                        className='group relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
+                      >
+                        <a
+                          role='button'
+                          href={`/${space.id}`}
+                          className='flex flex-1 flex-row items-center gap-1'
                         >
-                          <a
-                            role='button'
-                            href={`/${space.id}`}
-                            className='flex flex-1 flex-row items-center gap-1'
+                          <ChevronRightIcon className='size-4' />
+                          <span
+                            className={join(
+                              'w-28 truncate',
+                              space.title.length === 0 && 'opacity-70',
+                            )}
                           >
-                            <ChevronRightIcon className='size-4' />
-                            <span
-                              className={join(
-                                'w-28 truncate',
-                                space.title.length === 0 && 'opacity-70',
-                              )}
-                            >
-                              {space.title || 'Untitled Space'}
-                            </span>
-                          </a>
-                          <TrashIcon
-                            role='button'
-                            className='ml-2 size-4 shrink-0 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
-                            aria-label='Delete Space'
-                            onClick={() => setDeleteSpaceId(space.id)}
-                          />
-                        </div>
-                      ))}
+                            {space.title || 'Untitled Space'}
+                          </span>
+                        </a>
+                        <TrashIcon
+                          role='button'
+                          className='ml-2 size-4 shrink-0 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
+                          aria-label='Delete Space'
+                          onClick={() => setDeleteSpaceId(space.id)}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

@@ -41,7 +41,6 @@ export default async function updateDatabase({
   try {
     // Update space in the database
     const pathRef = ref(db, `users/${userId}/${itemPath}`);
-    console.log('updating DB'); // REMOVE
     await timeoutAsyncFunction(() => set(pathRef, data));
     result = 'success';
   } catch (e) {

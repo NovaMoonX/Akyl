@@ -38,8 +38,6 @@ export default function usePersistCloud() {
         cryptoKey,
       });
 
-      console.log('fetchedSpace', fetchedSpace); // REMOVE
-
       if (fetchedSpace) {
         const filledInSpace: Space = {
           ...fetchedSpace,
@@ -84,19 +82,10 @@ export default function usePersistCloud() {
     let timeout: NodeJS.Timeout;
 
     const saveChanges = async () => {
-      syncSpace({
+      await syncSpace({
         space,
         cryptoKey,
         userId: currentUser.uid,
-      }).then(() => {
-        // Set createdBy metadata if it doesn't exist. It represents if the space is synced.
-        const spaceCreatedBy = space?.metadata?.createdBy;
-        if (!spaceCreatedBy) {
-          setSpace({
-            ...space,
-            metadata: { ...space.metadata, createdBy: currentUser.uid },
-          });
-        }
       });
     };
 
