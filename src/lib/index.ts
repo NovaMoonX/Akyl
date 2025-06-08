@@ -31,7 +31,7 @@ export { exportFile, importFile } from './file.actions';
 export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 
 // Firebase
-export { syncSpace } from './firebase.actions';
+export { fetchSpace, syncSpace } from './firebase.actions';
 export { ALL_SPACES_LAST_SYNC_KEY } from './firebase.constants';
 
 // Node

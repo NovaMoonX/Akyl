@@ -1,4 +1,5 @@
 import { pullEncryptionKey, pushEncryptionKey } from '../firebase';
+import type { EncryptionObject } from './crypt.types';
 
 async function generateEncryptionKey() {
   return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, [
@@ -32,7 +33,10 @@ export async function getUserCryptoKey(
   return key;
 }
 
-export async function encryptData(data: object, key: CryptoKey) {
+export async function encryptData(
+  data: object,
+  key: CryptoKey,
+): Promise<EncryptionObject> {
   try {
     const iv = crypto.getRandomValues(new Uint8Array(12)); // Initialization vector
     const encodedData = new TextEncoder().encode(JSON.stringify(data));

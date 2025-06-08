@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { readDatabase } from '../firebase';
-import { syncSpace, type Space } from '../lib';
+import { fetchSpace, syncSpace, type Space } from '../lib';
 import { useSpace } from '../store';
 import { setTabTitle } from '../utils';
 import useLastSpaceCloudSync from './useLastSpaceCloudSync';
@@ -33,14 +32,15 @@ export default function usePersistCloud() {
     }
 
     const readAndUpdate = async () => {
-      const response = await readDatabase({
+      const fetchedSpace = await fetchSpace({
         spaceId: space.id,
         userId: currentUser.uid,
         cryptoKey,
       });
 
-      if (response?.result) {
-        const fetchedSpace = response.result;
+      console.log('fetchedSpace', fetchedSpace); // REMOVE
+
+      if (fetchedSpace) {
         const filledInSpace: Space = {
           ...fetchedSpace,
           title: fetchedSpace?.title || '',
