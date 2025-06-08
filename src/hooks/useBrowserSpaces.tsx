@@ -46,10 +46,8 @@ export default function useBrowserSpaces() {
     };
 
     fetchSpaces();
-    const interval = setInterval(fetchSpaces, 5000);
     return () => {
       isMounted.current = false;
-      clearInterval(interval);
     };
   }, []);
 
