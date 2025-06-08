@@ -5,7 +5,7 @@ import { listenForChanges } from '../firebase';
 import { useSpace } from '../store';
 import useURL from './useURL';
 
-export default function useLastCloudSync() {
+export default function useLastSpaceCloudSync() {
   const { currentUser } = useAuth();
   const spaceId = useSpace(useShallow((state) => state?.space?.id));
   const { spaceId: urlSpaceId } = useURL();
@@ -26,7 +26,7 @@ export default function useLastCloudSync() {
     }
 
     const unsubscribe = listenForChanges({
-      spaceId,
+      itemPath: `${spaceId}/metadata/updatedAt`,
       userId: currentUser.uid,
       onChange: setLastSpaceSync,
     });

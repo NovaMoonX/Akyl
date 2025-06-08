@@ -16,7 +16,7 @@ import {
 } from './space.constants';
 import type { Space } from './space.types';
 
-export function createNewSpace() {
+export function createNewSpace(userId?: string) {
   const id = generateId('space');
   const timestamp = Date.now();
   const theme = getTheme();
@@ -26,7 +26,7 @@ export function createNewSpace() {
     title: '',
     description: '',
     metadata: {
-      createdBy: '',
+      createdBy: userId ?? '',
       createdAt: timestamp,
       updatedAt: timestamp,
       fileName: '',

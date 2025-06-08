@@ -40,16 +40,7 @@ export default function useBrowserSpaces() {
         }
       }
       if (isMounted.current) {
-        // Sort spaces by updatedAt and title
-        const sortedSpaces = foundSpaces.sort((a, b) => {
-          const aUpdated = a.metadata?.updatedAt ?? 0;
-          const bUpdated = b.metadata?.updatedAt ?? 0;
-          if (bUpdated !== aUpdated) {
-            return bUpdated - aUpdated;
-          }
-          return a.title.localeCompare(b.title);
-        });
-        setSpaces(sortedSpaces);
+        setSpaces(foundSpaces);
       }
     };
 

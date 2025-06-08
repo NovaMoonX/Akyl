@@ -132,7 +132,7 @@ export default function HeaderMenu() {
           title: 'Create New Space',
           message:
             'Any unsaved changes will be lost. Are you sure you want to create a new space?',
-          onConfirm: createNewSpace,
+          onConfirm: () => createNewSpace(currentUser?.uid),
         });
         break;
       case 'Open':

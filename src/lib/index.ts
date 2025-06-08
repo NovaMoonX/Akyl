@@ -30,6 +30,14 @@ export { exportFile, importFile } from './file.actions';
 
 export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 
+// Firebase
+export {
+  fetchAllSpacesAndUploadToLocalStorage,
+  fetchSpace,
+  syncSpace,
+} from './firebase.actions';
+export { ALL_SPACES_LAST_SYNC_KEY } from './firebase.constants';
+
 // Node
 export { EDGE_ANIMATION_TIME, NODE_CORE_ID } from './node.constants';
 export type {

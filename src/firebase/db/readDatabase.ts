@@ -1,54 +1,51 @@
 import { FirebaseError } from '@firebase/util';
 import { get, ref } from 'firebase/database';
-import { decryptData, type Space } from '../../lib';
 import { timeoutAsyncFunction } from '../../utils';
 import { db } from '../config';
 
 interface ReadDatabaseParams {
-  spaceId: string;
-  cryptoKey: CryptoKey | null;
-  testing?: boolean;
+  itemPath: string;
   userId?: string;
 }
 
-export default async function readDatabase({
-  spaceId,
-  cryptoKey,
+export default async function readDatabase<T>({
+  itemPath,
   userId,
-  testing = false,
 }: ReadDatabaseParams) {
   let result = null,
     error = null;
 
-  const path = testing ? 'test' : 'users';
-  const userSegment = testing ? 'test_user' : userId;
+  if (!userId) {
+    return {
+      result,
+      error: new FirebaseError('', 'userId is required to read database'),
+    };
+  }
 
-  if (!userSegment) {
+  if (
+    itemPath === undefined ||
+    itemPath === null ||
+    typeof itemPath !== 'string'
+  ) {
     return {
       result,
-      error: new FirebaseError('', 'userSegment is required to read database'),
+      error: new FirebaseError('', 'itemPath is required to read database'),
     };
   }
-  if (!cryptoKey) {
-    return {
-      result,
-      error: new FirebaseError('', 'cryptoKey is required to read database'),
-    };
+
+  if (itemPath === '') {
+    console.warn(
+      'itemPath is empty, reading root of the database for user:',
+      userId,
+    );
   }
+
+  const formattedItemPath = itemPath === '' ? '' : `/${itemPath}`;
 
   try {
-    const pathRef = ref(db, `${path}/${userSegment}/${spaceId}`);
+    const pathRef = ref(db, `users/${userId}${formattedItemPath}`);
     const snapshot = await timeoutAsyncFunction(() => get(pathRef));
-    const { iv, encryptedData } = snapshot.val() as {
-      iv: string;
-      encryptedData: string;
-    };
-    const decryptedData = (await decryptData(
-      encryptedData,
-      cryptoKey,
-      iv,
-    )) as Space;
-    result = decryptedData;
+    result = snapshot.val() as T;
   } catch (e) {
     error = e as FirebaseError;
   }

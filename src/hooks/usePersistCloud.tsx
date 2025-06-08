@@ -1,24 +1,28 @@
 import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { readDatabase, updateDatabase } from '../firebase';
-import type { Space } from '../lib';
+import { fetchSpace, syncSpace, type Space } from '../lib';
 import { useSpace } from '../store';
 import { setTabTitle } from '../utils';
-import useLastCloudSync from './useLastCloudSync';
+import useLastSpaceCloudSync from './useLastSpaceCloudSync';
 import useURL from './useURL';
 
 const CLOUD_THROTTLE_TIME = 3000; // 3 seconds
 
 export default function usePersistCloud() {
   const { currentUser, cryptoKey } = useAuth();
-  const { lastSpaceSync } = useLastCloudSync();
+  const { lastSpaceSync } = useLastSpaceCloudSync();
   const { space, setSpace } = useSpace();
   const { spaceId: urlSpaceId } = useURL();
 
   // Update space from cloud if there are changes
   useEffect(() => {
     const spaceUpdatedAt = space?.metadata?.updatedAt;
-    if (!currentUser?.uid || !spaceUpdatedAt || lastSpaceSync === null) {
+    if (
+      !currentUser?.uid ||
+      !urlSpaceId ||
+      !spaceUpdatedAt ||
+      lastSpaceSync === null
+    ) {
       return;
     }
 
@@ -28,14 +32,13 @@ export default function usePersistCloud() {
     }
 
     const readAndUpdate = async () => {
-      const response = await readDatabase({
+      const fetchedSpace = await fetchSpace({
         spaceId: space.id,
         userId: currentUser.uid,
         cryptoKey,
       });
 
-      if (response?.result) {
-        const fetchedSpace = response.result;
+      if (fetchedSpace) {
         const filledInSpace: Space = {
           ...fetchedSpace,
           title: fetchedSpace?.title || '',
@@ -56,6 +59,7 @@ export default function usePersistCloud() {
     currentUser?.uid,
     setSpace,
     cryptoKey,
+    urlSpaceId,
   ]);
 
   // Save space to cloud if there are local changes
@@ -78,21 +82,11 @@ export default function usePersistCloud() {
     let timeout: NodeJS.Timeout;
 
     const saveChanges = async () => {
-      const response = await updateDatabase({
+      await syncSpace({
         space,
-        userId: currentUser.uid,
         cryptoKey,
+        userId: currentUser.uid,
       });
-
-      if (response?.result) {
-        const spaceCreatedBy = space?.metadata?.createdBy;
-        if (!spaceCreatedBy) {
-          setSpace({
-            ...space,
-            metadata: { ...space.metadata, createdBy: currentUser.uid },
-          });
-        }
-      }
     };
 
     // Save changes once it has been CLOUD_THROTTLE_TIME since the last save
