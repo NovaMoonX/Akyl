@@ -72,7 +72,7 @@ export function duplicateSpace(spaceId: string) {
   window.location.href = `/${newSpaceId}`;
 }
 
-export function removeLocalSpace(spaceId: string, redirect = true) {
+export function deleteSpace(spaceId: string, redirect = true) {
   if (!spaceId) return;
 
   if (localStorage.getItem(spaceId)) {

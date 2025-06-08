@@ -1,4 +1,4 @@
-import { removeLocalSpace } from '../../lib';
+import { deleteSpace } from '../../lib';
 import ConfirmationModal, {
   type ConfirmationModalProps,
 } from './ConfirmationModal';
@@ -19,7 +19,7 @@ export default function DeleteSpaceModal({
 }: DeleteSpaceModalProps) {
   const handleConfirm = () => {
     if (spaceId) {
-      removeLocalSpace(spaceId);
+      deleteSpace(spaceId);
       confirmationModalProps.onClose();
       onDelete?.(spaceId);
     }
