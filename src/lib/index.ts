@@ -1,4 +1,5 @@
 // App
+export { postSignOutProcess } from './app.actions';
 export {
   APP_SLOGAN,
   APP_SPACE_LIMIT,

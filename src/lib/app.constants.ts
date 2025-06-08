@@ -7,3 +7,5 @@ export const APP_SPACE_LIMIT_REACHED = `You can only have ${APP_SPACE_LIMIT} spa
 
 export const URL_PARAM_FORM = 'form';
 export const URL_PARAM_ID = 'id';
+
+export const LOCAL_STORAGE_USER_ID = 'userId';

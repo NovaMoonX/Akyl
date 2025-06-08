@@ -63,16 +63,14 @@ export default function LoadScreen() {
     if (currentUser?.uid) {
       chosenSpaces = syncedSpaces;
 
-      // Add in any local spaces that are not synced yet and created by the current user
+      // Add in any local spaces that are not synced yet
       localSpaces.forEach((localSpace) => {
-        const createdByUser =
-          localSpace?.metadata?.createdBy === currentUser.uid;
-        if (!syncedSpacesMap[localSpace.id] && createdByUser) {
+        if (!syncedSpacesMap[localSpace.id]) {
           chosenSpaces.push(localSpace);
         }
       });
     } else {
-      chosenSpaces = localSpaces;
+      chosenSpaces = localSpaces.filter((space) => !space?.metadata?.createdBy);
     }
 
     const filteredSpaces = chosenSpaces.filter(

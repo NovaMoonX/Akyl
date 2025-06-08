@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { auth } from '../firebase/config';
 import { getUserCryptoKey } from '../lib';
+import { LOCAL_STORAGE_USER_ID } from '../lib/app.constants';
 
 type AuthContextType = {
   currentUser: User | null;
@@ -30,15 +31,20 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
       if (!user) {
         setCryptoKey(null);
+        localStorage.removeItem(LOCAL_STORAGE_USER_ID);
         return;
       }
 
+      localStorage.setItem(LOCAL_STORAGE_USER_ID, user.uid);
       getUserCryptoKey(user.uid)
         .then((key) => {
           if (key) {
             setCryptoKey(key);
           } else {
-            console.error('Failed to retrieve crypto key for user:', user.email);
+            console.error(
+              'Failed to retrieve crypto key for user:',
+              user.email,
+            );
           }
         })
         .catch((error) => {
