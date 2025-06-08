@@ -48,6 +48,29 @@ export async function syncSpace({
   }
 }
 
+async function processedEncryptedSpace(
+  spaceData: EncryptionObjectWithMetadata,
+  cryptoKey: CryptoKey,
+  id: string,
+): Promise<Space | undefined> {
+  if (!spaceData.encryptedData || !spaceData.iv) {
+    console.warn('Incomplete encrypted data for space:', id);
+    return;
+  }
+
+  const { encryptedData, iv } = spaceData;
+  const decryptedData = await decryptData(encryptedData, cryptoKey, iv);
+  const decryptedSpace = decryptedData as Space;
+
+  const metaTitle = spaceData?.metadata?.title;
+  const space: Space = {
+    ...decryptedSpace,
+    title: metaTitle || decryptedSpace.title || '',
+  };
+
+  return space;
+}
+
 export async function fetchSpace({
   spaceId,
   userId,
@@ -75,20 +98,65 @@ export async function fetchSpace({
     return;
   }
 
-  if (!spaceReadResponse.result.encryptedData || !spaceReadResponse.result.iv) {
-    console.warn('Incomplete encrypted data for space:', spaceId);
+  const processedSpace = await processedEncryptedSpace(
+    spaceReadResponse.result,
+    cryptoKey,
+    spaceId,
+  );
+  return processedSpace;
+}
+
+export async function fetchAllSpacesAndUploadToLocalStorage({
+  userId,
+  cryptoKey,
+}: {
+  userId?: string;
+  cryptoKey?: CryptoKey | null;
+}) {
+  if (!cryptoKey) {
+    throw new Error('cryptoKey is required to read database for all spaces');
+  }
+
+  // Fetch all space IDs (assuming a function or a way to list all space IDs exists)
+  // You may need to implement or adjust this part based on your DB structure
+  const allSpacesResponse = await readDatabase<{
+    [key: string]: EncryptionObjectWithMetadata;
+  }>({
+    itemPath: '',
+    userId,
+  });
+
+  if (allSpacesResponse.error) {
+    throw allSpacesResponse.error;
+  }
+
+  if (!allSpacesResponse.result) {
+    console.warn('No spaces found for user:', userId);
     return;
   }
 
-  const { encryptedData, iv } = spaceReadResponse.result;
-  const decryptedData = await decryptData(encryptedData, cryptoKey, iv);
-  const decryptedSpace = decryptedData as Space;
+  const allSpaces: Space[] = [];
 
-  const metaTitle = spaceReadResponse?.result?.metadata?.title;
-  const space: Space = {
-    ...decryptedSpace,
-    title: metaTitle || decryptedSpace.title || '',
-  };
+  for (const [spaceId, spaceData] of Object.entries(allSpacesResponse.result)) {
+    if (spaceId === ALL_SPACES_LAST_SYNC_KEY) {
+      // Skip the last sync key
+      continue;
+    }
 
-  return space;
+    const processedSpace = await processedEncryptedSpace(
+      spaceData,
+      cryptoKey,
+      spaceId,
+    );
+
+    if (!processedSpace) {
+      console.warn('Failed to process space:', spaceId);
+      continue;
+    }
+    allSpaces.push(processedSpace);
+    localStorage.setItem(spaceId, JSON.stringify(processedSpace));
+  }
+
+  localStorage.setItem(ALL_SPACES_LAST_SYNC_KEY, String(Date.now()));
+  return allSpaces;
 }
