@@ -3,6 +3,10 @@ export { default as listenForChanges } from './db/listenForChange';
 export { default as readDatabase } from './db/readDatabase';
 export { default as updateDatabase } from './db/updateDatabase';
 
+// Firestore
+export { default as pullEncryptionKey } from './firestore/pullEncryptionKey';
+export { default as pushEncryptionKey } from './firestore/pushEncryptionKey';
+
 // Auth
 export { default as authWithGoogle } from './auth/authWithGoogle';
 export { default as logIn } from './auth/logIn';

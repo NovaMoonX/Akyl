@@ -10,7 +10,7 @@ import useURL from './useURL';
 const CLOUD_THROTTLE_TIME = 3000; // 3 seconds
 
 export default function usePersistCloud() {
-  const { currentUser } = useAuth();
+  const { currentUser, cryptoKey } = useAuth();
   const { lastSpaceSync } = useLastCloudSync();
   const { space, setSpace } = useSpace();
   const { spaceId: urlSpaceId } = useURL();
@@ -28,9 +28,10 @@ export default function usePersistCloud() {
     }
 
     const readAndUpdate = async () => {
-      const response = await readDatabase<Space>({
+      const response = await readDatabase({
         spaceId: space.id,
         userId: currentUser.uid,
+        cryptoKey,
       });
 
       if (response?.result) {
@@ -54,6 +55,7 @@ export default function usePersistCloud() {
     space?.metadata?.updatedAt,
     currentUser?.uid,
     setSpace,
+    cryptoKey,
   ]);
 
   // Save space to cloud if there are local changes
@@ -79,6 +81,7 @@ export default function usePersistCloud() {
       const response = await updateDatabase({
         space,
         userId: currentUser.uid,
+        cryptoKey,
       });
 
       if (response?.result) {
@@ -107,5 +110,5 @@ export default function usePersistCloud() {
         clearTimeout(timeout);
       }
     };
-  }, [space, currentUser?.uid, urlSpaceId, lastSpaceSync, setSpace]);
+  }, [space, currentUser?.uid, urlSpaceId, lastSpaceSync, setSpace, cryptoKey]);
 }

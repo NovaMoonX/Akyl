@@ -1,17 +1,19 @@
 import { FirebaseError } from '@firebase/util';
 import { ref, set } from 'firebase/database';
-import type { Space } from '../../lib';
+import { encryptData, type Space } from '../../lib';
 import { timeoutAsyncFunction } from '../../utils';
 import { db } from '../config';
 
 interface UpdateDatabaseParams {
   space: Space;
+  cryptoKey: CryptoKey | null;
   testing?: boolean;
   userId?: string;
 }
 
 export default async function updateDatabase({
   space,
+  cryptoKey,
   userId,
   testing = false,
 }: UpdateDatabaseParams) {
@@ -22,14 +24,33 @@ export default async function updateDatabase({
   const userSegment = testing ? 'test_user' : userId;
 
   if (!userSegment) {
-    return;
+    return {
+      result,
+      error: new FirebaseError(
+        '',
+        'userSegment is required to update database',
+      ),
+    };
+  }
+  if (!cryptoKey) {
+    return {
+      result,
+      error: new FirebaseError('', 'cryptoKey is required to update database'),
+    };
   }
 
   const { id } = space;
 
   try {
     const pathRef = ref(db, `${path}/${userSegment}/${id}`);
-    await timeoutAsyncFunction(() => set(pathRef, space));
+    const encryptedData = await encryptData(space, cryptoKey);
+    const dataWithMeta = {
+      ...encryptedData,
+      metadata: {
+        updatedAt: space?.metadata?.updatedAt || Date.now(),
+      },
+    };
+    await timeoutAsyncFunction(() => set(pathRef, dataWithMeta));
     result = 'success';
   } catch (e) {
     error = e as FirebaseError;

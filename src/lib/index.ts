@@ -22,6 +22,9 @@ export type {
   Income,
 } from './budget.types';
 
+// Cryptography
+export { decryptData, encryptData, getUserCryptoKey } from './crypt.actions';
+
 // File
 export { exportFile, importFile } from './file.actions';
 
