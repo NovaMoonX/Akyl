@@ -70,7 +70,7 @@ export default function LoadScreen() {
         }
       });
     } else {
-      chosenSpaces = localSpaces;
+      chosenSpaces = localSpaces.filter(space => !space.metadata?.createdBy);
     }
 
     const filteredSpaces = chosenSpaces.filter(

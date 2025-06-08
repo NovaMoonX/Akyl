@@ -76,7 +76,7 @@ export default function usePersistCloud() {
 
     // Ensure createdBy is set to current user if not already set
     // This is for when a space is created when user was not logged in
-    if (space?.metadata?.createdBy !== currentUser.uid) {
+    if (space?.metadata?.createdBy === '') {
       setSpace({
         ...space,
         metadata: {
