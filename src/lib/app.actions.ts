@@ -1,4 +1,5 @@
 import { LOCAL_STORAGE_USER_ID } from './app.constants';
+import { ALL_SPACES_LAST_SYNC_KEY } from './firebase.constants';
 import type { Space } from './space.types';
 
 export function postSignOutProcess(redirect = true) {
@@ -12,6 +13,9 @@ export function postSignOutProcess(redirect = true) {
       localStorage.removeItem(key);
     }
   });
+
+  // Remove all spaces last sync key
+  localStorage.removeItem(ALL_SPACES_LAST_SYNC_KEY);
 
   // Take the user to home page
   const isHome = window.location.pathname === '/';

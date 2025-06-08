@@ -15,6 +15,7 @@ export default function useSyncAllSpaces() {
 
   useEffect(() => {
     if (!currentUser?.uid) {
+      setSpaces([]);
       return;
     }
 
