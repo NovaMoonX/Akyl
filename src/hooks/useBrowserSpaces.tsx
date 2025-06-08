@@ -21,7 +21,7 @@ export default function useBrowserSpaces() {
         try {
           const value = localStorage.getItem(key);
           if (!value) continue;
-          const parsed = JSON.parse(value);
+          const parsed = JSON.parse(value) as Space;
           // Check for required Space properties
           if (
             typeof parsed === 'object' &&
@@ -30,6 +30,7 @@ export default function useBrowserSpaces() {
             typeof parsed.title === 'string' &&
             parsed.metadata &&
             parsed.config &&
+            parsed.metadata?.createdBy === '' &&
             Array.isArray(parsed.incomes) &&
             Array.isArray(parsed.expenses)
           ) {
@@ -45,10 +46,8 @@ export default function useBrowserSpaces() {
     };
 
     fetchSpaces();
-    const interval = setInterval(fetchSpaces, 5000);
     return () => {
       isMounted.current = false;
-      clearInterval(interval);
     };
   }, []);
 

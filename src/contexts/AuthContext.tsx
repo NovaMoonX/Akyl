@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react';
 import { auth } from '../firebase/config';
-import { getUserCryptoKey } from '../lib';
+import { getUserCryptoKey, postSignOutProcess } from '../lib';
 import { LOCAL_STORAGE_USER_ID } from '../lib/app.constants';
 
 type AuthContextType = {
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
       if (!user) {
         setCryptoKey(null);
-        localStorage.removeItem(LOCAL_STORAGE_USER_ID);
+        postSignOutProcess()
         return;
       }
 
