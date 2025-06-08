@@ -88,11 +88,7 @@ export async function deleteSpace(
     });
 
     if (deleteResponse.error) {
-      console.error(
-        'Error deleting space from database:',
-        deleteResponse.error,
-      );
-      return;
+      throw deleteResponse.error;
     }
   }
 

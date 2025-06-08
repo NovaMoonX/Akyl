@@ -19,9 +19,9 @@ export default function DeleteSpaceModal({
   ...confirmationModalProps
 }: DeleteSpaceModalProps) {
   const { currentUser } = useAuth();
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (spaceId) {
-      deleteSpace(spaceId, currentUser?.uid);
+      await deleteSpace(spaceId, currentUser?.uid);
       confirmationModalProps.onClose();
       onDelete?.(spaceId);
     }

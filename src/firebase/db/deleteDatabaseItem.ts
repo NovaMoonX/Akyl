@@ -36,7 +36,6 @@ export default async function deleteDatabaseItem({
   }
 
   try {
-    // Update space in the database
     const pathRef = ref(db, `users/${userId}/${itemPath}`);
     await timeoutAsyncFunction(() => remove(pathRef));
     result = 'success';
