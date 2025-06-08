@@ -4,21 +4,26 @@ import { readDatabase, updateDatabase } from '../firebase';
 import type { Space } from '../lib';
 import { useSpace } from '../store';
 import { setTabTitle } from '../utils';
-import useLastCloudSync from './useLastCloudSync';
+import useLastSpaceCloudSync from './useLastSpaceCloudSync';
 import useURL from './useURL';
 
 const CLOUD_THROTTLE_TIME = 3000; // 3 seconds
 
 export default function usePersistCloud() {
   const { currentUser, cryptoKey } = useAuth();
-  const { lastSpaceSync } = useLastCloudSync();
+  const { lastSpaceSync } = useLastSpaceCloudSync();
   const { space, setSpace } = useSpace();
   const { spaceId: urlSpaceId } = useURL();
 
   // Update space from cloud if there are changes
   useEffect(() => {
     const spaceUpdatedAt = space?.metadata?.updatedAt;
-    if (!currentUser?.uid || !spaceUpdatedAt || lastSpaceSync === null) {
+    if (
+      !currentUser?.uid ||
+      !urlSpaceId ||
+      !spaceUpdatedAt ||
+      lastSpaceSync === null
+    ) {
       return;
     }
 
@@ -56,6 +61,7 @@ export default function usePersistCloud() {
     currentUser?.uid,
     setSpace,
     cryptoKey,
+    urlSpaceId,
   ]);
 
   // Save space to cloud if there are local changes
