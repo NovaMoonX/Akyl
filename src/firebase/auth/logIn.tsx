@@ -7,9 +7,7 @@ export default async function logIn(email: string, password: string) {
   let result: UserCredential | null = null,
     error = null;
   try {
-    console.log('signing in'); // REMOVE
     result = await signInWithEmailAndPassword(auth, email, password);
-    console.log('signed in', result); // REMOVE
     localStorage.setItem(LOCAL_STORAGE_USER_ID, result.user.uid);
 
     if (!result.user.emailVerified) {

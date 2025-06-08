@@ -30,7 +30,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       setCurrentUser(user);
 
       if (!user) {
-        console.log('user not found'); // REMOVE
         setCryptoKey(null);
         postSignOutProcess()
         return;

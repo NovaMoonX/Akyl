@@ -160,7 +160,6 @@ export async function fetchAllSpacesAndUploadToLocalStorage({
   const resolvedSpaces = await Promise.all(spacePromises);
   allSpaces.push(...resolvedSpaces.filter((space) => space !== null));
 
-  console.log('allSpaces', allSpaces); // REMOVE
   localStorage.setItem(ALL_SPACES_LAST_SYNC_KEY, String(Date.now()));
   return allSpaces;
 }

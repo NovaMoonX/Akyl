@@ -66,7 +66,6 @@ export default function LoadScreen() {
       // Add in any local spaces that are not synced yet
       localSpaces.forEach((localSpace) => {
         if (!syncedSpacesMap[localSpace.id]) {
-          console.log('pushing space'); // REMOVE
           chosenSpaces.push(localSpace);
         }
       });

@@ -15,7 +15,6 @@ export default function useSyncAllSpaces() {
 
   useEffect(() => {
     if (!currentUser?.uid) {
-      console.log('return A'); // REMOVE
       setSpaces([]);
       return;
     }
@@ -23,9 +22,6 @@ export default function useSyncAllSpaces() {
     // Only fetch when at home since we sync individual spaces when they're open
     const isHome = window.location.pathname === '/';
     if (urlSpaceId || !isHome) {
-      console.log('return B'); // REMOVE
-      console.log('isHome', isHome); // REMOVE
-      console.log('urlSpaceId', urlSpaceId); // REMOVE
       return;
     }
 
@@ -33,18 +29,14 @@ export default function useSyncAllSpaces() {
       const localLastSyncItem = localStorage.getItem(ALL_SPACES_LAST_SYNC_KEY);
       const localLastSync = localLastSyncItem ? Number(localLastSyncItem) : 0;
 
-      console.log('lastSync', lastSync); // REMOVE
-      console.log('localLastSync', localLastSync); // REMOVE
       if (localLastSync >= lastSync) {
         return;
       }
 
-      console.log('fetchAllSpacesAndUploadToLocalStorage', fetchAllSpacesAndUploadToLocalStorage); // REMOVE
       const fetchedSpaces = await fetchAllSpacesAndUploadToLocalStorage({
         userId: currentUser.uid,
         cryptoKey,
       });
-      console.log('fetchedSpaces', fetchedSpaces); // REMOVE
       setSpaces(fetchedSpaces);
     };
 
@@ -60,10 +52,6 @@ export default function useSyncAllSpaces() {
       }
     };
   }, [currentUser, urlSpaceId, cryptoKey]);
-  
-  useEffect(() => {
-    console.log('spaces (sync)', spaces); // REMOVE
-  }, [spaces]);
 
   const spacesMap = useMemo(() => {
     return (spaces ?? []).reduce<Record<string, Space>>((map, space) => {
