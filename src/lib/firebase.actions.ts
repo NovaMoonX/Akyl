@@ -137,26 +137,27 @@ export async function fetchAllSpacesAndUploadToLocalStorage({
 
   const allSpaces: Space[] = [];
 
-  for (const [spaceId, spaceData] of Object.entries(allSpacesResponse.result)) {
-    if (spaceId === ALL_SPACES_LAST_SYNC_KEY) {
-      // Skip the last sync key
-      continue;
-    }
+  const spacePromises = Object.entries(allSpacesResponse.result).map(
+    async ([spaceId, spaceData]) => {
+      if (spaceId === ALL_SPACES_LAST_SYNC_KEY) {
+        // Skip the last sync key
+        return null;
+      }
+      const processedSpace = await processedEncryptedSpace(
+        spaceData,
+        cryptoKey,
+        spaceId,
+      );
+      if (!processedSpace) {
+        console.warn('Failed to process space:', spaceId);
+        return null;
+      }
+      localStorage.setItem(spaceId, JSON.stringify(processedSpace));
+      return processedSpace;
+    },
+  );
 
-    const processedSpace = await processedEncryptedSpace(
-      spaceData,
-      cryptoKey,
-      spaceId,
-    );
-
-    if (!processedSpace) {
-      console.warn('Failed to process space:', spaceId);
-      continue;
-    }
-    allSpaces.push(processedSpace);
-    localStorage.setItem(spaceId, JSON.stringify(processedSpace));
-  }
-
-  localStorage.setItem(ALL_SPACES_LAST_SYNC_KEY, String(Date.now()));
+  const resolvedSpaces = await Promise.all(spacePromises);
+  allSpaces.push(...resolvedSpaces.filter((space) => space !== null));
   return allSpaces;
 }

@@ -12,7 +12,6 @@ export default function useSyncAllSpaces() {
   const { currentUser, cryptoKey } = useAuth();
   const { spaceId: urlSpaceId } = useURL();
   const [spaces, setSpaces] = useState<Space[]>();
-  // TASK: add loading state
 
   useEffect(() => {
     if (!currentUser?.uid) {

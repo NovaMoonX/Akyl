@@ -17,7 +17,7 @@ export default async function updateDatabase({
   let result = null,
     error = null;
 
-  if (!data) {
+  if (data == null || data === undefined) {
     return {
       result,
       error: new FirebaseError('', 'data is required to update database'),
