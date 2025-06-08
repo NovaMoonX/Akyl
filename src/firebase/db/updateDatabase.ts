@@ -23,8 +23,20 @@ export default async function updateDatabase({
   const path = testing ? 'test' : 'users';
   const userSegment = testing ? 'test_user' : userId;
 
-  if (!userSegment || !cryptoKey) {
-    return;
+  if (!userSegment) {
+    return {
+      result,
+      error: new FirebaseError(
+        '',
+        'userSegment is required to update database',
+      ),
+    };
+  }
+  if (!cryptoKey) {
+    return {
+      result,
+      error: new FirebaseError('', 'cryptoKey is required to update database'),
+    };
   }
 
   const { id } = space;

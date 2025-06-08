@@ -23,6 +23,7 @@ export default async function pullEncryptionKey({
     const docSnap = await timeoutAsyncFunction(() => getDoc(pathRef));
     if (docSnap.exists()) {
       const jwk = docSnap.data()?.key;
+      // Convert key from JWK format to CryptoKey
       result = await crypto.subtle.importKey(
         'jwk',
         jwk,

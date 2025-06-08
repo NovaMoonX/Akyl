@@ -23,8 +23,17 @@ export default async function readDatabase({
   const path = testing ? 'test' : 'users';
   const userSegment = testing ? 'test_user' : userId;
 
-  if (!userSegment || !cryptoKey) {
-    return;
+  if (!userSegment) {
+    return {
+      result,
+      error: new FirebaseError('', 'userSegment is required to read database'),
+    };
+  }
+  if (!cryptoKey) {
+    return {
+      result,
+      error: new FirebaseError('', 'cryptoKey is required to read database'),
+    };
   }
 
   try {

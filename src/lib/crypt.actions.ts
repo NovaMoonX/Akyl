@@ -1,6 +1,6 @@
 import { pullEncryptionKey, pushEncryptionKey } from '../firebase';
 
-export async function generateEncryptionKey() {
+async function generateEncryptionKey() {
   return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, [
     'encrypt',
     'decrypt',
@@ -21,11 +21,6 @@ export async function getUserCryptoKey(
     return pullResponse.result;
   }
 
-  console.warn(
-    'No crypto key found for user:',
-    userId,
-    'generating a new key.',
-  );
   const key = await generateEncryptionKey();
   const pushResult = await pushEncryptionKey({ key, userId, testing });
 

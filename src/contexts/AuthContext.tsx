@@ -33,8 +33,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
         return;
       }
 
-      // TASK: remove testing flag
-      getUserCryptoKey(user.uid, true)
+      getUserCryptoKey(user.uid)
         .then((key) => {
           if (key) {
             setCryptoKey(key);
