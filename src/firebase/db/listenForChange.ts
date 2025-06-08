@@ -25,6 +25,7 @@ export default function listenForChanges({
 
   return onValue(spaceUpdateAtRef, (snapshot) => {
     const data = snapshot.val();
+    console.log('onChange', data); // REMOVE
     onChange?.(Number(data));
   });
 }

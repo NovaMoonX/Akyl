@@ -18,8 +18,9 @@ export function postSignOutProcess(redirect = true) {
     }
   });
 
-  // Remove all spaces last sync key
+  // Remove all other user-related items
   localStorage.removeItem(ALL_SPACES_LAST_SYNC_KEY);
+  localStorage.removeItem(LOCAL_STORAGE_USER_ID);
 
   // Take the user to home page
   const isHome = window.location.pathname === '/';

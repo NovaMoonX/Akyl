@@ -7,7 +7,7 @@ import {
   SquarePlusIcon,
   TrashIcon,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { signOutUser } from '../firebase';
 import useBrowserSpaces from '../hooks/useBrowserSpaces';
@@ -66,11 +66,12 @@ export default function LoadScreen() {
       // Add in any local spaces that are not synced yet
       localSpaces.forEach((localSpace) => {
         if (!syncedSpacesMap[localSpace.id]) {
+          console.log('pushing space'); // REMOVE
           chosenSpaces.push(localSpace);
         }
       });
     } else {
-      chosenSpaces = localSpaces.filter((space) => !space?.metadata?.createdBy);
+      chosenSpaces = localSpaces
     }
 
     const filteredSpaces = chosenSpaces.filter(
@@ -92,6 +93,10 @@ export default function LoadScreen() {
     currentUser?.uid,
     deletedSpaceIds,
   ]);
+
+  useEffect(() => {
+    console.log('localSpaces', localSpaces); // REMOVE
+  }, [localSpaces]);
 
   const items = useMemo(() => {
     if (currentUser) {
