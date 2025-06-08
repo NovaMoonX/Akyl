@@ -1,4 +1,5 @@
 import { BackgroundVariant } from '@xyflow/react';
+import { deleteDatabaseItem } from '../firebase';
 import { generateId, getTheme, getUserLocale } from '../utils';
 import type { Expense, Income } from './budget.types';
 import { NODE_CORE_ID } from './node.constants';
@@ -72,9 +73,30 @@ export function duplicateSpace(spaceId: string) {
   window.location.href = `/${newSpaceId}`;
 }
 
-export function deleteSpace(spaceId: string, redirect = true) {
+export async function deleteSpace(
+  spaceId: string,
+  userId?: string,
+  redirect = true,
+) {
   if (!spaceId) return;
 
+  // Remove the space from synced spaces if it exists
+  if (userId) {
+    const deleteResponse = await deleteDatabaseItem({
+      userId,
+      itemPath: `${spaceId}`,
+    });
+
+    if (deleteResponse.error) {
+      console.error(
+        'Error deleting space from database:',
+        deleteResponse.error,
+      );
+      return;
+    }
+  }
+
+  // Remove the space from localStorage
   if (localStorage.getItem(spaceId)) {
     localStorage.removeItem(spaceId);
 
