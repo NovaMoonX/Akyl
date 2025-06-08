@@ -196,11 +196,11 @@ export default function LoadScreen() {
           )}
 
           {spaces.length > 0 && (
-            <div className='absolute -bottom-8 -left-1/2 w-96 translate-y-full'>
+            <div className='absolute -bottom-8 left-0 flex w-full translate-y-full flex-col items-center'>
               <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
                 Previous Spaces
               </h2>
-              <div>
+              <div className='w-lg'>
                 <div className='max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
                   <div className='grid grid-cols-2 gap-1'>
                     {spaces.map((space) => (
@@ -215,8 +215,9 @@ export default function LoadScreen() {
                         >
                           <ChevronRightIcon className='size-4' />
                           <span
+                            title={space.title || 'Untitled Space'}
                             className={join(
-                              'w-28 truncate',
+                              'w-44 truncate',
                               space.title.length === 0 && 'opacity-70',
                             )}
                           >
