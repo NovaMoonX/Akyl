@@ -8,9 +8,13 @@ export function postSignOutProcess(redirect = true) {
 
   // Remove all spaces from local storage
   Object.entries(localStorage).forEach(([key, value]) => {
-    const valueAsSpace = JSON.parse(value ?? '{}') as Space;
-    if (valueAsSpace?.metadata?.createdBy === userId) {
-      localStorage.removeItem(key);
+    try {
+      const valueAsSpace = JSON.parse(value ?? '{}') as Space;
+      if (valueAsSpace?.metadata?.createdBy === userId) {
+        localStorage.removeItem(key);
+      }
+    } catch {
+      // Ignore any errors in parsing, just skip this key
     }
   });
 
