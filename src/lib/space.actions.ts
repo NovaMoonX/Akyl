@@ -1,7 +1,8 @@
 import { BackgroundVariant } from '@xyflow/react';
-import { deleteDatabaseItem } from '../firebase';
+import { deleteDatabaseItem, updateDatabase } from '../firebase';
 import { generateId, getTheme, getUserLocale } from '../utils';
 import type { Expense, Income } from './budget.types';
+import { ALL_SPACES_LAST_SYNC_KEY } from './firebase.constants';
 import { NODE_CORE_ID } from './node.constants';
 import type { Edge, Node } from './node.types';
 import {
@@ -90,6 +91,12 @@ export async function deleteSpace(
     if (deleteResponse.error) {
       throw deleteResponse.error;
     }
+
+    await updateDatabase({
+      data: Date.now(),
+      userId,
+      itemPath: `${ALL_SPACES_LAST_SYNC_KEY}`,
+    });
   }
 
   // Remove the space from localStorage
