@@ -56,7 +56,9 @@ export default function L1NodeListItem({ data }: L1NodeListItemProps) {
     >
       {/* Label and super text */}
       <div className='min-w-0 flex-1'>
-        <div className='truncate font-semibold'>{budgetItem.label}</div>
+        <div className='truncate font-semibold' title={budgetItem.label}>
+          {budgetItem.label}
+        </div>
       </div>
       {/* Amount */}
       <div
