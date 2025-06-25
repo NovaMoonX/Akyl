@@ -30,10 +30,11 @@ export default function useSpaceFlow() {
     incomesSourceHiddenMap,
     expensesCategoryHiddenMap,
   } = useBudget();
-  const [hideSources, hideCategories] = useSpace(
+  const [hideSources, hideCategories, listExpenses] = useSpace(
     useShallow((state) => [
       state?.space?.config?.hideSources,
       state?.space?.config?.hideCategories,
+      state?.space?.config?.listExpenses,
     ]),
   );
 
@@ -70,6 +71,7 @@ export default function useSpaceFlow() {
       expensesCategoryHiddenMap,
       hideCategories,
       hideSources,
+      listExpenses,
     );
   }, [
     expenseByCategory,
@@ -77,6 +79,7 @@ export default function useSpaceFlow() {
     showLoadScreen,
     hideCategories,
     hideSources,
+    listExpenses,
   ]);
 
   return {

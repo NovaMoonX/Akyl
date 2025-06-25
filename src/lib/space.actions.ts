@@ -224,6 +224,7 @@ export function generateExpenseNodesAndEdges(
   expensesCategoryHiddenMap: Record<string, boolean>,
   hideCategories: boolean = false,
   hideSources: boolean = false,
+  listExpenses: boolean = false,
 ) {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -252,47 +253,63 @@ export function generateExpenseNodesAndEdges(
   const totalBudgetNodes = allExpenseItems.length;
   const budgetStartX = -((totalBudgetNodes - 1) * BUCKET_SPACING_X) / 2;
 
-  // Add all budget nodes (level 0)
-  allExpenseItems.forEach(({ expense }, i) => {
-    nodes.push({
-      id: expense.id,
-      type: 'budget',
-      position: {
-        x: budgetStartX + i * BUCKET_SPACING_X,
-        y: hideCategories ? EXPENSE_BUCKET_Y : EXPENSE_ITEM_Y,
-      },
-      data: { budgetItemId: expense.id, hidden: expense.hidden },
-      draggable: false,
+  // If listExpenses is true, space categories equally (bucket nodes only)
+  let categoryStartX = 0;
+  let categoryCount = 0;
+  if (listExpenses) {
+    categoryCount = categories.length;
+    categoryStartX = -((categoryCount - 1) * BUCKET_SPACING_X) / 2;
+  }
+
+  if (!listExpenses) {
+    // Add all budget nodes (level 0)
+    allExpenseItems.forEach(({ expense }, i) => {
+      nodes.push({
+        id: expense.id,
+        type: 'budget',
+        position: {
+          x: budgetStartX + i * BUCKET_SPACING_X,
+          y: hideCategories ? EXPENSE_BUCKET_Y : EXPENSE_ITEM_Y,
+        },
+        data: { budgetItemId: expense.id, hidden: expense.hidden },
+        draggable: false,
+      });
+
+      if (hideCategories) {
+        edges.push({
+          id: `${expense.id}_to_${NODE_CORE_ID}`,
+          source: NODE_CORE_ID,
+          target: expense.id,
+          type: expense.hidden ? 'hidden' : 'outflow',
+          ...(expense.hidden
+            ? {}
+            : { data: { animationTreeLevel: hideSources ? 1 : 2 } }),
+        });
+      }
     });
 
+    // If categories are hidden, we don't create bucket nodes
     if (hideCategories) {
-      edges.push({
-        id: `${expense.id}_to_${NODE_CORE_ID}`,
-        source: NODE_CORE_ID,
-        target: expense.id,
-        type: expense.hidden ? 'hidden' : 'outflow',
-        ...(expense.hidden
-          ? {}
-          : { data: { animationTreeLevel: hideSources ? 1 : 2 } }),
-      });
+      return { expenseNodes: nodes, expenseEdges: edges };
     }
-  });
-
-  // If categories are hidden, we don't create bucket nodes
-  if (hideCategories) {
-    return { expenseNodes: nodes, expenseEdges: edges };
   }
 
   // Add all bucket nodes (level 1), centered above their expense items
-  categories.forEach((category) => {
+  categories.forEach((category, catIdx) => {
     const bucketId = generateId('budget');
     const { total, items } = expenseByCategory[category];
     const indices = categoryExpenseIndices[category];
-    if (indices.length === 0) return;
+    if (!listExpenses && indices.length === 0) return;
     // Find the center X of this category's expense items
-    const firstX = budgetStartX + indices[0] * BUCKET_SPACING_X;
-    const lastX = budgetStartX + indices[indices.length - 1] * BUCKET_SPACING_X;
-    const bucketNodeX = (firstX + lastX) / 2;
+    let bucketNodeX;
+    if (listExpenses) {
+      // Equally space categories
+      bucketNodeX = categoryStartX + catIdx * BUCKET_SPACING_X;
+    } else {
+      const firstX = budgetStartX + indices[0] * BUCKET_SPACING_X;
+      const lastX = budgetStartX + indices[indices.length - 1] * BUCKET_SPACING_X;
+      bucketNodeX = (firstX + lastX) / 2;
+    }
     nodes.push({
       id: bucketId,
       type: 'L1',
@@ -311,20 +328,22 @@ export function generateExpenseNodesAndEdges(
       source: NODE_CORE_ID,
       target: bucketId,
       type: isCategoryHidden ? 'hidden' : 'outflow',
-      ...(isCategoryHidden ? {} : { data: { animationTreeLevel: 2 } }),
+      ...(isCategoryHidden ? {} : { data: { animationTreeLevel: hideSources ? 1 : 2 } }),
     });
 
     // For each expense item under this category, find its index in allExpenseItems
-    items.forEach((expense) => {
-      const isHidden = expense.hidden;
-      edges.push({
-        id: `${bucketId}_to_${expense.id}`,
-        source: bucketId,
-        target: expense.id,
-        type: isHidden ? 'hidden' : 'outflow',
-        ...(isHidden ? {} : { data: { animationTreeLevel: 3 } }),
+    if (!listExpenses) {
+      items.forEach((expense) => {
+        const isHidden = expense.hidden;
+        edges.push({
+          id: `${bucketId}_to_${expense.id}`,
+          source: bucketId,
+          target: expense.id,
+          type: isHidden ? 'hidden' : 'outflow',
+          ...(isHidden ? {} : { data: { animationTreeLevel: hideSources ? 2 : 3 } }),
+        });
       });
-    });
+    }
   });
 
   return { expenseNodes: nodes, expenseEdges: edges };
