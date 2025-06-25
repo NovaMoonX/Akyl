@@ -2,10 +2,11 @@ import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../store';
 
 export default function BottomActions() {
-  const [hideSources, hideCategories] = useSpace(
+  const [hideSources, hideCategories, listExpenses] = useSpace(
     useShallow((state) => [
       state?.space?.config?.hideSources,
       state?.space?.config?.hideCategories,
+      state?.space?.config?.listExpenses,
     ]),
   );
   const { updateConfig } = useSpace();
@@ -18,6 +19,11 @@ export default function BottomActions() {
   const handleToggleCategories = () => {
     const nowHidden = hideCategories ? false : true;
     updateConfig({ hideCategories: nowHidden });
+  };
+
+  const handleToggleListExpenses = () => {
+    const nowList = listExpenses ? false : true;
+    updateConfig({ listExpenses: nowList });
   };
 
   return (
@@ -35,6 +41,13 @@ export default function BottomActions() {
         className='bg-surface-hover-light hover:bg-surface-light dark:bg-surface-hover-dark hover:dark:bg-surface-dark rounded-t-md px-3 py-1.5 text-xs'
       >
         {hideCategories ? 'Show Categories' : 'Hide Categories'}
+      </button>
+      <button
+        role='button'
+        onClick={handleToggleListExpenses}
+        className='bg-surface-hover-light hover:bg-surface-light dark:bg-surface-hover-dark hover:dark:bg-surface-dark rounded-t-md px-3 py-1.5 text-xs'
+      >
+        {listExpenses ? 'Expand Expenses' : 'List Expenses'}
       </button>
     </div>
   );

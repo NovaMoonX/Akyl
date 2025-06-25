@@ -32,6 +32,7 @@ export interface Config {
   timeWindow: BudgetItemCadence;
   hideSources?: boolean;
   hideCategories?: boolean;
+  listExpenses?: boolean
 }
 
 export interface Space {
