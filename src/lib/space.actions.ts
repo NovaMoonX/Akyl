@@ -258,7 +258,7 @@ export function generateExpenseNodesAndEdges(
   let categoryCount = 0;
   if (listExpenses) {
     categoryCount = categories.length;
-    categoryStartX = -((categoryCount - 1) * BUCKET_SPACING_X) / 2;
+    categoryStartX = -((categoryCount - 1) * (BUCKET_SPACING_X + 200)) / 2;
   }
 
   if (!listExpenses) {
@@ -304,10 +304,11 @@ export function generateExpenseNodesAndEdges(
     let bucketNodeX;
     if (listExpenses) {
       // Equally space categories
-      bucketNodeX = categoryStartX + catIdx * BUCKET_SPACING_X;
+      bucketNodeX = categoryStartX + catIdx * (BUCKET_SPACING_X + 200);
     } else {
       const firstX = budgetStartX + indices[0] * BUCKET_SPACING_X;
-      const lastX = budgetStartX + indices[indices.length - 1] * BUCKET_SPACING_X;
+      const lastX =
+        budgetStartX + indices[indices.length - 1] * BUCKET_SPACING_X;
       bucketNodeX = (firstX + lastX) / 2;
     }
     nodes.push({
@@ -317,7 +318,11 @@ export function generateExpenseNodesAndEdges(
         x: bucketNodeX,
         y: EXPENSE_BUCKET_Y,
       },
-      data: { label: category, amount: total, type: 'expense' },
+      data: {
+        label: category,
+        amount: total,
+        type: 'expense',
+      },
       draggable: false,
     });
 
@@ -328,7 +333,9 @@ export function generateExpenseNodesAndEdges(
       source: NODE_CORE_ID,
       target: bucketId,
       type: isCategoryHidden ? 'hidden' : 'outflow',
-      ...(isCategoryHidden ? {} : { data: { animationTreeLevel: hideSources ? 1 : 2 } }),
+      ...(isCategoryHidden
+        ? {}
+        : { data: { animationTreeLevel: hideSources ? 1 : 2 } }),
     });
 
     // For each expense item under this category, find its index in allExpenseItems
@@ -340,7 +347,9 @@ export function generateExpenseNodesAndEdges(
           source: bucketId,
           target: expense.id,
           type: isHidden ? 'hidden' : 'outflow',
-          ...(isHidden ? {} : { data: { animationTreeLevel: hideSources ? 2 : 3 } }),
+          ...(isHidden
+            ? {}
+            : { data: { animationTreeLevel: hideSources ? 2 : 3 } }),
         });
       });
     }
