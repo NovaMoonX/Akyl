@@ -172,9 +172,9 @@ export default function HeaderMenu() {
     <>
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className='bg-surface-light dark:bg-surface-dark hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark rounded-lg px-4 py-5 text-teal-500 shadow-md'
+        className='bg-surface-light dark:bg-surface-dark hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark rounded-lg px-3 py-4 sm:px-4 sm:py-5 text-teal-500 shadow-md'
       >
-        <MenuIcon />
+        <MenuIcon className='size-4 sm:size-5' />
       </button>
 
       <Dropdown

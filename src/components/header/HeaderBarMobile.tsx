@@ -1,4 +1,10 @@
-import { ArrowUpIcon } from 'lucide-react';
+import {
+  ArrowUpIcon,
+  MinusIcon,
+  PlusIcon,
+  Settings2Icon,
+  SlashIcon,
+} from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../../contexts/AuthContext';
@@ -14,8 +20,10 @@ import ExpenseForm from '../forms/ExpenseForm';
 import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
 import HeaderBarTimeWindow from './HeaderBarTimeWindow';
+import { useState } from 'react';
+import Modal from '../ui/Modal';
 
-export default function HeaderBar() {
+export default function HeaderBarMobile() {
   const { currentUser } = useAuth();
   const [title, cashFlowVerbiage] = useSpace(
     useShallow((state) => [
@@ -26,6 +34,7 @@ export default function HeaderBar() {
   const { updateSpace } = useSpace();
   const { incomes, expenses } = useBudget();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
@@ -43,41 +52,45 @@ export default function HeaderBar() {
 
   return (
     <>
-      <div className='bg-surface-light dark:bg-surface-dark relative flex flex-1 items-center justify-between rounded-lg px-4 py-2.5 shadow-md'>
+      <div className='bg-surface-light dark:bg-surface-dark relative flex flex-grow items-center justify-between rounded-lg px-3 py-3 shadow-md sm:py-2.5'>
         <input
           value={title || ''}
           onChange={handleTextChange}
           placeholder='Space Title'
-          className='text-surface-hover-dark dark:text-surface-hover-light flex-1 min-w-16 text-xl font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
+          className='text-surface-hover-dark dark:text-surface-hover-light min-w-10 flex-1 font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
         />
-        <div className='flex items-center gap-3 text-sm'>
-          <HeaderBarTimeWindow />
-          <span className='bg-surface-hover-dark dark:bg-surface-hover-light mx-1 h-6 w-px' />
+        <div className='flex items-center gap-1 text-sm'>
           <button
             onClick={() => handleOpenForm('income')}
-            className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-4 py-2.5 whitespace-nowrap transition'
+            className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-2 py-1 transition'
           >
-            add {CashFlowVerbiagePairs[cashFlowVerbiage].in}
+            <PlusIcon className='size-4 sm:size-5' />
           </button>
           <button
             onClick={() => handleOpenForm('expense')}
-            className='text-surface-light not-dark:bg-outflow not-dark:hover:bg-outflow-darker dark:text-outflow-darker hover:dark:border-outflow-darker rounded border border-transparent px-4 py-2.5 whitespace-nowrap transition'
+            className='text-surface-light not-dark:bg-outflow not-dark:hover:bg-outflow-darker dark:text-outflow-darker hover:dark:border-outflow-darker rounded border border-transparent px-2 py-1 transition'
           >
-            add {CashFlowVerbiagePairs[cashFlowVerbiage].out}
+            <MinusIcon className='size-4 sm:size-5' />
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className='text-surface-hover-dark dark:text-surface-hover-light py-1 pr-1 pl-2 opacity-70 transition-opacity hover:opacity-100'
+          >
+            <Settings2Icon className='size-4 sm:size-5' />
           </button>
         </div>
 
         {[...incomes, ...expenses].length === 0 && (
-          <div className='absolute right-8 -bottom-20 flex animate-pulse flex-col items-center'>
-            <ArrowUpIcon />
-            <span className='rounded-lg px-4 py-2 text-sm font-medium'>
+          <div className='absolute right-2 -bottom-20 flex animate-pulse flex-col items-center'>
+            <ArrowUpIcon className='size-4' />
+            <span className='rounded-lg px-4 py-2 text-xs font-medium'>
               add your first budget item~
             </span>
           </div>
         )}
 
         {currentUser?.email && (
-          <small className='absolute bottom-0 left-0 translate-y-full'>
+          <small className='absolute bottom-0 left-0 translate-y-full whitespace-nowrap'>
             <span className='mr-1 font-light text-gray-500 dark:text-gray-400'>
               Logged in as
             </span>
@@ -95,6 +108,21 @@ export default function HeaderBar() {
         {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}
         {searchParams.get(URL_PARAM_FORM) === 'expense' && <ExpenseForm />}
       </Dropdown>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title='A Realized Dream 🌙'
+        centerTitle={true}
+      >
+        <div className='flex flex-col items-center gap-4 p-4'>
+          <SlashIcon className='size-12 text-gray-400' />
+          <p className='text-center text-gray-600'>
+            This feature is not yet available on mobile devices. Please access
+            it from a desktop or laptop computer.
+          </p>
+        </div>
+      </Modal>
     </>
   );
 }
