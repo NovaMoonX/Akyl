@@ -55,7 +55,7 @@ export default function Flow() {
   const { nodes, edges, onNodesChange, onEdgesChange } = useSpaceFlow();
 
   return (
-    <div id='app' className='relative h-screen w-screen'>
+    <div id='app' className='relative h-dvh w-dvw'>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -67,6 +67,9 @@ export default function Flow() {
         panOnScroll={true}
         selectionOnDrag={true}
         panOnScrollSpeed={1}
+        fitViewOptions={{
+          padding: 2
+        }}
       >
         {showLoadScreen && <LoadScreen />}
         {!showLoadScreen && (

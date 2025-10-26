@@ -30,7 +30,7 @@ export default function BottomActions() {
   };
 
   return (
-    <div className='absolute bottom-0 z-50 flex w-screen justify-center gap-2'>
+    <div className='absolute bottom-0 z-50 flex w-dvw justify-center gap-2'>
       <button
         role='button'
         onClick={handleToggleSources}

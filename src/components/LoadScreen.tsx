@@ -146,7 +146,7 @@ export default function LoadScreen() {
     <>
       <ThemeToggle2 />
 
-      <div className='absolute top-0 left-0 z-10 flex min-h-screen w-screen'>
+      <div className='absolute top-0 left-0 z-10 flex min-h-dvh w-dvw pb-16 sm:pb-0'>
         <div className='bg-background-light/70 dark:bg-background-dark/70 relative m-auto w-48 py-1'>
           <div className='absolute -top-3 -left-14 w-full min-w-fit -translate-y-full'>
             <div className='text-brand relative'>
