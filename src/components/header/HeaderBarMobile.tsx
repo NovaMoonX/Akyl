@@ -1,31 +1,22 @@
-import {
-  ArrowUpIcon,
-  MinusIcon,
-  PlusIcon,
-  Settings2Icon,
-  SlashIcon,
-} from 'lucide-react';
+import { ArrowUpIcon, MinusIcon, PlusIcon, Settings2Icon } from 'lucide-react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBudget } from '../../hooks';
-import {
-  CashFlowVerbiagePairs,
-  URL_PARAM_FORM,
-  type BudgetType,
-} from '../../lib';
+import { URL_PARAM_FORM, type BudgetType } from '../../lib';
 import { useSpace } from '../../store';
 import { setTabTitle } from '../../utils';
+import BottomActions from '../BottomActions';
 import ExpenseForm from '../forms/ExpenseForm';
 import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
-import HeaderBarTimeWindow from './HeaderBarTimeWindow';
-import { useState } from 'react';
 import Modal from '../ui/Modal';
+import HeaderBarTimeWindow from './HeaderBarTimeWindow';
 
 export default function HeaderBarMobile() {
   const { currentUser } = useAuth();
-  const [title, cashFlowVerbiage] = useSpace(
+  const [title] = useSpace(
     useShallow((state) => [
       state.space.title,
       state.space.config.cashFlowVerbiage,
@@ -81,7 +72,7 @@ export default function HeaderBarMobile() {
         </div>
 
         {[...incomes, ...expenses].length === 0 && (
-          <div className='absolute right-2 -bottom-20 flex animate-pulse flex-col items-center'>
+          <div className='absolute -right-2 -bottom-16 flex animate-pulse flex-col items-center'>
             <ArrowUpIcon className='size-4' />
             <span className='rounded-lg px-4 py-2 text-xs font-medium'>
               add your first budget item~
@@ -112,15 +103,23 @@ export default function HeaderBarMobile() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title='A Realized Dream 🌙'
+        title='Space Settings'
         centerTitle={true}
       >
-        <div className='flex flex-col items-center gap-4 p-4'>
-          <SlashIcon className='size-12 text-gray-400' />
-          <p className='text-center text-gray-600'>
-            This feature is not yet available on mobile devices. Please access
-            it from a desktop or laptop computer.
-          </p>
+        <div className='flex flex-col items-center gap-4 pb-2'>
+          <div>
+            <span className='mb-1 block text-center font-medium text-gray-700 dark:text-gray-200'>
+              Budget Time Window
+            </span>
+            <HeaderBarTimeWindow />
+          </div>
+
+          <div>
+            <span className='mb-1 block text-center font-medium text-gray-700 dark:text-gray-200'>
+              Display Options
+            </span>
+            <BottomActions className='' actionClassName='rounded-md' />
+          </div>
         </div>
       </Modal>
     </>

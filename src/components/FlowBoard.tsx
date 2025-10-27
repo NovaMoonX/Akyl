@@ -79,7 +79,7 @@ export default function Flow() {
               Akyl
             </h1>
 
-            <BottomActions />
+            <BottomActions className='absolute bottom-0 z-50 w-dvw !hidden sm:!flex' actionClassName='rounded-t-md' />
             <Controls position='bottom-right' showInteractive={false} />
           </>
         )}

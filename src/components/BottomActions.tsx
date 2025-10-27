@@ -1,7 +1,16 @@
 import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../store';
+import { join } from '../utils';
 
-export default function BottomActions() {
+interface BottomActionsProps {
+  className?: string;
+  actionClassName?: string;
+}
+
+export default function BottomActions({
+  className,
+  actionClassName,
+}: BottomActionsProps) {
   const [hideSources, hideCategories, listExpenses] = useSpace(
     useShallow((state) => [
       state?.space?.config?.hideSources,
@@ -30,18 +39,24 @@ export default function BottomActions() {
   };
 
   return (
-    <div className='absolute bottom-0 z-50 flex w-dvw justify-center gap-2'>
+    <div className={join('flex justify-center gap-2', className)}>
       <button
         role='button'
         onClick={handleToggleSources}
-        className='bg-surface-hover-light hover:bg-surface-light dark:bg-surface-hover-dark hover:dark:bg-surface-dark rounded-t-md px-3 py-1.5 text-xs'
+        className={join(
+          'bg-surface-hover-light hover:bg-surface-light dark:bg-surface-hover-dark hover:dark:bg-surface-dark px-3 py-1.5 text-xs',
+          actionClassName,
+        )}
       >
         {hideSources ? 'Show Sources' : 'Hide Sources'}
       </button>
       <button
         role='button'
         onClick={handleToggleCategories}
-        className='bg-surface-hover-light hover:bg-surface-light dark:bg-surface-hover-dark hover:dark:bg-surface-dark rounded-t-md px-3 py-1.5 text-xs'
+        className={join(
+          'bg-surface-hover-light hover:bg-surface-light dark:bg-surface-hover-dark hover:dark:bg-surface-dark px-3 py-1.5 text-xs',
+          actionClassName,
+        )}
       >
         {hideCategories ? 'Show Categories' : 'Hide Categories'}
       </button>
@@ -49,7 +64,10 @@ export default function BottomActions() {
         <button
           role='button'
           onClick={handleToggleListExpenses}
-          className='bg-surface-hover-light hover:bg-surface-light dark:bg-surface-hover-dark hover:dark:bg-surface-dark rounded-t-md px-3 py-1.5 text-xs'
+          className={join(
+            'bg-surface-hover-light hover:bg-surface-light dark:bg-surface-hover-dark hover:dark:bg-surface-dark px-3 py-1.5 text-xs',
+            actionClassName,
+          )}
         >
           {listExpenses ? 'Expand Expenses' : 'List Expenses'}
         </button>
