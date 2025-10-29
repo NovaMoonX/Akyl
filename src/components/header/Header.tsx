@@ -5,7 +5,7 @@ import HeaderSave from './HeaderSave';
 
 export default function Header() {
   return (
-    <header className='absolute top-0 right-0 left-0 z-50 flex w-dvw flex-row items-center gap-2 p-2 sm:gap-4 sm:p-4'>
+    <header className='absolute top-0 right-0 left-0 z-50 flex flex-row items-center gap-2 p-2 sm:gap-4 sm:p-4'>
       <div className='min-w-0'>
         <HeaderMenu />
       </div>
