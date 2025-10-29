@@ -13,6 +13,7 @@ import { setTabTitle } from '../../utils';
 import ExpenseForm from '../forms/ExpenseForm';
 import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
+import HeaderBarSheets from './HeaderBarSheets';
 import HeaderBarTimeWindow from './HeaderBarTimeWindow';
 
 export default function HeaderBar() {
@@ -51,6 +52,8 @@ export default function HeaderBar() {
           className='text-surface-hover-dark dark:text-surface-hover-light flex-1 min-w-16 text-xl font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
         />
         <div className='flex items-center gap-3 text-sm'>
+          <HeaderBarSheets />
+          <span className='bg-surface-hover-dark dark:bg-surface-hover-light mx-1 h-6 w-px' />
           <HeaderBarTimeWindow />
           <span className='bg-surface-hover-dark dark:bg-surface-hover-light mx-1 h-6 w-px' />
           <button

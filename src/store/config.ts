@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { Expense, Income } from '../lib';
-import type { Space } from '../lib/space.types';
+import type { Sheet, Space } from '../lib/space.types';
 
 interface SpaceStore {
   space: Space;
@@ -15,6 +15,16 @@ interface SpaceStore {
   addExpense: (expense: Expense) => void;
   updateExpense: (id: string, updates: Partial<Expense>) => void;
   removeExpense: (id: string) => void;
+  addSheet: (sheet: Sheet) => void;
+  updateSheet: (id: string, updates: Partial<Sheet>) => void;
+  removeSheet: (id: string) => void;
+  setActiveSheet: (sheetId: string) => void;
+  // Multi-select state for bulk sheet assignment
+  selectedBudgetItems: string[];
+  toggleBudgetItemSelection: (id: string) => void;
+  clearBudgetItemSelection: () => void;
+  addSheetToSelectedItems: (sheetId: string) => void;
+  removeSheetFromSelectedItems: (sheetId: string) => void;
 }
 
 const initialSpace = {} as Space;
@@ -23,6 +33,7 @@ const initialSpace = {} as Space;
 const useSpaceStore = create<SpaceStore>()(
   devtools((set) => ({
     space: initialSpace,
+    selectedBudgetItems: [],
     setSpace: (space) => set({ space }),
     updateSpace: (partial) =>
       set((state) => ({
@@ -127,6 +138,116 @@ const useSpaceStore = create<SpaceStore>()(
             }
           : initialSpace,
       })),
+    addSheet: (sheet) =>
+      set((state) => ({
+        space: state.space
+          ? {
+              ...state.space,
+              sheets: [...(state.space.sheets || []), sheet],
+              metadata: { ...state.space.metadata, updatedAt: Date.now() },
+            }
+          : initialSpace,
+      })),
+    updateSheet: (id, updates) =>
+      set((state) => ({
+        space: state.space
+          ? {
+              ...state.space,
+              sheets: (state.space.sheets || []).map((sheet) =>
+                sheet.id === id ? { ...sheet, ...updates } : sheet,
+              ),
+              metadata: { ...state.space.metadata, updatedAt: Date.now() },
+            }
+          : initialSpace,
+      })),
+    removeSheet: (id) =>
+      set((state) => ({
+        space: state.space
+          ? {
+              ...state.space,
+              sheets: (state.space.sheets || []).filter(
+                (sheet) => sheet.id !== id,
+              ),
+              metadata: { ...state.space.metadata, updatedAt: Date.now() },
+            }
+          : initialSpace,
+      })),
+    setActiveSheet: (sheetId) =>
+      set((state) => ({
+        space: state.space
+          ? {
+              ...state.space,
+              config: { ...state.space.config, activeSheet: sheetId },
+              metadata: { ...state.space.metadata, updatedAt: Date.now() },
+            }
+          : initialSpace,
+      })),
+    toggleBudgetItemSelection: (id) =>
+      set((state) => ({
+        selectedBudgetItems: state.selectedBudgetItems.includes(id)
+          ? state.selectedBudgetItems.filter((itemId) => itemId !== id)
+          : [...state.selectedBudgetItems, id],
+      })),
+    clearBudgetItemSelection: () =>
+      set(() => ({
+        selectedBudgetItems: [],
+      })),
+    addSheetToSelectedItems: (sheetId) =>
+      set((state) => {
+        if (!state.space) return state;
+        const updatedIncomes = state.space.incomes.map((income) =>
+          state.selectedBudgetItems.includes(income.id)
+            ? {
+                ...income,
+                sheets: [...new Set([...(income.sheets || []), sheetId])],
+              }
+            : income,
+        );
+        const updatedExpenses = state.space.expenses.map((expense) =>
+          state.selectedBudgetItems.includes(expense.id)
+            ? {
+                ...expense,
+                sheets: [...new Set([...(expense.sheets || []), sheetId])],
+              }
+            : expense,
+        );
+        return {
+          space: {
+            ...state.space,
+            incomes: updatedIncomes,
+            expenses: updatedExpenses,
+            metadata: { ...state.space.metadata, updatedAt: Date.now() },
+          },
+        };
+      }),
+    removeSheetFromSelectedItems: (sheetId) =>
+      set((state) => {
+        if (!state.space) return state;
+        const updatedIncomes = state.space.incomes.map((income) =>
+          state.selectedBudgetItems.includes(income.id)
+            ? {
+                ...income,
+                sheets: (income.sheets || []).filter((id) => id !== sheetId),
+              }
+            : income,
+        );
+        const updatedExpenses = state.space.expenses.map((expense) =>
+          state.selectedBudgetItems.includes(expense.id)
+            ? {
+                ...expense,
+                sheets: (expense.sheets || []).filter((id) => id !== sheetId),
+              }
+            : expense,
+        );
+        return {
+          space: {
+            ...state.space,
+            incomes: updatedIncomes,
+            expenses: updatedExpenses,
+            metadata: { ...state.space.metadata, updatedAt: Date.now() },
+          },
+        };
+      }),
   })),
 );
 

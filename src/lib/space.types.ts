@@ -19,6 +19,12 @@ export type Theme = 'light' | 'dark';
 export type Currency = 'USD' | 'EUR';
 export type CashFlowVerbiage = keyof typeof CashFlowVerbiagePairs;
 
+export interface Sheet {
+  id: string;
+  name: string;
+  color?: string;
+}
+
 export interface Config {
   theme: Theme;
   backgroundPattern:
@@ -33,6 +39,7 @@ export interface Config {
   hideSources?: boolean;
   hideCategories?: boolean;
   listExpenses?: boolean;
+  activeSheet?: string; // ID of the currently active sheet, or 'all' for all items
 }
 
 export interface Space {
@@ -43,4 +50,5 @@ export interface Space {
   config: Config;
   incomes: Income[];
   expenses: Expense[];
+  sheets: Sheet[];
 }

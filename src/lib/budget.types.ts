@@ -15,6 +15,7 @@ export interface Income {
   cadence: BudgetItemCadence;
   notes: string;
   hidden?: boolean; // For UI purposes, to hide/show income items
+  sheets?: string[]; // Optional array of sheet ids
 }
 
 export interface Expense {
@@ -27,4 +28,5 @@ export interface Expense {
   cadence: BudgetItemCadence;
   notes: string;
   hidden?: boolean; // For UI purposes, to hide/show expense items
+  sheets?: string[]; // Optional array of sheet ids
 }

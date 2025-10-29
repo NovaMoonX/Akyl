@@ -1,5 +1,5 @@
 import { Handle, Position } from '@xyflow/react';
-import { EyeClosedIcon, EyeIcon, PencilIcon } from 'lucide-react';
+import { CheckIcon, EyeClosedIcon, EyeIcon, PencilIcon } from 'lucide-react';
 import { memo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
@@ -24,12 +24,22 @@ function BudgetNode({ data }: BudgetNodeProps) {
   const currency = useSpace(
     useShallow((state) => state?.space?.config?.currency || 'USD'),
   );
-  const { updateIncome, updateExpense } = useSpace();
+  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems } = useSpace(
+    useShallow((state) => ({
+      updateIncome: state.updateIncome,
+      updateExpense: state.updateExpense,
+      toggleBudgetItemSelection: state.toggleBudgetItemSelection,
+      selectedBudgetItems: state.selectedBudgetItems,
+    })),
+  );
   const { getBudgetItem } = useBudget();
   const { item: budgetItem, type } = getBudgetItem(budgetItemId);
   const [, setSearchParams] = useSearchParams();
 
-  const toggleHide = () => {
+  const isSelected = selectedBudgetItems.includes(budgetItemId);
+
+  const toggleHide = (e: React.MouseEvent) => {
+    e.stopPropagation();
     const nowHidden = budgetItem?.hidden ? false : true;
     if (type === 'income') {
       updateIncome(budgetItemId, { hidden: nowHidden });
@@ -39,11 +49,21 @@ function BudgetNode({ data }: BudgetNodeProps) {
     setSearchParams({});
   };
 
-  const handleEdit = () => {
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setSearchParams({
       [URL_PARAM_FORM]: type,
       [URL_PARAM_ID]: budgetItemId,
     });
+  };
+
+  const handleNodeClick = (e: React.MouseEvent) => {
+    // Only toggle selection if shift or ctrl/cmd is pressed
+    if (e.shiftKey || e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleBudgetItemSelection(budgetItemId);
+    }
   };
 
   if (!budgetItem) {
@@ -72,13 +92,22 @@ function BudgetNode({ data }: BudgetNodeProps) {
         budgetItem?.hidden &&
           'bg-surface-light group dark:bg-surface-dark rounded-lg',
       )}
+      onClick={handleNodeClick}
     >
       <div
         className={join(
           'bg-surface-light group dark:bg-surface-dark border-node-border relative flex max-w-[180px] min-w-[140px] flex-col rounded-lg border p-0 shadow-md',
           budgetItem?.hidden && 'opacity-40',
+          isSelected && 'ring-2 ring-emerald-500',
         )}
       >
+        {/* Selection indicator */}
+        {isSelected && (
+          <div className='absolute -top-2 -right-2 bg-emerald-500 rounded-full p-1 z-10'>
+            <CheckIcon className='size-3 text-white' />
+          </div>
+        )}
+
         {/* Super Text */}
         <small className='absolute top-0 left-0 line-clamp-2 max-w-full -translate-y-full opacity-80'>
           {getBudgetSuperText()}

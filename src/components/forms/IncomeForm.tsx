@@ -87,6 +87,7 @@ export default function IncomeForm() {
       amount={formData?.amount}
       cadence={formData?.cadence}
       notes={formData?.notes}
+      sheets={formData?.sheets}
       onFieldChange={(field, val) =>
         handleFieldChange(field as keyof Income, val)
       }

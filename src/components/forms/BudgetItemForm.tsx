@@ -18,8 +18,9 @@ export interface BudgetItemFormProps {
   amount?: number;
   cadence?: BudgetItemCadence;
   notes?: string;
+  sheets?: string[];
   onFieldChange: (
-    field: 'label' | 'description' | 'amount' | 'cadence' | 'notes',
+    field: 'label' | 'description' | 'amount' | 'cadence' | 'notes' | 'sheets',
     value: unknown,
   ) => void;
   children?: React.ReactNode;
@@ -35,6 +36,7 @@ export default function BudgetItemForm({
   amount = 0,
   cadence = { type: 'month', interval: 1 },
   notes = '',
+  sheets = [],
   onFieldChange,
   children,
   saveButtonDisabled = false,
@@ -46,6 +48,9 @@ export default function BudgetItemForm({
   );
   const cashFlowVerbiage = useSpace(
     useShallow((state) => state?.space.config?.cashFlowVerbiage),
+  );
+  const availableSheets = useSpace(
+    useShallow((state) => state?.space?.sheets || []),
   );
   const { removeExpense, removeIncome } = useSpace();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -204,6 +209,37 @@ export default function BudgetItemForm({
 
         {/* Children for custom fields */}
         {children}
+
+        {/* Sheets */}
+        {availableSheets.length > 0 && (
+          <div>
+            <label className='font-medium'>Sheets</label>
+            <div className='flex flex-wrap gap-2 mt-2'>
+              {availableSheets.map((sheet) => {
+                const isSelected = sheets?.includes(sheet.id) ?? false;
+                return (
+                  <button
+                    key={sheet.id}
+                    type='button'
+                    className={`px-3 py-1 rounded border text-sm transition-colors ${
+                      isSelected
+                        ? 'bg-emerald-500 text-white border-emerald-600'
+                        : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 hover:border-emerald-500'
+                    }`}
+                    onClick={() => {
+                      const newSheets = isSelected
+                        ? (sheets || []).filter((id) => id !== sheet.id)
+                        : [...(sheets || []), sheet.id];
+                      onFieldChange('sheets', newSheets);
+                    }}
+                  >
+                    {sheet.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {!showNotes && (
           <div className='mb-4 flex justify-end'>

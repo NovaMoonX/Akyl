@@ -11,6 +11,7 @@ import { useInitSpace, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
 import BottomActions from './BottomActions';
+import BulkSheetEditor from './BulkSheetEditor';
 import { AnimatedInflowEdge, AnimatedOutflowEdge } from './edges';
 import { HiddenNodeEdge } from './edges/HiddenNodeEdge';
 import LoadScreen from './LoadScreen';
@@ -83,6 +84,7 @@ export default function Flow() {
             </h1>
 
             <BottomActions className='absolute bottom-0 z-50 w-dvw !hidden sm:!flex' actionClassName='rounded-t-md' />
+            <BulkSheetEditor />
             <Controls position='bottom-right' showInteractive={false} />
           </>
         )}

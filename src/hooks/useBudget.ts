@@ -12,11 +12,12 @@ import type { BudgetType } from '../lib/node.types';
 import { useSpace } from '../store';
 
 export default function useBudget() {
-  const [incomesInSpace, expensesInSpace, spaceTimeWindow] = useSpace(
+  const [incomesInSpace, expensesInSpace, spaceTimeWindow, activeSheet] = useSpace(
     useShallow((state) => [
       state?.space?.incomes,
       state?.space?.expenses,
       state?.space?.config?.timeWindow,
+      state?.space?.config?.activeSheet,
     ]),
   );
 
@@ -25,7 +26,15 @@ export default function useBudget() {
   }, [spaceTimeWindow]);
 
   const incomes = useMemo(() => {
-    const items = incomesInSpace ?? [];
+    let items = incomesInSpace ?? [];
+    
+    // Filter by active sheet
+    if (activeSheet && activeSheet !== 'all') {
+      items = items.filter((income) => 
+        income.sheets?.includes(activeSheet) ?? false
+      );
+    }
+    
     const itemsAdjustedAmount = items.map((income) => {
       const adjustedAmount = getBudgetItemWindowAmount(
         income.amount,
@@ -36,10 +45,18 @@ export default function useBudget() {
     });
     itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
-  }, [incomesInSpace, timeWindow]);
+  }, [incomesInSpace, timeWindow, activeSheet]);
 
   const expenses = useMemo(() => {
-    const items = expensesInSpace ?? [];
+    let items = expensesInSpace ?? [];
+    
+    // Filter by active sheet
+    if (activeSheet && activeSheet !== 'all') {
+      items = items.filter((expense) => 
+        expense.sheets?.includes(activeSheet) ?? false
+      );
+    }
+    
     const itemsAdjustedAmount = items.map((expense) => {
       const adjustedAmount = getBudgetItemWindowAmount(
         expense.amount,
@@ -50,7 +67,7 @@ export default function useBudget() {
     });
     itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
-  }, [expensesInSpace, timeWindow]);
+  }, [expensesInSpace, timeWindow, activeSheet]);
 
   const incomeSources = useMemo(() => {
     const sourceCount = new Map<string, number>();

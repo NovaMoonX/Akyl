@@ -88,6 +88,7 @@ export default function ExpenseForm() {
       amount={formData?.amount}
       cadence={formData?.cadence}
       notes={formData?.notes}
+      sheets={formData?.sheets}
       onFieldChange={(field, val) =>
         handleFieldChange(field as keyof Expense, val)
       }
