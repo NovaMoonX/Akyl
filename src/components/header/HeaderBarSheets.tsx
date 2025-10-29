@@ -1,5 +1,5 @@
 import { PlusIcon, XIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../../store';
 import { generateId } from '../../utils';
@@ -18,7 +18,7 @@ export default function HeaderBarSheets() {
   const [newSheetName, setNewSheetName] = useState('');
   const [showHint, setShowHint] = useState(false);
 
-  const handleAddSheet = () => {
+  const handleAddSheet = useCallback(() => {
     if (newSheetName.trim()) {
       const newSheet = {
         id: generateId('sheet'),
@@ -28,24 +28,27 @@ export default function HeaderBarSheets() {
       setNewSheetName('');
       setShowAddSheet(false);
     }
-  };
+  }, [newSheetName, addSheet]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleAddSheet();
     } else if (e.key === 'Escape') {
       setShowAddSheet(false);
       setNewSheetName('');
     }
-  };
+  }, [handleAddSheet]);
+
+  const handleShowHint = useCallback(() => setShowHint(true), []);
+  const handleHideHint = useCallback(() => setShowHint(false), []);
 
   return (
     <div className='flex items-center gap-2'>
       {sheets.length > 0 && (
         <div 
           className='relative'
-          onMouseEnter={() => setShowHint(true)}
-          onMouseLeave={() => setShowHint(false)}
+          onMouseEnter={handleShowHint}
+          onMouseLeave={handleHideHint}
         >
           <span className='text-xs text-gray-500 dark:text-gray-400'>Sheets:</span>
           {showHint && (

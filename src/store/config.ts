@@ -175,7 +175,7 @@ const useSpaceStore = create<SpaceStore>()(
         }));
         
         // If the deleted sheet was active, switch to 'all'
-        const newActiveSheet = state.space.config?.activeSheet === id ? 'all' : state.space.config?.activeSheet;
+        const newActiveSheet = state.space.config?.activeSheet === id ? 'all' : (state.space.config?.activeSheet || 'all');
         
         return {
           space: {
