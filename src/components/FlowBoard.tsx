@@ -55,7 +55,8 @@ export default function Flow() {
   const { nodes, edges, onNodesChange, onEdgesChange } = useSpaceFlow();
 
   return (
-    <div id='app' className='relative h-screen w-screen'>
+    <div id='app' className='relative h-dvh w-dvw'>
+      {/* all viewport props: https://reactflow.dev/api-reference/react-flow#viewport-props */}
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -67,16 +68,21 @@ export default function Flow() {
         panOnScroll={true}
         selectionOnDrag={true}
         panOnScrollSpeed={1}
+        fitViewOptions={{
+          padding: 2,
+        }}
+        maxZoom={1.5} // default is 2
+        minZoom={0.15} // default is 0.5
       >
         {showLoadScreen && <LoadScreen />}
         {!showLoadScreen && (
           <>
             <Header />
-            <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-4xl font-black'>
+            <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-2xl sm:text-4xl font-black'>
               Akyl
             </h1>
 
-            <BottomActions />
+            <BottomActions className='absolute bottom-0 z-50 w-dvw !hidden sm:!flex' actionClassName='rounded-t-md' />
             <Controls position='bottom-right' showInteractive={false} />
           </>
         )}

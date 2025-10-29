@@ -146,7 +146,7 @@ export default function LoadScreen() {
     <>
       <ThemeToggle2 />
 
-      <div className='absolute top-0 left-0 z-10 flex min-h-screen w-screen'>
+      <div className='absolute top-0 left-0 z-10 flex min-h-dvh w-dvw pb-16 overflow-y-auto sm:pb-0'>
         <div className='bg-background-light/70 dark:bg-background-dark/70 relative m-auto w-48 py-1'>
           <div className='absolute -top-3 -left-14 w-full min-w-fit -translate-y-full'>
             <div className='text-brand relative'>
@@ -196,17 +196,17 @@ export default function LoadScreen() {
           )}
 
           {spaces.length > 0 && (
-            <div className='absolute -bottom-8 left-0 flex w-full translate-y-full flex-col items-center'>
+            <div className='absolute -bottom-4 sm:-bottom-8 left-0 flex w-full translate-y-full flex-col items-center pb-10'>
               <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
                 Previous Spaces
               </h2>
-              <div className='w-lg'>
-                <div className='max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
-                  <div className='grid grid-cols-2 gap-1'>
+              <div className='sm:w-lg'>
+                <div className='max-h-48 sm:max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
+                  <div className='grid sm:grid-cols-2 gap-1'>
                     {spaces.map((space) => (
                       <div
                         key={space.id}
-                        className='group relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
+                        className='group w-64 relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
                       >
                         <a
                           role='button'
@@ -217,7 +217,7 @@ export default function LoadScreen() {
                           <span
                             title={space.title || 'Untitled Space'}
                             className={join(
-                              'w-44 truncate',
+                              'w-44 truncate text-sm sm:text-base',
                               space.title.length === 0 && 'opacity-70',
                             )}
                           >
@@ -226,7 +226,7 @@ export default function LoadScreen() {
                         </a>
                         <TrashIcon
                           role='button'
-                          className='ml-2 size-4 shrink-0 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
+                          className='ml-2 size-4 shrink-0 text-gray-400 sm:opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
                           aria-label='Delete Space'
                           onClick={() => setDeleteSpaceId(space.id)}
                         />

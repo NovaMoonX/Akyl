@@ -23,12 +23,12 @@ export default function HeaderBarWindowSelector() {
   };
 
   return (
-    <div className='flex flex-wrap items-center gap-2'>
+    <div className='flex items-center gap-2'>
       <CalendarClockIcon className='size-6 stroke-1 text-gray-500' />
       <input
         type='number'
         min={1}
-        className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+        className='w-12 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
         aria-description='Enter the time window interval'
         value={timeWindow?.interval ?? DEFAULT_TIME_WINDOW.interval}
         onChange={(e) => handleChange('interval', Number(e.target.value))}
