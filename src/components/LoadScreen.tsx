@@ -146,7 +146,7 @@ export default function LoadScreen() {
     <>
       <ThemeToggle2 />
 
-      <div className='absolute top-0 left-0 z-10 flex min-h-dvh w-dvw pb-16 sm:pb-0'>
+      <div className='absolute top-0 left-0 z-10 flex min-h-dvh w-dvw pb-16 overflow-y-auto sm:pb-0'>
         <div className='bg-background-light/70 dark:bg-background-dark/70 relative m-auto w-48 py-1'>
           <div className='absolute -top-3 -left-14 w-full min-w-fit -translate-y-full'>
             <div className='text-brand relative'>
@@ -196,12 +196,12 @@ export default function LoadScreen() {
           )}
 
           {spaces.length > 0 && (
-            <div className='absolute -bottom-8 left-0 flex w-full translate-y-full flex-col items-center'>
+            <div className='absolute -bottom-4 sm:-bottom-8 left-0 flex w-full translate-y-full flex-col items-center pb-10'>
               <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
                 Previous Spaces
               </h2>
               <div className='sm:w-lg'>
-                <div className='max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
+                <div className='max-h-48 sm:max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
                   <div className='grid sm:grid-cols-2 gap-1'>
                     {spaces.map((space) => (
                       <div
