@@ -161,17 +161,35 @@ const useSpaceStore = create<SpaceStore>()(
           : initialSpace,
       })),
     removeSheet: (id) =>
-      set((state) => ({
-        space: state.space
-          ? {
-              ...state.space,
-              sheets: (state.space.sheets || []).filter(
-                (sheet) => sheet.id !== id,
-              ),
-              metadata: { ...state.space.metadata, updatedAt: Date.now() },
-            }
-          : initialSpace,
-      })),
+      set((state) => {
+        if (!state.space) return state;
+        
+        // Remove sheet from all budget items
+        const updatedIncomes = state.space.incomes.map((income) => ({
+          ...income,
+          sheets: (income.sheets || []).filter((sheetId) => sheetId !== id),
+        }));
+        const updatedExpenses = state.space.expenses.map((expense) => ({
+          ...expense,
+          sheets: (expense.sheets || []).filter((sheetId) => sheetId !== id),
+        }));
+        
+        // If the deleted sheet was active, switch to 'all'
+        const newActiveSheet = state.space.config?.activeSheet === id ? 'all' : state.space.config?.activeSheet;
+        
+        return {
+          space: {
+            ...state.space,
+            sheets: (state.space.sheets || []).filter(
+              (sheet) => sheet.id !== id,
+            ),
+            incomes: updatedIncomes,
+            expenses: updatedExpenses,
+            config: { ...state.space.config, activeSheet: newActiveSheet },
+            metadata: { ...state.space.metadata, updatedAt: Date.now() },
+          },
+        };
+      }),
     setActiveSheet: (sheetId) =>
       set((state) => ({
         space: state.space
