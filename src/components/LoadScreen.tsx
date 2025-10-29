@@ -217,7 +217,7 @@ export default function LoadScreen() {
                           <span
                             title={space.title || 'Untitled Space'}
                             className={join(
-                              'w-44 truncate',
+                              'w-44 truncate text-sm sm:text-base',
                               space.title.length === 0 && 'opacity-70',
                             )}
                           >

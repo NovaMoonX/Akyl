@@ -13,7 +13,7 @@ export default function DreamTrigger() {
           onClick={() => setIsModalOpen(true)}
         >
           <CloudMoonIcon className='size-4' />
-          <span className='text-sm'>The Dream</span>
+          <span className='text-xs sm:text-sm'>The Dream</span>
         </button>
       </div>
 
