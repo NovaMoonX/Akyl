@@ -12,7 +12,6 @@ import ExpenseForm from '../forms/ExpenseForm';
 import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
 import Modal from '../ui/Modal';
-import HeaderBarSheets from './HeaderBarSheets';
 import HeaderBarTimeWindow from './HeaderBarTimeWindow';
 
 export default function HeaderBarMobile() {
@@ -108,13 +107,6 @@ export default function HeaderBarMobile() {
         centerTitle={true}
       >
         <div className='flex flex-col items-center gap-4 pb-2'>
-          <div>
-            <span className='mb-1 block text-center font-medium text-gray-700 dark:text-gray-200'>
-              Sheets
-            </span>
-            <HeaderBarSheets />
-          </div>
-
           <div>
             <span className='mb-1 block text-center font-medium text-gray-700 dark:text-gray-200'>
               Budget Time Window
