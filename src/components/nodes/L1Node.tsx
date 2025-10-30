@@ -16,9 +16,9 @@ function L1Node({ data }: L1NodeProps) {
   const { label, amount, type } = data;
   const [currency, listExpenses, activeSheet, sheets] = useSpace(
     useShallow((state) => [
-      state?.space?.config?.currency,
+      state?.space?.config?.currency || 'USD',
       state?.space?.config?.listExpenses,
-      state?.space?.config?.activeSheet,
+      state?.space?.config?.activeSheet || 'all',
       state?.space?.sheets,
     ]),
   );
@@ -38,7 +38,7 @@ function L1Node({ data }: L1NodeProps) {
   } = useBudget();
 
   // Get current sheet's listExpenses or fall back to global
-  const activeSheetObj = activeSheet && activeSheet !== 'all' && sheets
+  const activeSheetObj = activeSheet !== 'all' && sheets
     ? sheets.find((s) => s.id === activeSheet)
     : null;
 
@@ -58,7 +58,7 @@ function L1Node({ data }: L1NodeProps) {
     if (type === 'income') {
       const sourceIncomes = incomeBySource[label]?.items ?? [];
       sourceIncomes.forEach((income) => {
-        if (!activeSheet || activeSheet === 'all') {
+        if (activeSheet === 'all') {
           // Toggle global hidden state
           updateIncome(income.id, { hidden: nowHidden });
         } else {
@@ -75,7 +75,7 @@ function L1Node({ data }: L1NodeProps) {
 
     const categoryExpenses = expenseByCategory[label]?.items ?? [];
     categoryExpenses.forEach((expense) => {
-      if (!activeSheet || activeSheet === 'all') {
+      if (activeSheet === 'all') {
         // Toggle global hidden state
         updateExpense(expense.id, { hidden: nowHidden });
       } else {
@@ -167,7 +167,7 @@ function L1Node({ data }: L1NodeProps) {
               type === 'expense' && 'text-outflow/80',
             )}
           >
-            {formatCurrency(amount, currency || 'USD')}
+            {formatCurrency(amount, currency)}
           </span>
 
           {/* move handle inward for smoother edge animation */}

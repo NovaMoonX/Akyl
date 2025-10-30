@@ -16,14 +16,14 @@ export default function BottomActions({
       state?.space?.config?.hideSources,
       state?.space?.config?.hideCategories,
       state?.space?.config?.listExpenses,
-      state?.space?.config?.activeSheet,
+      state?.space?.config?.activeSheet || 'all',
       state?.space?.sheets,
     ]),
   );
   const { updateConfig, updateSheet } = useSpace();
 
   // Get current sheet's settings or fall back to global
-  const activeSheetObj = activeSheet && activeSheet !== 'all' && sheets
+  const activeSheetObj = activeSheet !== 'all' && sheets
     ? sheets.find((s) => s.id === activeSheet)
     : null;
 
@@ -33,7 +33,7 @@ export default function BottomActions({
 
   const handleToggleSources = () => {
     const nowHidden = currentHideSources ? false : true;
-    if (!activeSheet || activeSheet === 'all') {
+    if (activeSheet === 'all') {
       updateConfig({ hideSources: nowHidden });
     } else {
       updateSheet(activeSheet, { hideSources: nowHidden });
@@ -42,7 +42,7 @@ export default function BottomActions({
 
   const handleToggleCategories = () => {
     const nowHidden = currentHideCategories ? false : true;
-    if (!activeSheet || activeSheet === 'all') {
+    if (activeSheet === 'all') {
       updateConfig({ hideCategories: nowHidden });
       if (nowHidden) {
         updateConfig({ listExpenses: false });
@@ -57,7 +57,7 @@ export default function BottomActions({
 
   const handleToggleListExpenses = () => {
     const nowList = currentListExpenses ? false : true;
-    if (!activeSheet || activeSheet === 'all') {
+    if (activeSheet === 'all') {
       updateConfig({ listExpenses: nowList });
     } else {
       updateSheet(activeSheet, { listExpenses: nowList });

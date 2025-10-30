@@ -11,14 +11,14 @@ export default function HeaderBarWindowSelector() {
   const [timeWindow, activeSheet, sheets] = useSpace(
     useShallow((state) => [
       state?.space?.config?.timeWindow,
-      state?.space?.config?.activeSheet,
+      state?.space?.config?.activeSheet || 'all',
       state?.space?.sheets,
     ]),
   );
   const { updateConfig, updateSheet } = useSpace();
 
   // Get current sheet's time window or fall back to global
-  const activeSheetObj = activeSheet && activeSheet !== 'all' && sheets
+  const activeSheetObj = activeSheet !== 'all' && sheets
     ? sheets.find((s) => s.id === activeSheet)
     : null;
 
@@ -30,7 +30,7 @@ export default function HeaderBarWindowSelector() {
       [field]: value,
     };
     
-    if (!activeSheet || activeSheet === 'all') {
+    if (activeSheet === 'all') {
       updateConfig({ timeWindow: newTimeWindow });
     } else {
       updateSheet(activeSheet, { timeWindow: newTimeWindow });

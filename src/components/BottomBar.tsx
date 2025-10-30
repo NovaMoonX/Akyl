@@ -14,7 +14,7 @@ export default function BottomBar() {
   const [sheets, activeSheet, setActiveSheet, addSheet, updateSheet, removeSheet] = useSpace(
     useShallow((state) => [
       state?.space?.sheets,
-      state?.space?.config?.activeSheet,
+      state?.space?.config?.activeSheet || 'all',
       state.setActiveSheet,
       state.addSheet,
       state.updateSheet,
@@ -75,7 +75,7 @@ export default function BottomBar() {
           {/* Mobile: Select-based sheet selector */}
           <div className='sm:hidden flex items-center gap-2'>
             <select
-              value={activeSheet || 'all'}
+              value={activeSheet}
               onChange={(e) => setActiveSheet(e.target.value)}
               className='px-3 py-1 rounded text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-emerald-500 focus:outline-none'
             >
