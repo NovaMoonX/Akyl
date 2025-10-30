@@ -6,7 +6,7 @@ export default function BulkSheetEditor() {
   const [selectedBudgetItems, sheets, addSheetToSelectedItems, removeSheetFromSelectedItems, clearBudgetItemSelection] = useSpace(
     useShallow((state) => [
       state.selectedBudgetItems,
-      state?.space?.sheets || [],
+      state?.space?.sheets,
       state.addSheetToSelectedItems,
       state.removeSheetFromSelectedItems,
       state.clearBudgetItemSelection,
@@ -32,7 +32,7 @@ export default function BulkSheetEditor() {
             <XIcon className='size-4' />
           </button>
         </div>
-        {sheets.length > 0 && (
+        {sheets && sheets.length > 0 && (
           <>
             <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
             <div className='flex items-center gap-2'>

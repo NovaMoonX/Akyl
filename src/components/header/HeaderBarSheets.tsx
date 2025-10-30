@@ -7,7 +7,7 @@ import { generateId } from '../../utils';
 export default function HeaderBarSheets() {
   const [sheets, activeSheet, setActiveSheet, addSheet, removeSheet] = useSpace(
     useShallow((state) => [
-      state?.space?.sheets || [],
+      state?.space?.sheets,
       state?.space?.config?.activeSheet || 'all',
       state.setActiveSheet,
       state.addSheet,
@@ -44,7 +44,7 @@ export default function HeaderBarSheets() {
 
   return (
     <div className='flex items-center gap-2'>
-      {sheets.length > 0 && (
+      {sheets && sheets.length > 0 && (
         <div 
           className='relative'
           onMouseEnter={handleShowHint}
@@ -68,7 +68,7 @@ export default function HeaderBarSheets() {
       >
         All
       </button>
-      {sheets.map((sheet) => (
+      {sheets && sheets.map((sheet) => (
         <div key={sheet.id} className='relative group'>
           <button
             onClick={() => setActiveSheet(sheet.id)}

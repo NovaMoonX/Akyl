@@ -50,5 +50,5 @@ export interface Space {
   config: Config;
   incomes: Income[];
   expenses: Expense[];
-  sheets: Sheet[];
+  sheets?: Sheet[];
 }
