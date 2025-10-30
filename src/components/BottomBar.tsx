@@ -1,5 +1,5 @@
-import { PlusIcon, Settings2Icon, CheckSquareIcon } from 'lucide-react';
-import { useState } from 'react';
+import { PlusIcon, Settings2Icon, CheckSquareIcon, XIcon, ArrowRightIcon } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../store';
 import { generateId, join } from '../utils';
@@ -36,6 +36,10 @@ export default function BottomBar() {
   const [editingSheetName, setEditingSheetName] = useState('');
   const [deleteConfirmSheetId, setDeleteConfirmSheetId] = useState<string | null>(null);
 
+  // Quick bar state for "Added to sheet" prompt
+  const [quickSheet, setQuickSheet] = useState<{ id: string; name: string } | null>(null);
+  const quickTimerRef = useRef<number | null>(null);
+
   const isBulkSelecting = selectedBudgetItems.length > 0;
 
   const handleAddSheet = () => {
@@ -63,19 +67,70 @@ export default function BottomBar() {
     setDeleteConfirmSheetId(null);
   };
 
+  const handleEndBulkEdit = () => {
+    clearBudgetItemSelection();
+    setIsBulkEditMode(false);
+  }
+
   const handleToggleBulkEdit = () => {
     if (isBulkEditMode) {
       // Exit bulk edit mode
-      clearBudgetItemSelection();
-      setIsBulkEditMode(false);
+      handleEndBulkEdit()
     } else {
       // Enter bulk edit mode
       setIsBulkEditMode(true);
     }
   };
 
+  const handleAddedToSheet = (sheet: { id: string; name: string }) => {
+    setQuickSheet(sheet);
+    if (quickTimerRef.current) {
+      window.clearTimeout(quickTimerRef.current);
+    }
+    quickTimerRef.current = window.setTimeout(() => {
+      setQuickSheet(null);
+      quickTimerRef.current = null;
+    }, 5000);
+  };
+
+  const closeQuickBar = () => {
+    setQuickSheet(null);
+    if (quickTimerRef.current) {
+      window.clearTimeout(quickTimerRef.current);
+      quickTimerRef.current = null;
+    }
+  };
+
   if (isBulkSelecting) {
-    return <BulkSheetEditor toggleBulkEdit={handleToggleBulkEdit} />;
+    return (
+      <>
+        <BulkSheetEditor
+          endBulkEdit={handleEndBulkEdit}
+          onAddedToSheet={handleAddedToSheet}
+        />
+        {quickSheet && (
+          <div className='fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-surface-light dark:bg-surface-dark rounded-full shadow-lg px-3 py-1.5 border border-gray-300 dark:border-gray-700 flex items-center gap-2'>
+            <span className='text-xs sm:text-sm'>Added to "{quickSheet.name}"</span>
+            <button
+              onClick={() => {
+                setActiveSheet(quickSheet.id);
+                closeQuickBar();
+              }}
+              className='text-xs sm:text-sm px-2 py-0.5 rounded bg-emerald-500 text-white hover:bg-emerald-600 inline-flex items-center gap-1'
+            >
+              Go <ArrowRightIcon className='size-3.5' />
+            </button>
+            <button
+              onClick={closeQuickBar}
+              className='p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700'
+              aria-label='Dismiss notification'
+            >
+              <XIcon className='size-3.5' />
+            </button>
+          </div>
+        )}
+      </>
+    );
   }
 
   return (
@@ -228,6 +283,28 @@ export default function BottomBar() {
           </button>
         </div>
       </div>
+
+      {quickSheet && (
+        <div className='fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-surface-light dark:bg-surface-dark rounded-full shadow-lg px-3 py-1.5 border border-gray-300 dark:border-gray-700 flex items-center gap-2'>
+          <span className='text-xs sm:text-sm'>Added to "{quickSheet.name}"</span>
+          <button
+            onClick={() => {
+              setActiveSheet(quickSheet.id);
+              closeQuickBar();
+            }}
+            className='text-xs sm:text-sm px-2 py-0.5 rounded bg-emerald-500 text-white hover:bg-emerald-600 inline-flex items-center gap-1'
+          >
+            Go <ArrowRightIcon className='size-3.5' />
+          </button>
+          <button
+            onClick={closeQuickBar}
+            className='p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700'
+            aria-label='Dismiss notification'
+          >
+            <XIcon className='size-3.5' />
+          </button>
+        </div>
+      )}
 
       {/* Mobile Settings Modal */}
       <Modal

@@ -3,11 +3,13 @@ import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../store';
 
 interface BulkSheetEditorProps {
-  toggleBulkEdit: () => void;
+  endBulkEdit: () => void;
+  onAddedToSheet?: (sheet: { id: string; name: string }) => void;
 }
 
 export default function BulkSheetEditor({
-  toggleBulkEdit,
+  endBulkEdit,
+  onAddedToSheet,
 }: BulkSheetEditorProps) {
   const [
     selectedBudgetItems,
@@ -29,12 +31,16 @@ export default function BulkSheetEditor({
 
   const handleRemoveSheetFromSelectedItems = (sheetId: string) => {
     removeSheetFromSelectedItems(sheetId);
-    toggleBulkEdit();
+    endBulkEdit();
   };
 
-  const handleAddSheetToSelectedItems = (sheetId: string) => {
-    addSheetToSelectedItems(sheetId);
-    toggleBulkEdit();
+  const handleAddSheetToSelectedItems = (sheet: {
+    id: string;
+    name: string;
+  }) => {
+    addSheetToSelectedItems(sheet.id);
+    endBulkEdit();
+    onAddedToSheet?.(sheet);
   };
 
   if (selectedBudgetItems.length === 0) {
@@ -70,7 +76,7 @@ export default function BulkSheetEditor({
                 .map((sheet) => (
                   <button
                     key={sheet.id}
-                    onClick={() => handleAddSheetToSelectedItems(sheet.id)}
+                    onClick={() => handleAddSheetToSelectedItems(sheet)}
                     className='max-w-36 truncate rounded bg-emerald-500 px-3 py-1 text-sm text-white transition-colors hover:bg-emerald-600'
                   >
                     {sheet.name}
@@ -137,7 +143,7 @@ export default function BulkSheetEditor({
                 .map((sheet) => (
                   <button
                     key={sheet.id}
-                    onClick={() => handleAddSheetToSelectedItems(sheet.id)}
+                    onClick={() => handleAddSheetToSelectedItems(sheet)}
                     className='max-w-24 truncate rounded bg-emerald-500 px-2 py-0.5 text-xs text-white transition-colors active:bg-emerald-600'
                   >
                     {sheet.name}
