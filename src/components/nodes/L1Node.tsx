@@ -98,8 +98,8 @@ function L1Node({ data }: L1NodeProps) {
     return expenseByCategory[label]?.items ?? [];
   }, [type, label, incomeBySource, expenseByCategory]);
 
-  const isAnySelected = useMemo(() => {
-    return groupItems.some((item) => selectedBudgetItems.includes(item.id));
+  const isAllItemsSelected = useMemo(() => {
+    return groupItems.every((item) => selectedBudgetItems.includes(item.id));
   }, [groupItems, selectedBudgetItems]);
 
   const handleNodeClick = (e: React.MouseEvent) => {
@@ -131,12 +131,12 @@ function L1Node({ data }: L1NodeProps) {
           className={join(
             'group bg-surface-light dark:bg-surface-dark border-node-border relative flex max-w-[160px] min-w-[120px] flex-col items-center gap-1 rounded-lg border p-4 shadow-md',
             isHidden && 'opacity-40',
-            isAnySelected && type === 'income' && 'ring-2 ring-green-500',
-            isAnySelected && type === 'expense' && 'ring-2 ring-red-500',
+            isAllItemsSelected && type === 'income' && 'ring-2 ring-green-500',
+            isAllItemsSelected && type === 'expense' && 'ring-2 ring-red-500',
           )}
         >
           {/* Selection indicator */}
-          {isAnySelected && (
+          {isAllItemsSelected && (
             <div className={join(
               'absolute -top-2 -right-2 rounded-full p-1 z-10',
               type === 'income' && 'bg-green-500',
