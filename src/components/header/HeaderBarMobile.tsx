@@ -1,5 +1,4 @@
-import { ArrowUpIcon, MinusIcon, PlusIcon, Settings2Icon } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowUpIcon, MinusIcon, PlusIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../../contexts/AuthContext';
@@ -7,12 +6,9 @@ import { useBudget } from '../../hooks';
 import { URL_PARAM_FORM, type BudgetType } from '../../lib';
 import { useSpace } from '../../store';
 import { setTabTitle } from '../../utils';
-import BottomActions from '../BottomActions';
 import ExpenseForm from '../forms/ExpenseForm';
 import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
-import Modal from '../ui/Modal';
-import HeaderBarTimeWindow from './HeaderBarTimeWindow';
 
 export default function HeaderBarMobile() {
   const { currentUser } = useAuth();
@@ -25,7 +21,6 @@ export default function HeaderBarMobile() {
   const { updateSpace } = useSpace();
   const { incomes, expenses } = useBudget();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
@@ -63,12 +58,6 @@ export default function HeaderBarMobile() {
           >
             <MinusIcon className='size-4 sm:size-5' />
           </button>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className='text-surface-hover-dark dark:text-surface-hover-light py-1 pr-1 pl-2 opacity-70 transition-opacity hover:opacity-100'
-          >
-            <Settings2Icon className='size-4 sm:size-5' />
-          </button>
         </div>
 
         {[...incomes, ...expenses].length === 0 && (
@@ -99,29 +88,6 @@ export default function HeaderBarMobile() {
         {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}
         {searchParams.get(URL_PARAM_FORM) === 'expense' && <ExpenseForm />}
       </Dropdown>
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title='Space Settings'
-        centerTitle={true}
-      >
-        <div className='flex flex-col items-center gap-4 pb-2'>
-          <div>
-            <span className='mb-1 block text-center font-medium text-gray-700 dark:text-gray-200'>
-              Budget Time Window
-            </span>
-            <HeaderBarTimeWindow />
-          </div>
-
-          <div>
-            <span className='mb-1 block text-center font-medium text-gray-700 dark:text-gray-200'>
-              Display Options
-            </span>
-            <BottomActions className='' actionClassName='rounded-md' />
-          </div>
-        </div>
-      </Modal>
     </>
   );
 }
