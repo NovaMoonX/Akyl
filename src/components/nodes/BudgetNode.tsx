@@ -27,12 +27,13 @@ function BudgetNode({ data }: BudgetNodeProps) {
       state?.space?.config?.activeSheet || 'all',
     ]),
   );
-  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems } = useSpace(
+  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems, isBulkEditMode } = useSpace(
     useShallow((state) => ({
       updateIncome: state.updateIncome,
       updateExpense: state.updateExpense,
       toggleBudgetItemSelection: state.toggleBudgetItemSelection,
       selectedBudgetItems: state.selectedBudgetItems,
+      isBulkEditMode: state.isBulkEditMode,
     })),
   );
   const { getBudgetItem } = useBudget();
@@ -88,8 +89,10 @@ function BudgetNode({ data }: BudgetNodeProps) {
   };
 
   const handleNodeClick = (e: React.MouseEvent) => {
-    // Only toggle selection if shift or ctrl/cmd is pressed
-    if (e.shiftKey || e.ctrlKey || e.metaKey) {
+    // Toggle selection if:
+    // - Shift or Ctrl/Cmd is pressed (desktop multi-select), OR
+    // - Bulk edit mode is active (mobile bulk selection)
+    if (e.shiftKey || e.ctrlKey || e.metaKey || isBulkEditMode) {
       e.preventDefault();
       e.stopPropagation();
       toggleBudgetItemSelection(budgetItemId);

@@ -20,9 +20,11 @@ export default function BottomBar() {
       state.removeSheet,
     ]),
   );
-  const [selectedBudgetItems, clearBudgetItemSelection] = useSpace(
+  const [selectedBudgetItems, isBulkEditMode, setIsBulkEditMode, clearBudgetItemSelection] = useSpace(
     useShallow((state) => [
       state.selectedBudgetItems,
+      state.isBulkEditMode,
+      state.setIsBulkEditMode,
       state.clearBudgetItemSelection,
     ]),
   );
@@ -33,7 +35,6 @@ export default function BottomBar() {
   const [editingSheetId, setEditingSheetId] = useState<string | null>(null);
   const [editingSheetName, setEditingSheetName] = useState('');
   const [deleteConfirmSheetId, setDeleteConfirmSheetId] = useState<string | null>(null);
-  const [isBulkEditMode, setIsBulkEditMode] = useState(false);
 
   const isBulkSelecting = selectedBudgetItems.length > 0;
 

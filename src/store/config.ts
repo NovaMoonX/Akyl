@@ -21,6 +21,8 @@ interface SpaceStore {
   setActiveSheet: (sheetId: string) => void;
   // Multi-select state for bulk sheet assignment
   selectedBudgetItems: string[];
+  isBulkEditMode: boolean;
+  setIsBulkEditMode: (isActive: boolean) => void;
   toggleBudgetItemSelection: (id: string) => void;
   clearBudgetItemSelection: () => void;
   addSheetToSelectedItems: (sheetId: string) => void;
@@ -34,6 +36,7 @@ const useSpaceStore = create<SpaceStore>()(
   devtools((set) => ({
     space: initialSpace,
     selectedBudgetItems: [],
+    isBulkEditMode: false,
     setSpace: (space) => set({ space }),
     updateSpace: (partial) =>
       set((state) => ({
@@ -199,6 +202,10 @@ const useSpaceStore = create<SpaceStore>()(
               metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }
           : initialSpace,
+      })),
+    setIsBulkEditMode: (isActive: boolean) =>
+      set(() => ({
+        isBulkEditMode: isActive,
       })),
     toggleBudgetItemSelection: (id: string) =>
       set((state) => ({
