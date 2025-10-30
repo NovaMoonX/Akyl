@@ -94,7 +94,7 @@ export default function BottomBar() {
               onChange={(e) => setActiveSheet(e.target.value)}
               className='px-3 py-1 rounded text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-emerald-500 focus:outline-none'
             >
-              <option value='all'>All Sheets</option>
+              <option value='all'>All</option>
               {sheets && sheets.map((sheet) => (
                 <option key={sheet.id} value={sheet.id}>
                   {sheet.name}
