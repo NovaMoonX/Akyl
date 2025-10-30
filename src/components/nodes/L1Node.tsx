@@ -1,5 +1,5 @@
 import { Handle, Position } from '@xyflow/react';
-import { EyeClosedIcon, EyeIcon } from 'lucide-react';
+import { CheckIcon, EyeClosedIcon, EyeIcon } from 'lucide-react';
 import { memo, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
@@ -20,7 +20,14 @@ function L1Node({ data }: L1NodeProps) {
       state?.space?.config?.listExpenses,
     ]),
   );
-  const { updateIncome, updateExpense } = useSpace();
+  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems } = useSpace(
+    useShallow((state) => ({
+      updateIncome: state.updateIncome,
+      updateExpense: state.updateExpense,
+      toggleBudgetItemSelection: state.toggleBudgetItemSelection,
+      selectedBudgetItems: state.selectedBudgetItems,
+    })),
+  );
   const {
     incomesSourceHiddenMap,
     expensesCategoryHiddenMap,
@@ -35,7 +42,8 @@ function L1Node({ data }: L1NodeProps) {
     return expensesCategoryHiddenMap[label];
   }, [type, label, incomesSourceHiddenMap, expensesCategoryHiddenMap]);
 
-  const toggleHide = () => {
+  const toggleHide = (e: React.MouseEvent) => {
+    e.stopPropagation();
     const nowHidden = isHidden ? false : true;
 
     if (type === 'income') {
@@ -52,9 +60,33 @@ function L1Node({ data }: L1NodeProps) {
     });
   };
 
+  // Check if any items in this group are selected
+  const groupItems = useMemo(() => {
+    if (type === 'income') {
+      return incomeBySource[label]?.items ?? [];
+    }
+    return expenseByCategory[label]?.items ?? [];
+  }, [type, label, incomeBySource, expenseByCategory]);
+
+  const isAnySelected = useMemo(() => {
+    return groupItems.some((item) => selectedBudgetItems.includes(item.id));
+  }, [groupItems, selectedBudgetItems]);
+
+  const handleNodeClick = (e: React.MouseEvent) => {
+    // Only toggle selection if shift or ctrl/cmd is pressed
+    if (e.shiftKey || e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Toggle all items in this group
+      groupItems.forEach((item) => {
+        toggleBudgetItemSelection(item.id);
+      });
+    }
+  };
+
   return (
     // Wrapper div for styling and hiding
-    <div>
+    <div onClick={handleNodeClick}>
       <div
         className={join(
           isHidden &&
@@ -65,8 +97,21 @@ function L1Node({ data }: L1NodeProps) {
           className={join(
             'group bg-surface-light dark:bg-surface-dark border-node-border relative flex max-w-[160px] min-w-[120px] flex-col items-center gap-1 rounded-lg border p-4 shadow-md',
             isHidden && 'opacity-40',
+            isAnySelected && type === 'income' && 'ring-2 ring-green-500',
+            isAnySelected && type === 'expense' && 'ring-2 ring-red-500',
           )}
         >
+          {/* Selection indicator */}
+          {isAnySelected && (
+            <div className={join(
+              'absolute -top-2 -right-2 rounded-full p-1 z-10',
+              type === 'income' && 'bg-green-500',
+              type === 'expense' && 'bg-red-500',
+            )}>
+              <CheckIcon className='size-3 text-white' />
+            </div>
+          )}
+
           <p className='text-center text-lg leading-snug font-semibold'>
             {label}
           </p>

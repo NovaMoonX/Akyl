@@ -72,7 +72,7 @@ const useSpaceStore = create<SpaceStore>()(
             }
           : initialSpace,
       })),
-    addIncome: (income) =>
+    addIncome: (income: Income) =>
       set((state) => ({
         space: state.space
           ? {
@@ -82,29 +82,29 @@ const useSpaceStore = create<SpaceStore>()(
             }
           : initialSpace,
       })),
-    updateIncome: (id, updates) =>
+    updateIncome: (id: string, updates: Partial<Income>) =>
       set((state) => ({
         space: state.space
           ? {
               ...state.space,
-              incomes: state.space.incomes.map((income) =>
+              incomes: state.space.incomes.map((income: Income) =>
                 income.id === id ? { ...income, ...updates } : income,
               ),
               metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }
           : initialSpace,
       })),
-    removeIncome: (id) =>
+    removeIncome: (id: string) =>
       set((state) => ({
         space: state.space
           ? {
               ...state.space,
-              incomes: state.space.incomes.filter((income) => income.id !== id),
+              incomes: state.space.incomes.filter((income: Income) => income.id !== id),
               metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }
           : initialSpace,
       })),
-    addExpense: (expense) =>
+    addExpense: (expense: Expense) =>
       set((state) => ({
         space: state.space
           ? {
@@ -114,25 +114,25 @@ const useSpaceStore = create<SpaceStore>()(
             }
           : initialSpace,
       })),
-    updateExpense: (id, updates) =>
+    updateExpense: (id: string, updates: Partial<Expense>) =>
       set((state) => ({
         space: state.space
           ? {
               ...state.space,
-              expenses: state.space.expenses.map((expense) =>
+              expenses: state.space.expenses.map((expense: Expense) =>
                 expense.id === id ? { ...expense, ...updates } : expense,
               ),
               metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }
           : initialSpace,
       })),
-    removeExpense: (id) =>
+    removeExpense: (id: string) =>
       set((state) => ({
         space: state.space
           ? {
               ...state.space,
               expenses: state.space.expenses.filter(
-                (expense) => expense.id !== id,
+                (expense: Expense) => expense.id !== id,
               ),
               metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }

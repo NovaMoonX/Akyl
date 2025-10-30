@@ -6,7 +6,7 @@ export default function BulkSheetEditor() {
   const [selectedBudgetItems, sheets, addSheetToSelectedItems, removeSheetFromSelectedItems, clearBudgetItemSelection] = useSpace(
     useShallow((state) => [
       state.selectedBudgetItems,
-      state?.space?.sheets,
+      state?.space?.sheets || [],
       state.addSheetToSelectedItems,
       state.removeSheetFromSelectedItems,
       state.clearBudgetItemSelection,
@@ -18,10 +18,10 @@ export default function BulkSheetEditor() {
   }
 
   return (
-    <div className='fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-surface-light dark:bg-surface-dark rounded-lg shadow-lg p-4 border border-gray-300 dark:border-gray-700'>
-      <div className='flex items-center gap-4'>
+    <div className='fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-surface-light dark:bg-surface-dark rounded-full shadow-lg px-4 py-2 border border-gray-300 dark:border-gray-700'>
+      <div className='flex items-center gap-3'>
         <div className='flex items-center gap-2'>
-          <span className='font-semibold'>
+          <span className='font-semibold text-sm'>
             {selectedBudgetItems.length} item{selectedBudgetItems.length > 1 ? 's' : ''} selected
           </span>
           <button
@@ -32,7 +32,7 @@ export default function BulkSheetEditor() {
             <XIcon className='size-4' />
           </button>
         </div>
-        {sheets && sheets.length > 0 && (
+        {sheets.length > 0 && (
           <>
             <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
             <div className='flex items-center gap-2'>

@@ -98,12 +98,17 @@ function BudgetNode({ data }: BudgetNodeProps) {
         className={join(
           'bg-surface-light group dark:bg-surface-dark border-node-border relative flex max-w-[180px] min-w-[140px] flex-col rounded-lg border p-0 shadow-md',
           budgetItem?.hidden && 'opacity-40',
-          isSelected && 'ring-2 ring-emerald-500',
+          isSelected && type === 'income' && 'ring-2 ring-green-500',
+          isSelected && type === 'expense' && 'ring-2 ring-red-500',
         )}
       >
         {/* Selection indicator */}
         {isSelected && (
-          <div className='absolute -top-2 -right-2 bg-emerald-500 rounded-full p-1 z-10'>
+          <div className={join(
+            'absolute -top-2 -right-2 rounded-full p-1 z-10',
+            type === 'income' && 'bg-green-500',
+            type === 'expense' && 'bg-red-500',
+          )}>
             <CheckIcon className='size-3 text-white' />
           </div>
         )}
