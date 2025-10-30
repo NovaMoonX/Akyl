@@ -12,18 +12,31 @@ import type { BudgetType } from '../lib/node.types';
 import { useSpace } from '../store';
 
 export default function useBudget() {
-  const [incomesInSpace, expensesInSpace, spaceTimeWindow, activeSheet] = useSpace(
+  const [incomesInSpace, expensesInSpace, spaceTimeWindow, activeSheet, sheets] = useSpace(
     useShallow((state) => [
       state?.space?.incomes,
       state?.space?.expenses,
       state?.space?.config?.timeWindow,
       state?.space?.config?.activeSheet,
+      state?.space?.sheets || [],
     ]),
   );
 
+  // Get the active sheet object for per-sheet settings
+  const activeSheetObj = useMemo(() => {
+    if (activeSheet && activeSheet !== 'all') {
+      return sheets.find((s) => s.id === activeSheet);
+    }
+    return null;
+  }, [activeSheet, sheets]);
+
+  // Use per-sheet time window if available, otherwise fall back to global
   const timeWindow = useMemo(() => {
+    if (activeSheetObj?.timeWindow) {
+      return activeSheetObj.timeWindow;
+    }
     return spaceTimeWindow ?? DEFAULT_TIME_WINDOW;
-  }, [spaceTimeWindow]);
+  }, [activeSheetObj, spaceTimeWindow]);
 
   const incomes = useMemo(() => {
     let items = incomesInSpace ?? [];
@@ -151,7 +164,13 @@ export default function useBudget() {
           }
           acc[income.source].items.push(income);
           acc[income.source].completeTotal += income.amount;
-          if (!income.hidden) {
+          
+          // Check per-sheet hidden state
+          const isHidden = activeSheet && activeSheet !== 'all'
+            ? income.hiddenInSheets?.includes(activeSheet) ?? false
+            : income.hidden ?? false;
+          
+          if (!isHidden) {
             // only include non-hidden incomes
             acc[income.source].total += income.amount;
           }
@@ -173,7 +192,7 @@ export default function useBudget() {
         },
         {} as Record<string, { total: number; items: Income[] }>,
       );
-  }, [incomes]);
+  }, [incomes, activeSheet]);
 
   // Group expenses by category and calculate totals
   // Sort categories by total amount descending
@@ -186,7 +205,13 @@ export default function useBudget() {
           }
           acc[expense.category].items.push(expense);
           acc[expense.category].completeTotal += expense.amount;
-          if (!expense.hidden) {
+          
+          // Check per-sheet hidden state
+          const isHidden = activeSheet && activeSheet !== 'all'
+            ? expense.hiddenInSheets?.includes(activeSheet) ?? false
+            : expense.hidden ?? false;
+          
+          if (!isHidden) {
             // only include non-hidden expenses
             acc[expense.category].total += expense.amount;
           }
@@ -211,47 +236,65 @@ export default function useBudget() {
         },
         {} as Record<string, { total: number; items: Expense[] }>,
       );
-  }, [expenses]);
+  }, [expenses, activeSheet]);
 
   const incomesTotal = useMemo(() => {
     return incomes.reduce((total, income) => {
-      if (income.hidden) {
+      // Check per-sheet hidden state
+      const isHidden = activeSheet && activeSheet !== 'all'
+        ? income.hiddenInSheets?.includes(activeSheet) ?? false
+        : income.hidden ?? false;
+      
+      if (isHidden) {
         return total; // only include non-hidden incomes
       }
       return total + income.amount;
     }, 0);
-  }, [incomes]);
+  }, [incomes, activeSheet]);
 
   const expensesTotal = useMemo(() => {
     return expenses.reduce((total, expense) => {
-      if (expense.hidden) {
+      // Check per-sheet hidden state
+      const isHidden = activeSheet && activeSheet !== 'all'
+        ? expense.hiddenInSheets?.includes(activeSheet) ?? false
+        : expense.hidden ?? false;
+      
+      if (isHidden) {
         return total; // only include non-hidden expenses
       }
       return total + expense.amount;
     }, 0);
-  }, [expenses]);
+  }, [expenses, activeSheet]);
 
   // Source mapped to `true` if all items in that source are hidden
   const incomesSourceHiddenMap = useMemo(() => {
     const visibility: Record<string, boolean> = {};
     for (const source in incomeBySource) {
       const items = incomeBySource[source]?.items ?? [];
-      visibility[source] =
-        items.length > 0 && items.every((income) => income.hidden);
+      visibility[source] = items.length > 0 && items.every((income) => {
+        // Check per-sheet hidden state
+        return activeSheet && activeSheet !== 'all'
+          ? income.hiddenInSheets?.includes(activeSheet) ?? false
+          : income.hidden ?? false;
+      });
     }
     return visibility;
-  }, [incomeBySource]);
+  }, [incomeBySource, activeSheet]);
 
   // Category mapped to `true` if all items in that category are hidden
   const expensesCategoryHiddenMap = useMemo(() => {
     const visibility: Record<string, boolean> = {};
     for (const category in expenseByCategory) {
       const items = expenseByCategory[category]?.items ?? [];
-      visibility[category] =
-        items.length > 0 && items.every((expense) => expense.hidden);
+      visibility[category] = items.length > 0 && items.every((expense) => {
+        // Check per-sheet hidden state
+        return activeSheet && activeSheet !== 'all'
+          ? expense.hiddenInSheets?.includes(activeSheet) ?? false
+          : expense.hidden ?? false;
+      });
     }
     return visibility;
-  }, [expenseByCategory]);
+  }, [expenseByCategory, activeSheet]);
 
   const getBudgetItem = useCallback(
     (

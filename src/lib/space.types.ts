@@ -23,6 +23,10 @@ export interface Sheet {
   id: string;
   name: string;
   color?: string;
+  timeWindow?: BudgetItemCadence; // Per-sheet time window
+  hideSources?: boolean; // Per-sheet display option
+  hideCategories?: boolean; // Per-sheet display option
+  listExpenses?: boolean; // Per-sheet display option
 }
 
 export interface Config {

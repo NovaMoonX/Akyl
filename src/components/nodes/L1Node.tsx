@@ -14,10 +14,11 @@ interface L1NodeProps {
 
 function L1Node({ data }: L1NodeProps) {
   const { label, amount, type } = data;
-  const [currency, listExpenses] = useSpace(
+  const [currency, listExpenses, activeSheet] = useSpace(
     useShallow((state) => [
       state?.space?.config?.currency || 'USD',
       state?.space?.config?.listExpenses,
+      state?.space?.config?.activeSheet || 'all',
     ]),
   );
   const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems } = useSpace(
@@ -49,14 +50,34 @@ function L1Node({ data }: L1NodeProps) {
     if (type === 'income') {
       const sourceIncomes = incomeBySource[label]?.items ?? [];
       sourceIncomes.forEach((income) => {
-        updateIncome(income.id, { hidden: nowHidden });
+        if (activeSheet === 'all') {
+          // Toggle global hidden state
+          updateIncome(income.id, { hidden: nowHidden });
+        } else {
+          // Toggle per-sheet hidden state
+          const hiddenInSheets = income.hiddenInSheets || [];
+          const updatedHiddenInSheets = nowHidden
+            ? [...hiddenInSheets, activeSheet]
+            : hiddenInSheets.filter((id) => id !== activeSheet);
+          updateIncome(income.id, { hiddenInSheets: updatedHiddenInSheets });
+        }
       });
       return;
     }
 
     const categoryExpenses = expenseByCategory[label]?.items ?? [];
     categoryExpenses.forEach((expense) => {
-      updateExpense(expense.id, { hidden: nowHidden });
+      if (activeSheet === 'all') {
+        // Toggle global hidden state
+        updateExpense(expense.id, { hidden: nowHidden });
+      } else {
+        // Toggle per-sheet hidden state
+        const hiddenInSheets = expense.hiddenInSheets || [];
+        const updatedHiddenInSheets = nowHidden
+          ? [...hiddenInSheets, activeSheet]
+          : hiddenInSheets.filter((id) => id !== activeSheet);
+        updateExpense(expense.id, { hiddenInSheets: updatedHiddenInSheets });
+      }
     });
   };
 
