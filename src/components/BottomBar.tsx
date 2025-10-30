@@ -259,7 +259,10 @@ export default function BottomBar() {
                         Rename
                       </button>
                       <button
-                        onClick={() => setDeleteConfirmSheetId(sheet.id)}
+                        onClick={() => {
+                          setDeleteConfirmSheetId(sheet.id);
+                          setIsSettingsModalOpen(false);
+                        }}
                         className='px-2 py-1 text-xs rounded bg-red-500 text-white hover:bg-red-600'
                       >
                         Delete
