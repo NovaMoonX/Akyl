@@ -35,13 +35,13 @@ export default function useSpaceFlow() {
       state?.space?.config?.hideSources,
       state?.space?.config?.hideCategories,
       state?.space?.config?.listExpenses,
-      state?.space?.config?.activeSheet || 'all',
-      state?.space?.sheets || [],
+      state?.space?.config?.activeSheet,
+      state?.space?.sheets,
     ]),
   );
 
   // Get current sheet's display options or fall back to global
-  const activeSheetObj = activeSheet !== 'all' 
+  const activeSheetObj = activeSheet && activeSheet !== 'all' && sheets
     ? sheets.find((s) => s.id === activeSheet)
     : null;
 

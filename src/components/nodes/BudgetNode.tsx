@@ -23,8 +23,8 @@ function BudgetNode({ data }: BudgetNodeProps) {
   const { budgetItemId } = data;
   const [currency, activeSheet] = useSpace(
     useShallow((state) => [
-      state?.space?.config?.currency || 'USD',
-      state?.space?.config?.activeSheet || 'all',
+      state?.space?.config?.currency,
+      state?.space?.config?.activeSheet,
     ]),
   );
   const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems } = useSpace(
@@ -44,7 +44,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
   // Check if item is hidden in current sheet context
   const isHidden = useMemo(() => {
     if (!budgetItem) return false;
-    if (activeSheet === 'all') {
+    if (!activeSheet || activeSheet === 'all') {
       return budgetItem.hidden ?? false;
     }
     return budgetItem.hiddenInSheets?.includes(activeSheet) ?? false;
@@ -54,7 +54,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
     e.stopPropagation();
     if (!budgetItem) return;
     
-    if (activeSheet === 'all') {
+    if (!activeSheet || activeSheet === 'all') {
       // Toggle global hidden state
       const nowHidden = budgetItem.hidden ? false : true;
       if (type === 'income') {
@@ -64,7 +64,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
       }
     } else {
       // Toggle per-sheet hidden state
-      const hiddenInSheets = budgetItem.hiddenInSheets || [];
+      const hiddenInSheets = budgetItem.hiddenInSheets ?? [];
       const nowHidden = hiddenInSheets.includes(activeSheet);
       const updatedHiddenInSheets = nowHidden
         ? hiddenInSheets.filter((id) => id !== activeSheet)
@@ -183,7 +183,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
               type === 'expense' && 'text-outflow/80',
             )}
           >
-            {formatCurrency(budgetItem.amount, currency)}
+            {formatCurrency(budgetItem.amount, currency || 'USD')}
           </span>
         </div>
 

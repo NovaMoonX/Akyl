@@ -16,10 +16,10 @@ function L1Node({ data }: L1NodeProps) {
   const { label, amount, type } = data;
   const [currency, listExpenses, activeSheet, sheets] = useSpace(
     useShallow((state) => [
-      state?.space?.config?.currency || 'USD',
+      state?.space?.config?.currency,
       state?.space?.config?.listExpenses,
-      state?.space?.config?.activeSheet || 'all',
-      state?.space?.sheets || [],
+      state?.space?.config?.activeSheet,
+      state?.space?.sheets,
     ]),
   );
   const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems } = useSpace(
@@ -38,7 +38,7 @@ function L1Node({ data }: L1NodeProps) {
   } = useBudget();
 
   // Get current sheet's listExpenses or fall back to global
-  const activeSheetObj = activeSheet !== 'all' 
+  const activeSheetObj = activeSheet && activeSheet !== 'all' && sheets
     ? sheets.find((s) => s.id === activeSheet)
     : null;
 
@@ -58,12 +58,12 @@ function L1Node({ data }: L1NodeProps) {
     if (type === 'income') {
       const sourceIncomes = incomeBySource[label]?.items ?? [];
       sourceIncomes.forEach((income) => {
-        if (activeSheet === 'all') {
+        if (!activeSheet || activeSheet === 'all') {
           // Toggle global hidden state
           updateIncome(income.id, { hidden: nowHidden });
         } else {
           // Toggle per-sheet hidden state
-          const hiddenInSheets = income.hiddenInSheets || [];
+          const hiddenInSheets = income.hiddenInSheets ?? [];
           const updatedHiddenInSheets = nowHidden
             ? [...hiddenInSheets, activeSheet]
             : hiddenInSheets.filter((id) => id !== activeSheet);
@@ -75,12 +75,12 @@ function L1Node({ data }: L1NodeProps) {
 
     const categoryExpenses = expenseByCategory[label]?.items ?? [];
     categoryExpenses.forEach((expense) => {
-      if (activeSheet === 'all') {
+      if (!activeSheet || activeSheet === 'all') {
         // Toggle global hidden state
         updateExpense(expense.id, { hidden: nowHidden });
       } else {
         // Toggle per-sheet hidden state
-        const hiddenInSheets = expense.hiddenInSheets || [];
+        const hiddenInSheets = expense.hiddenInSheets ?? [];
         const updatedHiddenInSheets = nowHidden
           ? [...hiddenInSheets, activeSheet]
           : hiddenInSheets.filter((id) => id !== activeSheet);
@@ -167,7 +167,7 @@ function L1Node({ data }: L1NodeProps) {
               type === 'expense' && 'text-outflow/80',
             )}
           >
-            {formatCurrency(amount, currency)}
+            {formatCurrency(amount, currency || 'USD')}
           </span>
 
           {/* move handle inward for smoother edge animation */}

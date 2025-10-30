@@ -18,13 +18,13 @@ export default function useBudget() {
       state?.space?.expenses,
       state?.space?.config?.timeWindow,
       state?.space?.config?.activeSheet,
-      state?.space?.sheets || [],
+      state?.space?.sheets,
     ]),
   );
 
   // Get the active sheet object for per-sheet settings
   const activeSheetObj = useMemo(() => {
-    if (activeSheet && activeSheet !== 'all') {
+    if (activeSheet && activeSheet !== 'all' && sheets) {
       return sheets.find((s) => s.id === activeSheet);
     }
     return null;

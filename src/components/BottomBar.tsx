@@ -13,8 +13,8 @@ import HeaderBarTimeWindow from './header/HeaderBarTimeWindow';
 export default function BottomBar() {
   const [sheets, activeSheet, setActiveSheet, addSheet, updateSheet, removeSheet] = useSpace(
     useShallow((state) => [
-      state?.space?.sheets || [],
-      state?.space?.config?.activeSheet || 'all',
+      state?.space?.sheets,
+      state?.space?.config?.activeSheet,
       state.setActiveSheet,
       state.addSheet,
       state.updateSheet,
@@ -75,12 +75,12 @@ export default function BottomBar() {
           {/* Mobile: Select-based sheet selector */}
           <div className='sm:hidden flex items-center gap-2'>
             <select
-              value={activeSheet}
+              value={activeSheet || 'all'}
               onChange={(e) => setActiveSheet(e.target.value)}
               className='px-3 py-1 rounded text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-emerald-500 focus:outline-none'
             >
               <option value='all'>All Sheets</option>
-              {sheets.map((sheet) => (
+              {sheets && sheets.map((sheet) => (
                 <option key={sheet.id} value={sheet.id}>
                   {sheet.name}
                 </option>
@@ -130,7 +130,7 @@ export default function BottomBar() {
                     Manage Sheets
                   </span>
                   <div className='flex flex-col gap-2'>
-                    {sheets.map((sheet) => (
+                    {sheets && sheets.map((sheet) => (
                       <div key={sheet.id} className='flex items-center gap-2'>
                         {editingSheetId === sheet.id ? (
                           <>
@@ -221,7 +221,7 @@ export default function BottomBar() {
               Manage Sheets
             </span>
             <div className='flex flex-col gap-2'>
-              {sheets.map((sheet) => (
+              {sheets && sheets.map((sheet) => (
                 <div key={sheet.id} className='flex items-center gap-2'>
                   {editingSheetId === sheet.id ? (
                     <>
