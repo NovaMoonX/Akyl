@@ -19,7 +19,7 @@ export default function HeaderBarMobile() {
     ]),
   );
   const { updateSpace } = useSpace();
-  const { incomes, expenses } = useBudget();
+  const { totalBudgetItemsInSpace } = useBudget();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +60,7 @@ export default function HeaderBarMobile() {
           </button>
         </div>
 
-        {[...incomes, ...expenses].length === 0 && (
+        {totalBudgetItemsInSpace === 0 && (
           <div className='absolute -right-2 -bottom-16 flex animate-pulse flex-col items-center'>
             <ArrowUpIcon className='size-4' />
             <span className='rounded-lg px-4 py-2 text-xs font-medium'>

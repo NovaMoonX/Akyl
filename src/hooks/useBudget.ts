@@ -316,9 +316,19 @@ export default function useBudget() {
     [incomesMap, expensesMap],
   );
 
+  const totalBudgetItems = useMemo(() => {
+    return incomes.length + expenses.length;
+  }, [incomes, expenses]);
+
+  const totalBudgetItemsInSpace = useMemo(() => {
+    return (incomesInSpace?.length ?? 0) + (expensesInSpace?.length ?? 0);
+  }, [incomesInSpace, expensesInSpace]);
+
   return {
     incomes,
     expenses,
+    incomesInSpace,
+    expensesInSpace,
     incomesMap,
     expensesMap,
     incomesTotal,
@@ -332,5 +342,7 @@ export default function useBudget() {
     expenseByCategory,
     incomesSourceHiddenMap,
     expensesCategoryHiddenMap,
+    totalBudgetItems,
+    totalBudgetItemsInSpace,
   };
 }
