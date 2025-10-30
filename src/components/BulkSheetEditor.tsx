@@ -4,7 +4,7 @@ import { useSpace } from '../store';
 
 interface BulkSheetEditorProps {
   endBulkEdit: () => void;
-  onAddedToSheet?: (sheet: { id: string; name: string }) => void;
+  onAddedToSheet: (sheet: { id: string; name: string }) => void;
 }
 
 export default function BulkSheetEditor({
