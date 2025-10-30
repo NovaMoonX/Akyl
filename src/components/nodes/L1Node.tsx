@@ -1,6 +1,6 @@
 import { Handle, Position } from '@xyflow/react';
 import { CheckIcon, EyeClosedIcon, EyeIcon } from 'lucide-react';
-import { memo, useMemo, useRef, useCallback } from 'react';
+import { memo, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
 import { formatCurrency, type L1Data } from '../../lib';
@@ -113,47 +113,10 @@ function L1Node({ data }: L1NodeProps) {
     }
   };
 
-  // Long-press handling for mobile
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const longPressTriggered = useRef(false);
-
-  const handleTouchStart = useCallback(() => {
-    longPressTriggered.current = false;
-    longPressTimer.current = setTimeout(() => {
-      longPressTriggered.current = true;
-      // Toggle all items in this group
-      groupItems.forEach((item) => {
-        toggleBudgetItemSelection(item.id);
-      });
-      // Haptic feedback if available
-      if ('vibrate' in navigator) {
-        navigator.vibrate(50);
-      }
-    }, 500); // 500ms long-press threshold
-  }, [groupItems, toggleBudgetItemSelection]);
-
-  const handleTouchEnd = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  }, []);
-
-  const handleTouchMove = useCallback(() => {
-    // Cancel long-press if user moves finger
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  }, []);
-
   return (
     // Wrapper div for styling and hiding
     <div 
       onClick={handleNodeClick}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchMove={handleTouchMove}
     >
       <div
         className={join(

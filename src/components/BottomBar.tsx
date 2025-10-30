@@ -1,8 +1,8 @@
-import { PlusIcon, Settings2Icon } from 'lucide-react';
+import { PlusIcon, Settings2Icon, CheckSquareIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../store';
-import { generateId } from '../utils';
+import { generateId, join } from '../utils';
 import BulkSheetEditor from './BulkSheetEditor';
 import HeaderBarSheets from './header/HeaderBarSheets';
 import Modal from './ui/Modal';
@@ -21,8 +21,11 @@ export default function BottomBar() {
       state.removeSheet,
     ]),
   );
-  const selectedBudgetItems = useSpace(
-    useShallow((state) => state.selectedBudgetItems),
+  const [selectedBudgetItems, clearBudgetItemSelection] = useSpace(
+    useShallow((state) => [
+      state.selectedBudgetItems,
+      state.clearBudgetItemSelection,
+    ]),
   );
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAddSheetModalOpen, setIsAddSheetModalOpen] = useState(false);
@@ -31,6 +34,7 @@ export default function BottomBar() {
   const [editingSheetId, setEditingSheetId] = useState<string | null>(null);
   const [editingSheetName, setEditingSheetName] = useState('');
   const [deleteConfirmSheetId, setDeleteConfirmSheetId] = useState<string | null>(null);
+  const [isBulkEditMode, setIsBulkEditMode] = useState(false);
 
   const isBulkSelecting = selectedBudgetItems.length > 0;
 
@@ -57,6 +61,17 @@ export default function BottomBar() {
   const handleDeleteSheet = (sheetId: string) => {
     removeSheet(sheetId);
     setDeleteConfirmSheetId(null);
+  };
+
+  const handleToggleBulkEdit = () => {
+    if (isBulkEditMode) {
+      // Exit bulk edit mode
+      clearBudgetItemSelection();
+      setIsBulkEditMode(false);
+    } else {
+      // Enter bulk edit mode
+      setIsBulkEditMode(true);
+    }
   };
 
   if (isBulkSelecting) {
@@ -87,11 +102,16 @@ export default function BottomBar() {
               ))}
             </select>
             <button
-              onClick={() => setIsAddSheetModalOpen(true)}
-              className='p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700'
-              aria-label='Add new sheet'
+              onClick={handleToggleBulkEdit}
+              className={join(
+                'p-1 rounded transition-colors',
+                isBulkEditMode || isBulkSelecting
+                  ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+              )}
+              aria-label={isBulkEditMode ? 'Exit bulk edit mode' : 'Enter bulk edit mode'}
             >
-              <PlusIcon className='size-4' />
+              <CheckSquareIcon className='size-4' />
             </button>
           </div>
 
@@ -217,9 +237,18 @@ export default function BottomBar() {
           </div>
 
           <div className='w-full'>
-            <span className='mb-2 block text-center font-medium text-gray-700 dark:text-gray-200'>
-              Manage Sheets
-            </span>
+            <div className='flex items-center justify-between mb-2'>
+              <span className='block text-center font-medium text-gray-700 dark:text-gray-200'>
+                Manage Sheets
+              </span>
+              <button
+                onClick={() => setIsAddSheetModalOpen(true)}
+                className='p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700'
+                aria-label='Add new sheet'
+              >
+                <PlusIcon className='size-4' />
+              </button>
+            </div>
             <div className='flex flex-col gap-2'>
               {sheets && sheets.map((sheet) => (
                 <div key={sheet.id} className='flex items-center gap-2'>

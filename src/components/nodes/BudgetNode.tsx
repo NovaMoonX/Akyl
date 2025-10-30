@@ -1,6 +1,6 @@
 import { Handle, Position } from '@xyflow/react';
 import { CheckIcon, EyeClosedIcon, EyeIcon, PencilIcon } from 'lucide-react';
-import { memo, useMemo, useRef, useCallback } from 'react';
+import { memo, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
@@ -96,37 +96,6 @@ function BudgetNode({ data }: BudgetNodeProps) {
     }
   };
 
-  // Long-press handling for mobile
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const longPressTriggered = useRef(false);
-
-  const handleTouchStart = useCallback(() => {
-    longPressTriggered.current = false;
-    longPressTimer.current = setTimeout(() => {
-      longPressTriggered.current = true;
-      toggleBudgetItemSelection(budgetItemId);
-      // Haptic feedback if available
-      if ('vibrate' in navigator) {
-        navigator.vibrate(50);
-      }
-    }, 500); // 500ms long-press threshold
-  }, [budgetItemId, toggleBudgetItemSelection]);
-
-  const handleTouchEnd = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  }, []);
-
-  const handleTouchMove = useCallback(() => {
-    // Cancel long-press if user moves finger
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  }, []);
-
   if (!budgetItem) {
     console.log('Budget item not found', budgetItemId);
     return null;
@@ -154,9 +123,6 @@ function BudgetNode({ data }: BudgetNodeProps) {
           'bg-surface-light group dark:bg-surface-dark rounded-lg',
       )}
       onClick={handleNodeClick}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchMove={handleTouchMove}
     >
       <div
         className={join(
