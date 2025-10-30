@@ -18,7 +18,7 @@ export default function BulkSheetEditor() {
   }
 
   return (
-    <div className='fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-surface-light dark:bg-surface-dark rounded-full shadow-lg px-4 py-2 border border-gray-300 dark:border-gray-700'>
+    <div className='fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-surface-light dark:bg-surface-dark rounded-full shadow-lg px-4 py-2 border border-gray-300 dark:border-gray-700'>
       <div className='flex items-center gap-3'>
         <div className='flex items-center gap-2'>
           <span className='font-semibold text-sm'>

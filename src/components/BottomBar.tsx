@@ -30,6 +30,7 @@ export default function BottomBar() {
   const [newSheetName, setNewSheetName] = useState('');
   const [editingSheetId, setEditingSheetId] = useState<string | null>(null);
   const [editingSheetName, setEditingSheetName] = useState('');
+  const [deleteConfirmSheetId, setDeleteConfirmSheetId] = useState<string | null>(null);
 
   const isBulkSelecting = selectedBudgetItems.length > 0;
 
@@ -55,6 +56,7 @@ export default function BottomBar() {
 
   const handleDeleteSheet = (sheetId: string) => {
     removeSheet(sheetId);
+    setDeleteConfirmSheetId(null);
   };
 
   if (isBulkSelecting) {
@@ -63,7 +65,7 @@ export default function BottomBar() {
 
   return (
     <>
-      <div className='fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-surface-light dark:bg-surface-dark rounded-full shadow-lg px-4 py-2 border border-gray-300 dark:border-gray-700'>
+      <div className='fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-surface-light dark:bg-surface-dark rounded-full shadow-lg px-4 py-2 border border-gray-300 dark:border-gray-700'>
         <div className='flex items-center gap-3'>
           {/* Desktop: Button-based sheet selector */}
           <div className='hidden sm:block'>
@@ -166,7 +168,7 @@ export default function BottomBar() {
                               Rename
                             </button>
                             <button
-                              onClick={() => handleDeleteSheet(sheet.id)}
+                              onClick={() => setDeleteConfirmSheetId(sheet.id)}
                               className='px-2 py-1 text-xs rounded bg-red-500 text-white hover:bg-red-600'
                             >
                               Delete
@@ -257,7 +259,7 @@ export default function BottomBar() {
                         Rename
                       </button>
                       <button
-                        onClick={() => handleDeleteSheet(sheet.id)}
+                        onClick={() => setDeleteConfirmSheetId(sheet.id)}
                         className='px-2 py-1 text-xs rounded bg-red-500 text-white hover:bg-red-600'
                       >
                         Delete
@@ -314,6 +316,34 @@ export default function BottomBar() {
               className='px-4 py-2 rounded bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed'
             >
               Add Sheet
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteConfirmSheetId !== null}
+        onClose={() => setDeleteConfirmSheetId(null)}
+        title='Confirm Deletion'
+        centerTitle={true}
+      >
+        <div className='flex flex-col gap-4 pb-2'>
+          <p className='text-center text-gray-700 dark:text-gray-200'>
+            Are you sure you want to delete this sheet? This will remove the sheet from all budget items.
+          </p>
+          <div className='flex justify-center gap-2'>
+            <button
+              onClick={() => setDeleteConfirmSheetId(null)}
+              className='px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600'
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => deleteConfirmSheetId && handleDeleteSheet(deleteConfirmSheetId)}
+              className='px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600'
+            >
+              Delete
             </button>
           </div>
         </div>
