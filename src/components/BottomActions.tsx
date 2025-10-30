@@ -11,31 +11,57 @@ export default function BottomActions({
   className,
   actionClassName,
 }: BottomActionsProps) {
-  const [hideSources, hideCategories, listExpenses] = useSpace(
+  const [hideSources, hideCategories, listExpenses, activeSheet, sheets] = useSpace(
     useShallow((state) => [
       state?.space?.config?.hideSources,
       state?.space?.config?.hideCategories,
       state?.space?.config?.listExpenses,
+      state?.space?.config?.activeSheet || 'all',
+      state?.space?.sheets || [],
     ]),
   );
-  const { updateConfig } = useSpace();
+  const { updateConfig, updateSheet } = useSpace();
+
+  // Get current sheet's settings or fall back to global
+  const activeSheetObj = activeSheet !== 'all' 
+    ? sheets.find((s) => s.id === activeSheet)
+    : null;
+
+  const currentHideSources = activeSheetObj?.hideSources ?? hideSources;
+  const currentHideCategories = activeSheetObj?.hideCategories ?? hideCategories;
+  const currentListExpenses = activeSheetObj?.listExpenses ?? listExpenses;
 
   const handleToggleSources = () => {
-    const nowHidden = hideSources ? false : true;
-    updateConfig({ hideSources: nowHidden });
+    const nowHidden = currentHideSources ? false : true;
+    if (activeSheet === 'all') {
+      updateConfig({ hideSources: nowHidden });
+    } else {
+      updateSheet(activeSheet, { hideSources: nowHidden });
+    }
   };
 
   const handleToggleCategories = () => {
-    const nowHidden = hideCategories ? false : true;
-    updateConfig({ hideCategories: nowHidden });
-    if (nowHidden) {
-      updateConfig({ listExpenses: false });
+    const nowHidden = currentHideCategories ? false : true;
+    if (activeSheet === 'all') {
+      updateConfig({ hideCategories: nowHidden });
+      if (nowHidden) {
+        updateConfig({ listExpenses: false });
+      }
+    } else {
+      updateSheet(activeSheet, { hideCategories: nowHidden });
+      if (nowHidden) {
+        updateSheet(activeSheet, { listExpenses: false });
+      }
     }
   };
 
   const handleToggleListExpenses = () => {
-    const nowList = listExpenses ? false : true;
-    updateConfig({ listExpenses: nowList });
+    const nowList = currentListExpenses ? false : true;
+    if (activeSheet === 'all') {
+      updateConfig({ listExpenses: nowList });
+    } else {
+      updateSheet(activeSheet, { listExpenses: nowList });
+    }
   };
 
   return (
@@ -48,7 +74,7 @@ export default function BottomActions({
           actionClassName,
         )}
       >
-        {hideSources ? 'Show Sources' : 'Hide Sources'}
+        {currentHideSources ? 'Show Sources' : 'Hide Sources'}
       </button>
       <button
         role='button'
@@ -58,9 +84,9 @@ export default function BottomActions({
           actionClassName,
         )}
       >
-        {hideCategories ? 'Show Categories' : 'Hide Categories'}
+        {currentHideCategories ? 'Show Categories' : 'Hide Categories'}
       </button>
-      {!hideCategories && (
+      {!currentHideCategories && (
         <button
           role='button'
           onClick={handleToggleListExpenses}
@@ -69,7 +95,7 @@ export default function BottomActions({
             actionClassName,
           )}
         >
-          {listExpenses ? 'Expand Expenses' : 'List Expenses'}
+          {currentListExpenses ? 'Expand Expenses' : 'List Expenses'}
         </button>
       )}
     </div>

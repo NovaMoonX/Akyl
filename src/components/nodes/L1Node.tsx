@@ -14,11 +14,12 @@ interface L1NodeProps {
 
 function L1Node({ data }: L1NodeProps) {
   const { label, amount, type } = data;
-  const [currency, listExpenses, activeSheet] = useSpace(
+  const [currency, listExpenses, activeSheet, sheets] = useSpace(
     useShallow((state) => [
       state?.space?.config?.currency || 'USD',
       state?.space?.config?.listExpenses,
       state?.space?.config?.activeSheet || 'all',
+      state?.space?.sheets || [],
     ]),
   );
   const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems } = useSpace(
@@ -35,6 +36,13 @@ function L1Node({ data }: L1NodeProps) {
     incomeBySource,
     expenseByCategory,
   } = useBudget();
+
+  // Get current sheet's listExpenses or fall back to global
+  const activeSheetObj = activeSheet !== 'all' 
+    ? sheets.find((s) => s.id === activeSheet)
+    : null;
+
+  const currentListExpenses = activeSheetObj?.listExpenses ?? listExpenses;
 
   const isHidden = useMemo(() => {
     if (type === 'income') {
@@ -176,7 +184,7 @@ function L1Node({ data }: L1NodeProps) {
         </div>
       </div>
 
-      {listExpenses && type === 'expense' && (
+      {currentListExpenses && type === 'expense' && (
         <div>
           {expenseByCategory[label]?.items.map((expense) => (
             <L1NodeListItem
