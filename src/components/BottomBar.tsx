@@ -75,7 +75,7 @@ export default function BottomBar() {
   };
 
   if (isBulkSelecting) {
-    return <BulkSheetEditor />;
+    return <BulkSheetEditor toggleBulkEdit={handleToggleBulkEdit} />;
   }
 
   return (
