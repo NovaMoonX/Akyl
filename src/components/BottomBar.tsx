@@ -6,7 +6,6 @@ import { generateId, join } from '../utils';
 import BulkSheetEditor from './BulkSheetEditor';
 import HeaderBarSheets from './header/HeaderBarSheets';
 import Modal from './ui/Modal';
-import Dropdown from './ui/Dropdown';
 import BottomActions from './BottomActions';
 import HeaderBarTimeWindow from './header/HeaderBarTimeWindow';
 
@@ -92,7 +91,7 @@ export default function BottomBar() {
             <select
               value={activeSheet}
               onChange={(e) => setActiveSheet(e.target.value)}
-              className='px-3 py-1 rounded text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-emerald-500 focus:outline-none'
+              className='px-3 py-1 rounded text-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-emerald-500 focus:outline-none max-w-36 text-ellipsis'
             >
               <option value='all'>All</option>
               {sheets && sheets.map((sheet) => (
@@ -117,90 +116,105 @@ export default function BottomBar() {
 
           <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
           
-          {/* Desktop: Dropdown */}
+          {/* Desktop: Custom Popup */}
           <div className='hidden sm:block relative'>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className='p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
               aria-label='Settings'
+              id='settings-btn'
             >
               <Settings2Icon className='size-5' />
             </button>
-            
-            <Dropdown
-              isOpen={isDropdownOpen}
-              onClose={() => setIsDropdownOpen(false)}
-              className='bottom-full mb-2 right-0 w-fit !p-4'
-            >
-              <div className='flex flex-col gap-4'>
-                <div>
-                  <span className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200'>
-                    Budget Time Window
-                  </span>
-                  <HeaderBarTimeWindow />
-                </div>
-                <div>
-                  <span className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200'>
-                    Display Options
-                  </span>
-                  <BottomActions className='' actionClassName='rounded-md' />
-                </div>
-                <div>
-                  <span className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200'>
-                    Manage Sheets
-                  </span>
-                  <div className='flex flex-col gap-2'>
-                    {sheets && sheets.map((sheet) => (
-                      <div key={sheet.id} className='flex items-center gap-2'>
-                        {editingSheetId === sheet.id ? (
-                          <>
-                            <input
-                              type='text'
-                              value={editingSheetName}
-                              onChange={(e) => setEditingSheetName(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') handleRenameSheet(sheet.id);
-                                if (e.key === 'Escape') {
-                                  setEditingSheetId(null);
-                                  setEditingSheetName('');
-                                }
-                              }}
-                              className='flex-1 px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 focus:border-emerald-500 focus:outline-none'
-                              autoFocus
-                            />
-                            <button
-                              onClick={() => handleRenameSheet(sheet.id)}
-                              className='px-2 py-1 text-xs rounded bg-emerald-500 text-white hover:bg-emerald-600'
-                            >
-                              Save
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <span className='flex-1 text-sm'>{sheet.name}</span>
-                            <button
-                              onClick={() => {
-                                setEditingSheetId(sheet.id);
-                                setEditingSheetName(sheet.name);
-                              }}
-                              className='px-2 py-1 text-xs rounded bg-gray-500 text-white hover:bg-gray-600'
-                            >
-                              Rename
-                            </button>
-                            <button
-                              onClick={() => setDeleteConfirmSheetId(sheet.id)}
-                              className='px-2 py-1 text-xs rounded bg-red-500 text-white hover:bg-red-600'
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    ))}
+            {isDropdownOpen && (
+              <div
+                className='absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 bg-surface-light dark:bg-surface-dark border border-gray-300 dark:border-gray-700 rounded-xl shadow-lg p-6 w-80'
+                style={{ minWidth: '18rem' }}
+                tabIndex={-1}
+                onBlur={(e) => {
+                  // Only close if focus leaves the popup and not to a child element
+                  if (!e.currentTarget.contains(e.relatedTarget)) {
+                    setIsDropdownOpen(false);
+                  }
+                }}
+              >
+                <div className='flex flex-col gap-6'>
+                  <div className='flex flex-col items-center'>
+                    <span className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200'>
+                      Budget Time Window
+                    </span>
+                    <HeaderBarTimeWindow />
+                  </div>
+                  <div className='flex flex-col items-center'>
+                    <span className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200'>
+                      Display Options
+                    </span>
+                    <BottomActions className='' actionClassName='rounded-md' />
+                  </div>
+                  <div>
+                    <span className='mb-2 block text-sm text-center font-medium text-gray-700 dark:text-gray-200'>
+                      Manage Sheets
+                    </span>
+                    <div className='flex flex-col gap-2'>
+                      {sheets && sheets.map((sheet) => (
+                        <div key={sheet.id} className='flex items-center gap-2'>
+                          {editingSheetId === sheet.id ? (
+                            <>
+                              <input
+                                type='text'
+                                value={editingSheetName}
+                                onChange={(e) => setEditingSheetName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleRenameSheet(sheet.id);
+                                  if (e.key === 'Escape') {
+                                    setEditingSheetId(null);
+                                    setEditingSheetName('');
+                                  }
+                                }}
+                                className='flex-1 px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 focus:border-emerald-500 focus:outline-none'
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => handleRenameSheet(sheet.id)}
+                                className='px-2 py-1 text-xs rounded bg-emerald-500 text-white hover:bg-emerald-600'
+                              >
+                                Save
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <span className='flex-1 text-sm'>{sheet.name}</span>
+                              <button
+                                onClick={() => {
+                                  setEditingSheetId(sheet.id);
+                                  setEditingSheetName(sheet.name);
+                                }}
+                                className='px-2 py-1 text-xs rounded bg-gray-500 text-white hover:bg-gray-600'
+                              >
+                                Rename
+                              </button>
+                              <button
+                                onClick={() => setDeleteConfirmSheetId(sheet.id)}
+                                className='px-2 py-1 text-xs rounded bg-red-500 text-white hover:bg-red-600'
+                              >
+                                Delete
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
+                <button
+                  onClick={() => setIsDropdownOpen(false)}
+                  className='absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  aria-label='Close popup'
+                >
+                  ×
+                </button>
               </div>
-            </Dropdown>
+            )}
           </div>
 
           {/* Mobile: Modal */}

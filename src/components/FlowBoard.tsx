@@ -78,7 +78,7 @@ export default function Flow() {
         {!showLoadScreen && (
           <>
             <Header />
-            <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-50 rounded-tr-xl p-3 text-2xl sm:text-4xl font-black'>
+            <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 sm:p-3 text-xl sm:text-4xl font-black'>
               Akyl
             </h1>
 

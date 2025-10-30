@@ -46,7 +46,7 @@ export default function HeaderBarSheets() {
     <div className='flex items-center gap-2'>
       {sheets && sheets.length > 0 && (
         <div 
-          className='relative'
+          className='relative -translate-y-0.5'
           onMouseEnter={handleShowHint}
           onMouseLeave={handleHideHint}
         >
