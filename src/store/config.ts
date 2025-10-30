@@ -138,7 +138,7 @@ const useSpaceStore = create<SpaceStore>()(
             }
           : initialSpace,
       })),
-    addSheet: (sheet) =>
+    addSheet: (sheet: Sheet) =>
       set((state) => ({
         space: state.space
           ? {
@@ -148,30 +148,30 @@ const useSpaceStore = create<SpaceStore>()(
             }
           : initialSpace,
       })),
-    updateSheet: (id, updates) =>
+    updateSheet: (id: string, updates: Partial<Sheet>) =>
       set((state) => ({
         space: state.space
           ? {
               ...state.space,
-              sheets: (state.space.sheets || []).map((sheet) =>
+              sheets: (state.space.sheets || []).map((sheet: Sheet) =>
                 sheet.id === id ? { ...sheet, ...updates } : sheet,
               ),
               metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }
           : initialSpace,
       })),
-    removeSheet: (id) =>
+    removeSheet: (id: string) =>
       set((state) => {
         if (!state.space) return state;
         
         // Remove sheet from all budget items
-        const updatedIncomes = state.space.incomes.map((income) => ({
+        const updatedIncomes = state.space.incomes.map((income: Income) => ({
           ...income,
-          sheets: (income.sheets || []).filter((sheetId) => sheetId !== id),
+          sheets: (income.sheets || []).filter((sheetId: string) => sheetId !== id),
         }));
-        const updatedExpenses = state.space.expenses.map((expense) => ({
+        const updatedExpenses = state.space.expenses.map((expense: Expense) => ({
           ...expense,
-          sheets: (expense.sheets || []).filter((sheetId) => sheetId !== id),
+          sheets: (expense.sheets || []).filter((sheetId: string) => sheetId !== id),
         }));
         
         // If the deleted sheet was active, switch to 'all'
@@ -181,7 +181,7 @@ const useSpaceStore = create<SpaceStore>()(
           space: {
             ...state.space,
             sheets: (state.space.sheets || []).filter(
-              (sheet) => sheet.id !== id,
+              (sheet: Sheet) => sheet.id !== id,
             ),
             incomes: updatedIncomes,
             expenses: updatedExpenses,
@@ -190,7 +190,7 @@ const useSpaceStore = create<SpaceStore>()(
           },
         };
       }),
-    setActiveSheet: (sheetId) =>
+    setActiveSheet: (sheetId: string) =>
       set((state) => ({
         space: state.space
           ? {
@@ -200,20 +200,20 @@ const useSpaceStore = create<SpaceStore>()(
             }
           : initialSpace,
       })),
-    toggleBudgetItemSelection: (id) =>
+    toggleBudgetItemSelection: (id: string) =>
       set((state) => ({
         selectedBudgetItems: state.selectedBudgetItems.includes(id)
-          ? state.selectedBudgetItems.filter((itemId) => itemId !== id)
+          ? state.selectedBudgetItems.filter((itemId: string) => itemId !== id)
           : [...state.selectedBudgetItems, id],
       })),
     clearBudgetItemSelection: () =>
       set(() => ({
         selectedBudgetItems: [],
       })),
-    addSheetToSelectedItems: (sheetId) =>
+    addSheetToSelectedItems: (sheetId: string) =>
       set((state) => {
         if (!state.space) return state;
-        const updatedIncomes = state.space.incomes.map((income) =>
+        const updatedIncomes = state.space.incomes.map((income: Income) =>
           state.selectedBudgetItems.includes(income.id)
             ? {
                 ...income,
@@ -221,7 +221,7 @@ const useSpaceStore = create<SpaceStore>()(
               }
             : income,
         );
-        const updatedExpenses = state.space.expenses.map((expense) =>
+        const updatedExpenses = state.space.expenses.map((expense: Expense) =>
           state.selectedBudgetItems.includes(expense.id)
             ? {
                 ...expense,
@@ -238,22 +238,22 @@ const useSpaceStore = create<SpaceStore>()(
           },
         };
       }),
-    removeSheetFromSelectedItems: (sheetId) =>
+    removeSheetFromSelectedItems: (sheetId: string) =>
       set((state) => {
         if (!state.space) return state;
-        const updatedIncomes = state.space.incomes.map((income) =>
+        const updatedIncomes = state.space.incomes.map((income: Income) =>
           state.selectedBudgetItems.includes(income.id)
             ? {
                 ...income,
-                sheets: (income.sheets || []).filter((id) => id !== sheetId),
+                sheets: (income.sheets || []).filter((id: string) => id !== sheetId),
               }
             : income,
         );
-        const updatedExpenses = state.space.expenses.map((expense) =>
+        const updatedExpenses = state.space.expenses.map((expense: Expense) =>
           state.selectedBudgetItems.includes(expense.id)
             ? {
                 ...expense,
-                sheets: (expense.sheets || []).filter((id) => id !== sheetId),
+                sheets: (expense.sheets || []).filter((id: string) => id !== sheetId),
               }
             : expense,
         );
