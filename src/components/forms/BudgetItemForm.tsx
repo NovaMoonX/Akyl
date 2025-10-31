@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
+import { useBudget } from '../../hooks';
 import {
   CashFlowVerbiagePairs,
   getCurrencySymbol,
@@ -59,6 +60,7 @@ export default function BudgetItemForm({
   const [incomes, expenses] = useSpace(
     useShallow((state) => [state.space?.incomes || [], state.space?.expenses || []]),
   );
+  const { incomeSources, expenseCategories, incomesInSpace, expensesInSpace } = useBudget();
   const { removeExpense, removeIncome } = useSpace();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showDescription, setShowDescription] = useState(false);
@@ -71,7 +73,11 @@ export default function BudgetItemForm({
     isValid: boolean;
     error?: string;
   }>({ isValid: true });
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
+  const [selectedAutocompleteIndex, setSelectedAutocompleteIndex] = useState(0);
   const formulaInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<HTMLDivElement>(null);
   const itemId = searchParams.get(URL_PARAM_ID);
 
   useEffect(() => {
@@ -100,13 +106,78 @@ export default function BudgetItemForm({
     });
   }, [formula]);
 
-  const handleDeleteClick = () => {
-    if (!itemId) return;
+  // Autocomplete logic
+  useEffect(() => {
+    if (!formula || !formulaInputRef.current) {
+      setShowAutocomplete(false);
+      return;
+    }
 
-    // Check if this item is referenced in any formulas
+    const cursorPosition = formulaInputRef.current.selectionStart || 0;
+    const textBeforeCursor = formula.substring(0, cursorPosition);
+    
+    // Check if we're typing a reference
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    if (lastAtIndex === -1) {
+      setShowAutocomplete(false);
+      return;
+    }
+
+    const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+    const colonIndex = textAfterAt.indexOf(':');
+    
+    if (colonIndex === -1) {
+      // Typing the reference type (@source, @category, @item)
+      const types = ['source:', 'category:', 'item:'];
+      const matches = types.filter(t => t.startsWith(textAfterAt.toLowerCase()));
+      if (matches.length > 0 && textAfterAt.length > 0) {
+        setAutocompleteOptions(matches.map(m => '@' + m));
+        setShowAutocomplete(true);
+        setSelectedAutocompleteIndex(0);
+      } else {
+        setShowAutocomplete(false);
+      }
+    } else {
+      // Typing the value after colon
+      const refType = textAfterAt.substring(0, colonIndex);
+      const searchText = textAfterAt.substring(colonIndex + 1);
+      
+      let options: string[] = [];
+      if (refType === 'source') {
+        options = incomeSources.filter(s => 
+          s.toLowerCase().includes(searchText.toLowerCase())
+        ).map(s => `@source:${s}`);
+      } else if (refType === 'category') {
+        options = expenseCategories.filter(c => 
+          c.toLowerCase().includes(searchText.toLowerCase())
+        ).map(c => `@category:${c}`);
+      } else if (refType === 'item') {
+        const allItems = [
+          ...(incomesInSpace || []).filter(i => i.id !== itemId).map(i => ({ label: i.label, type: 'income' })),
+          ...(expensesInSpace || []).filter(e => e.id !== itemId).map(e => ({ label: e.label, type: 'expense' })),
+        ];
+        options = allItems
+          .filter(item => item.label.toLowerCase().includes(searchText.toLowerCase()))
+          .map(item => `@item:${item.label}`);
+      }
+      
+      if (options.length > 0) {
+        setAutocompleteOptions(options);
+        setShowAutocomplete(true);
+        setSelectedAutocompleteIndex(0);
+      } else {
+        setShowAutocomplete(false);
+      }
+    }
+  }, [formula, incomeSources, expenseCategories, incomesInSpace, expensesInSpace, itemId]);
+
+  const handleDeleteClick = () => {
+    if (!itemId || !label) return;
+
+    // Check if this item is referenced in any formulas (using label, not ID)
     const referencingItems = findReferencingItems(
       type,
-      itemId,
+      label,
       incomes,
       expenses,
     );
@@ -127,6 +198,48 @@ export default function BudgetItemForm({
     }
 
     setShowDeleteConfirmation(true);
+  };
+
+  const handleAutocompleteSelect = (option: string) => {
+    const input = formulaInputRef.current;
+    if (!input) return;
+
+    const cursorPosition = input.selectionStart || 0;
+    const textBeforeCursor = formula.substring(0, cursorPosition);
+    const textAfterCursor = formula.substring(cursorPosition);
+    
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    const newFormula = formula.substring(0, lastAtIndex) + option + textAfterCursor;
+    
+    onFieldChange('formula', newFormula);
+    setShowAutocomplete(false);
+    
+    // Set cursor position after the inserted text
+    setTimeout(() => {
+      const newPosition = lastAtIndex + option.length;
+      input.setSelectionRange(newPosition, newPosition);
+      input.focus();
+    }, 0);
+  };
+
+  const handleFormulaKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showAutocomplete) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedAutocompleteIndex(prev => 
+        prev < autocompleteOptions.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedAutocompleteIndex(prev => prev > 0 ? prev - 1 : prev);
+    } else if (e.key === 'Enter' && autocompleteOptions.length > 0) {
+      e.preventDefault();
+      handleAutocompleteSelect(autocompleteOptions[selectedAutocompleteIndex]);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setShowAutocomplete(false);
+    }
   };
 
   const handleDelete = () => {
@@ -306,10 +419,10 @@ export default function BudgetItemForm({
         )}
 
         {showFormula && (
-          <div>
+          <div className='relative'>
             <label className='font-medium'>Formula</label>
             <div className='text-xs text-gray-600 dark:text-gray-400 mb-1'>
-              Use @source:Name, @category:Name, or @item:id for references. Example: @source:Work * 0.1
+              Use @source:Name, @category:Name, or @item:Name for references. Example: @source:Work * 0.1
             </div>
             <input
               ref={formulaInputRef}
@@ -321,8 +434,35 @@ export default function BudgetItemForm({
               }`}
               value={formula}
               onChange={(e) => onFieldChange('formula', e.target.value)}
+              onKeyDown={handleFormulaKeyDown}
               placeholder='e.g., 1000 + 500 or @source:Work * 0.5'
+              autoComplete='off'
             />
+            
+            {/* Autocomplete dropdown */}
+            {showAutocomplete && autocompleteOptions.length > 0 && (
+              <div
+                ref={autocompleteRef}
+                className='absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow-lg max-h-60 overflow-y-auto'
+              >
+                {autocompleteOptions.map((option, index) => (
+                  <button
+                    key={option}
+                    type='button'
+                    className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                      index === selectedAutocompleteIndex
+                        ? 'bg-emerald-50 dark:bg-emerald-900/30'
+                        : ''
+                    }`}
+                    onClick={() => handleAutocompleteSelect(option)}
+                    onMouseEnter={() => setSelectedAutocompleteIndex(index)}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+            
             {!formulaValidation.isValid && formulaValidation.error && (
               <div className='mt-1 text-xs text-red-600 dark:text-red-400'>
                 {formulaValidation.error}

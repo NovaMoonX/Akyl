@@ -34,7 +34,7 @@ export default function FormulaHelper({ currentItemId, onInsert }: FormulaHelper
   }, [expensesInSpace, activeSheet]);
 
   return (
-    <div className='rounded border border-gray-300 dark:border-gray-700 p-3 text-sm'>
+    <div className='rounded border border-gray-300 dark:border-gray-700 p-3 text-sm max-h-96 overflow-y-auto touch-pan-y'>
       <div className='font-medium mb-2'>Formula Helper</div>
       <div className='text-xs text-gray-600 dark:text-gray-400 mb-3'>
         Click to insert references into your formula
@@ -87,7 +87,7 @@ export default function FormulaHelper({ currentItemId, onInsert }: FormulaHelper
               <button
                 key={income.id}
                 type='button'
-                onClick={() => onInsert(`@item:${income.id}`)}
+                onClick={() => onInsert(`@item:${income.label}`)}
                 className='block w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-xs mb-1'
                 title={`Income: ${income.label}`}
               >
@@ -98,7 +98,7 @@ export default function FormulaHelper({ currentItemId, onInsert }: FormulaHelper
               <button
                 key={expense.id}
                 type='button'
-                onClick={() => onInsert(`@item:${expense.id}`)}
+                onClick={() => onInsert(`@item:${expense.label}`)}
                 className='block w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-xs mb-1'
                 title={`Expense: ${expense.label}`}
               >

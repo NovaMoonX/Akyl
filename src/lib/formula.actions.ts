@@ -10,7 +10,7 @@ import type {
  * Supports:
  * - Basic arithmetic: +, -, *, /, ()
  * - Numbers: integers and decimals
- * - References: @source:Name, @category:Name, @item:id
+ * - References: @source:Name, @category:Name, @item:Name
  */
 export function evaluateFormula(
   formula: string,
@@ -31,7 +31,7 @@ export function evaluateFormula(
 
   try {
     // Replace references with their values
-    // Pattern: @source:Name, @category:Name, @item:id
+    // Pattern: @source:Name, @category:Name, @item:Name
     const referencePattern = /@(source|category|item):([^@+\-*/()]+)/g;
     let match;
 
@@ -60,16 +60,16 @@ export function evaluateFormula(
         );
         references.push({ type: 'category', name: refValue });
       } else if (refType === 'item') {
-        // Get specific budget item by ID
-        const income = incomes.find((inc) => inc.id === refValue);
-        const expense = expenses.find((exp) => exp.id === refValue);
+        // Get specific budget item by name (label)
+        const income = incomes.find((inc) => inc.label.toLowerCase() === refValue.toLowerCase());
+        const expense = expenses.find((exp) => exp.label.toLowerCase() === refValue.toLowerCase());
 
         if (income) {
           resolvedValue = income.amount;
-          references.push({ type: 'income', id: refValue });
+          references.push({ type: 'income', name: refValue });
         } else if (expense) {
           resolvedValue = expense.amount;
-          references.push({ type: 'expense', id: refValue });
+          references.push({ type: 'expense', name: refValue });
         } else {
           throw new Error(`Budget item not found: ${refValue}`);
         }
@@ -184,7 +184,7 @@ export function validateFormula(formula: string): FormulaValidationResult {
  */
 export function findReferencingItems(
   targetType: 'source' | 'category' | 'income' | 'expense',
-  targetIdentifier: string, // source/category name or item ID
+  targetIdentifier: string, // source/category/item name (label)
   incomes: Income[],
   expenses: Expense[],
 ): { incomes: Income[]; expenses: Expense[] } {
@@ -206,7 +206,7 @@ export function findReferencingItems(
       if (
         (targetType === 'source' && refType === 'source' && refValue.toLowerCase() === targetIdentifier.toLowerCase()) ||
         (targetType === 'category' && refType === 'category' && refValue.toLowerCase() === targetIdentifier.toLowerCase()) ||
-        ((targetType === 'income' || targetType === 'expense') && refType === 'item' && refValue === targetIdentifier)
+        ((targetType === 'income' || targetType === 'expense') && refType === 'item' && refValue.toLowerCase() === targetIdentifier.toLowerCase())
       ) {
         // Found a reference
         if ('source' in item) {

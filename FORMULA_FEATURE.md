@@ -14,8 +14,8 @@ You can reference other budget data in your formulas:
 - **Categories**: `@category:Name` - References all expenses from a specific category
   - Example: `@category:Housing` sums all expenses from the "Housing" category
   
-- **Specific Items**: `@item:id` - References a specific income or expense by its ID
-  - Example: `@item:budget_abc123` references the amount of a specific budget item
+- **Specific Items**: `@item:Name` - References a specific income or expense by its name
+  - Example: `@item:Salary` references the amount of a budget item named "Salary"
 
 ### Operators
 Standard arithmetic operators are supported:
@@ -56,10 +56,13 @@ Standard arithmetic operators are supported:
 When adding or editing a budget item:
 
 1. Click "Use calculated amount" to enable formula mode
-2. Click "Show formula helper" to access quick references
-3. Click on any source, category, or budget item to insert it into your formula
-4. Use the operator buttons to add arithmetic operations
-5. The formula is validated in real-time with error messages if invalid
+2. Start typing `@` to see autocomplete suggestions
+3. Type `@source:`, `@category:`, or `@item:` to get specific suggestions
+4. Use arrow keys to navigate suggestions and Enter to select
+5. Click "Show formula helper" to access quick references panel
+6. Click on any source, category, or budget item to insert it into your formula
+7. Use the operator buttons to add arithmetic operations
+8. The formula is validated in real-time with error messages if invalid
 
 ## Visual Indicators
 
@@ -96,9 +99,9 @@ Calculated amounts respect the time window settings just like static amounts. Th
 ## Known Limitations
 
 1. **Case Sensitivity**: Source and category names in formulas are case-insensitive, but exact matching is recommended
-2. **Item IDs**: When referencing specific items, you need the exact item ID (available via the formula helper)
+2. **Item Names**: When referencing specific items, you need the exact item name (label). If you have multiple items with the same name, the first match will be used
 3. **Calculation Order**: Items are calculated independently; complex interdependencies may not evaluate in optimal order
-4. **Error Recovery**: If a referenced item is deleted, formulas referencing it will show errors but won't crash the app
+4. **Error Recovery**: If a referenced item is deleted or renamed, formulas referencing it will show errors but won't crash the app
 
 ## Future Enhancements
 
