@@ -8,6 +8,7 @@ import {
   type BudgetType,
 } from '../../lib';
 import type { BudgetItemCadence } from '../../lib/budget.types';
+import { findReferencingItems, validateFormula } from '../../lib/formula.actions';
 import { useSpace } from '../../store';
 import ConfirmationModal from '../modals/ConfirmationModal';
 
@@ -19,8 +20,9 @@ export interface BudgetItemFormProps {
   cadence?: BudgetItemCadence;
   notes?: string;
   sheets?: string[];
+  formula?: string;
   onFieldChange: (
-    field: 'label' | 'description' | 'amount' | 'cadence' | 'notes' | 'sheets',
+    field: 'label' | 'description' | 'amount' | 'cadence' | 'notes' | 'sheets' | 'formula',
     value: unknown,
   ) => void;
   children?: React.ReactNode;
@@ -37,6 +39,7 @@ export default function BudgetItemForm({
   cadence = { type: 'month', interval: 1 },
   notes = '',
   sheets = [],
+  formula = '',
   onFieldChange,
   children,
   saveButtonDisabled = false,
@@ -52,11 +55,20 @@ export default function BudgetItemForm({
   const availableSheets = useSpace(
     useShallow((state) => state?.space?.sheets || []),
   );
+  const [incomes, expenses] = useSpace(
+    useShallow((state) => [state.space?.incomes || [], state.space?.expenses || []]),
+  );
   const { removeExpense, removeIncome } = useSpace();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showDescription, setShowDescription] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [showFormula, setShowFormula] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [deleteWarningMessage, setDeleteWarningMessage] = useState<string>('');
+  const [formulaValidation, setFormulaValidation] = useState<{
+    isValid: boolean;
+    error?: string;
+  }>({ isValid: true });
   const itemId = searchParams.get(URL_PARAM_ID);
 
   useEffect(() => {
@@ -66,7 +78,53 @@ export default function BudgetItemForm({
     if (notes.length > 0) {
       setShowNotes(true);
     }
-  }, [description, notes]);
+    if (formula && formula.length > 0) {
+      setShowFormula(true);
+    }
+  }, [description, notes, formula]);
+
+  // Validate formula when it changes
+  useEffect(() => {
+    if (!formula || formula.trim() === '') {
+      setFormulaValidation({ isValid: true });
+      return;
+    }
+
+    const result = validateFormula(formula);
+    setFormulaValidation({
+      isValid: result.isValid,
+      error: result.error?.message,
+    });
+  }, [formula]);
+
+  const handleDeleteClick = () => {
+    if (!itemId) return;
+
+    // Check if this item is referenced in any formulas
+    const referencingItems = findReferencingItems(
+      type,
+      itemId,
+      incomes,
+      expenses,
+    );
+
+    const totalReferences = referencingItems.incomes.length + referencingItems.expenses.length;
+
+    if (totalReferences > 0) {
+      const itemNames = [
+        ...referencingItems.incomes.map((i) => i.label),
+        ...referencingItems.expenses.map((e) => e.label),
+      ].join(', ');
+      
+      setDeleteWarningMessage(
+        `This item is referenced in ${totalReferences} formula(s): ${itemNames}. Deleting it may cause errors in those calculations.`,
+      );
+    } else {
+      setDeleteWarningMessage('');
+    }
+
+    setShowDeleteConfirmation(true);
+  };
 
   const handleDelete = () => {
     if (!itemId) return;
@@ -207,6 +265,58 @@ export default function BudgetItemForm({
           </div>
         </div>
 
+        {/* Formula Field */}
+        {!showFormula && (
+          <div className='flex justify-end'>
+            <button
+              type='button'
+              className='text-sm underline opacity-70 hover:opacity-85'
+              onClick={() => setShowFormula(true)}
+            >
+              Use calculated amount
+            </button>
+          </div>
+        )}
+
+        {showFormula && (
+          <div>
+            <label className='font-medium'>Formula</label>
+            <div className='text-xs text-gray-600 dark:text-gray-400 mb-1'>
+              Use @source:Name, @category:Name, or @item:id for references. Example: @source:Work * 0.1
+            </div>
+            <input
+              type='text'
+              className={`w-full rounded border px-2 py-1 focus:border-emerald-500 focus:outline-none ${
+                formulaValidation.isValid
+                  ? 'border-gray-300 dark:border-gray-700'
+                  : 'border-red-500'
+              }`}
+              value={formula}
+              onChange={(e) => onFieldChange('formula', e.target.value)}
+              placeholder='e.g., 1000 + 500 or @source:Work * 0.5'
+            />
+            {!formulaValidation.isValid && formulaValidation.error && (
+              <div className='mt-1 text-xs text-red-600 dark:text-red-400'>
+                {formulaValidation.error}
+              </div>
+            )}
+            {formula && formula.trim() !== '' && (
+              <div className='flex justify-end mt-1'>
+                <button
+                  type='button'
+                  className='text-xs underline opacity-70 hover:opacity-85'
+                  onClick={() => {
+                    onFieldChange('formula', '');
+                    setShowFormula(false);
+                  }}
+                >
+                  Remove formula
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Children for custom fields */}
         {children}
 
@@ -269,7 +379,7 @@ export default function BudgetItemForm({
             <button
               type='button'
               className='btn btn-danger mr-auto'
-              onClick={() => setShowDeleteConfirmation(true)}
+              onClick={handleDeleteClick}
             >
               Delete
             </button>
@@ -294,7 +404,11 @@ export default function BudgetItemForm({
 
       <ConfirmationModal
         title='Delete Budget Item'
-        message={`Are you sure you want to delete this ${type}? This action cannot be undone.`}
+        message={
+          deleteWarningMessage
+            ? `${deleteWarningMessage}\n\nAre you sure you want to delete this ${type}? This action cannot be undone.`
+            : `Are you sure you want to delete this ${type}? This action cannot be undone.`
+        }
         isOpen={showDeleteConfirmation}
         onClose={() => setShowDeleteConfirmation(false)}
         onCancel={() => setShowDeleteConfirmation(false)}

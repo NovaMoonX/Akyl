@@ -46,6 +46,7 @@ export default function ExpenseForm() {
         interval: 1,
       },
       notes: '',
+      formula: '',
       // Pre-select active sheet if creating new item and not on 'all' view
       sheets: !expenseItemId && activeSheet !== 'all' ? [activeSheet] : undefined,
     };
@@ -54,7 +55,7 @@ export default function ExpenseForm() {
     const expense: Expense = {
       ...defaultExpense,
       ...existingExpense,
-      amount: existingExpense.originalAmount || 0,
+      amount: existingExpense.originalAmount || existingExpense.amount || 0,
     };
     setFormData(expense);
 
@@ -95,6 +96,7 @@ export default function ExpenseForm() {
       cadence={formData?.cadence}
       notes={formData?.notes}
       sheets={formData?.sheets}
+      formula={formData?.formula}
       onFieldChange={(field, val) =>
         handleFieldChange(field as keyof Expense, val)
       }

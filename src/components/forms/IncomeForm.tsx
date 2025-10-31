@@ -47,6 +47,7 @@ export default function IncomeForm() {
         interval: 1,
       },
       notes: '',
+      formula: '',
       // Pre-select active sheet if creating new item and not on 'all' view
       sheets: !incomeItemId && activeSheet !== 'all' ? [activeSheet] : undefined,
     };
@@ -55,7 +56,7 @@ export default function IncomeForm() {
     const income: Income = {
       ...defaultIncome,
       ...existingIncome,
-      amount: existingIncome.originalAmount || 0,
+      amount: existingIncome.originalAmount || existingIncome.amount || 0,
     };
     setFormData(income);
   }, [incomeItemId, incomesMap, activeSheet]);
@@ -94,6 +95,7 @@ export default function IncomeForm() {
       cadence={formData?.cadence}
       notes={formData?.notes}
       sheets={formData?.sheets}
+      formula={formData?.formula}
       onFieldChange={(field, val) =>
         handleFieldChange(field as keyof Income, val)
       }
