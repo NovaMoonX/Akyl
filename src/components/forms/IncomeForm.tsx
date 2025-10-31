@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
+import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
 import { URL_PARAM_ID } from '../../lib';
 import type { Income } from '../../lib/budget.types';
@@ -14,6 +15,9 @@ export default function IncomeForm() {
   const incomeItemId = searchParams.get(URL_PARAM_ID);
   const { incomesMap, incomeSources } = useBudget(); // incomeTypes
   const { addIncome, updateIncome } = useSpace();
+  const activeSheet = useSpace(
+    useShallow((state) => state.space?.config?.activeSheet || 'all'),
+  );
 
   const sourceOptions = useMemo(() => {
     return incomeSources.map((src) => ({
@@ -43,6 +47,8 @@ export default function IncomeForm() {
         interval: 1,
       },
       notes: '',
+      // Pre-select active sheet if creating new item and not on 'all' view
+      sheets: !incomeItemId && activeSheet !== 'all' ? [activeSheet] : undefined,
     };
 
     const existingIncome = incomesMap[incomeItemId || ''] ?? {};
@@ -52,7 +58,7 @@ export default function IncomeForm() {
       amount: existingIncome.originalAmount || 0,
     };
     setFormData(income);
-  }, [incomeItemId, incomesMap]);
+  }, [incomeItemId, incomesMap, activeSheet]);
 
   const handleFieldChange = (field: keyof Income, val: unknown) => {
     setFormData((prev) => {
@@ -87,6 +93,7 @@ export default function IncomeForm() {
       amount={formData?.amount}
       cadence={formData?.cadence}
       notes={formData?.notes}
+      sheets={formData?.sheets}
       onFieldChange={(field, val) =>
         handleFieldChange(field as keyof Income, val)
       }

@@ -30,13 +30,24 @@ export default function useSpaceFlow() {
     incomesSourceHiddenMap,
     expensesCategoryHiddenMap,
   } = useBudget();
-  const [hideSources, hideCategories, listExpenses] = useSpace(
+  const [hideSources, hideCategories, listExpenses, activeSheet, sheets] = useSpace(
     useShallow((state) => [
       state?.space?.config?.hideSources,
       state?.space?.config?.hideCategories,
       state?.space?.config?.listExpenses,
+      state?.space?.config?.activeSheet || 'all',
+      state?.space?.sheets,
     ]),
   );
+
+  // Get current sheet's display options or fall back to global
+  const activeSheetObj = activeSheet !== 'all' && sheets
+    ? sheets.find((s) => s.id === activeSheet)
+    : null;
+
+  const currentHideSources = activeSheetObj?.hideSources ?? hideSources;
+  const currentHideCategories = activeSheetObj?.hideCategories ?? hideCategories;
+  const currentListExpenses = activeSheetObj?.listExpenses ?? listExpenses;
 
   const coreNodes = useMemo(() => {
     if (showLoadScreen) {
@@ -55,9 +66,9 @@ export default function useSpaceFlow() {
     return generateIncomeNodesAndEdges(
       incomeBySource,
       incomesSourceHiddenMap,
-      hideSources,
+      currentHideSources,
     );
-  }, [incomeBySource, incomesSourceHiddenMap, showLoadScreen, hideSources]);
+  }, [incomeBySource, incomesSourceHiddenMap, showLoadScreen, currentHideSources]);
 
   const { expenseNodes, expenseEdges } = useMemo(() => {
     if (showLoadScreen) {
@@ -69,17 +80,17 @@ export default function useSpaceFlow() {
     return generateExpenseNodesAndEdges(
       expenseByCategory,
       expensesCategoryHiddenMap,
-      hideCategories,
-      hideSources,
-      listExpenses,
+      currentHideCategories,
+      currentHideSources,
+      currentListExpenses,
     );
   }, [
     expenseByCategory,
     expensesCategoryHiddenMap,
     showLoadScreen,
-    hideCategories,
-    hideSources,
-    listExpenses,
+    currentHideCategories,
+    currentHideSources,
+    currentListExpenses,
   ]);
 
   return {

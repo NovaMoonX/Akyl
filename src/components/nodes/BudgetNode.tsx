@@ -1,6 +1,6 @@
 import { Handle, Position } from '@xyflow/react';
-import { EyeClosedIcon, EyeIcon, PencilIcon } from 'lucide-react';
-import { memo } from 'react';
+import { CheckIcon, EyeClosedIcon, EyeIcon, PencilIcon } from 'lucide-react';
+import { memo, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
@@ -21,29 +21,82 @@ interface BudgetNodeProps {
 
 function BudgetNode({ data }: BudgetNodeProps) {
   const { budgetItemId } = data;
-  const currency = useSpace(
-    useShallow((state) => state?.space?.config?.currency || 'USD'),
+  const [currency, activeSheet] = useSpace(
+    useShallow((state) => [
+      state?.space?.config?.currency || 'USD',
+      state?.space?.config?.activeSheet || 'all',
+    ]),
   );
-  const { updateIncome, updateExpense } = useSpace();
+  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems, isBulkEditMode } = useSpace(
+    useShallow((state) => ({
+      updateIncome: state.updateIncome,
+      updateExpense: state.updateExpense,
+      toggleBudgetItemSelection: state.toggleBudgetItemSelection,
+      selectedBudgetItems: state.selectedBudgetItems,
+      isBulkEditMode: state.isBulkEditMode,
+    })),
+  );
   const { getBudgetItem } = useBudget();
   const { item: budgetItem, type } = getBudgetItem(budgetItemId);
   const [, setSearchParams] = useSearchParams();
 
-  const toggleHide = () => {
-    const nowHidden = budgetItem?.hidden ? false : true;
-    if (type === 'income') {
-      updateIncome(budgetItemId, { hidden: nowHidden });
-    } else if (type === 'expense') {
-      updateExpense(budgetItemId, { hidden: nowHidden });
+  const isSelected = selectedBudgetItems.includes(budgetItemId);
+
+  // Check if item is hidden in current sheet context
+  const isHidden = useMemo(() => {
+    if (!budgetItem) return false;
+    if (activeSheet === 'all') {
+      return budgetItem.hidden ?? false;
+    }
+    return budgetItem.hiddenInSheets?.includes(activeSheet) ?? false;
+  }, [budgetItem, activeSheet]);
+
+  const toggleHide = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!budgetItem) return;
+    
+    if (activeSheet === 'all') {
+      // Toggle global hidden state
+      const nowHidden = budgetItem.hidden ? false : true;
+      if (type === 'income') {
+        updateIncome(budgetItemId, { hidden: nowHidden });
+      } else if (type === 'expense') {
+        updateExpense(budgetItemId, { hidden: nowHidden });
+      }
+    } else {
+      // Toggle per-sheet hidden state
+      const hiddenInSheets = budgetItem.hiddenInSheets ?? [];
+      const nowHidden = hiddenInSheets.includes(activeSheet);
+      const updatedHiddenInSheets = nowHidden
+        ? hiddenInSheets.filter((id) => id !== activeSheet)
+        : [...hiddenInSheets, activeSheet];
+      
+      if (type === 'income') {
+        updateIncome(budgetItemId, { hiddenInSheets: updatedHiddenInSheets });
+      } else if (type === 'expense') {
+        updateExpense(budgetItemId, { hiddenInSheets: updatedHiddenInSheets });
+      }
     }
     setSearchParams({});
   };
 
-  const handleEdit = () => {
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setSearchParams({
       [URL_PARAM_FORM]: type,
       [URL_PARAM_ID]: budgetItemId,
     });
+  };
+
+  const handleNodeClick = (e: React.MouseEvent) => {
+    // Toggle selection if:
+    // - Shift or Ctrl/Cmd is pressed (desktop multi-select), OR
+    // - Bulk edit mode is active (mobile bulk selection)
+    if (e.shiftKey || e.ctrlKey || e.metaKey || isBulkEditMode) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleBudgetItemSelection(budgetItemId);
+    }
   };
 
   if (!budgetItem) {
@@ -69,16 +122,30 @@ function BudgetNode({ data }: BudgetNodeProps) {
     // Wrapper div for styling and hiding
     <div
       className={join(
-        budgetItem?.hidden &&
+        isHidden &&
           'bg-surface-light group dark:bg-surface-dark rounded-lg',
       )}
+      onClick={handleNodeClick}
     >
       <div
         className={join(
           'bg-surface-light group dark:bg-surface-dark border-node-border relative flex max-w-[180px] min-w-[140px] flex-col rounded-lg border p-0 shadow-md',
-          budgetItem?.hidden && 'opacity-40',
+          isHidden && 'opacity-40',
+          isSelected && type === 'income' && 'ring-2 ring-green-500',
+          isSelected && type === 'expense' && 'ring-2 ring-red-500',
         )}
       >
+        {/* Selection indicator */}
+        {isSelected && (
+          <div className={join(
+            'absolute -top-2 -right-2 rounded-full p-1 z-10',
+            type === 'income' && 'bg-green-500',
+            type === 'expense' && 'bg-red-500',
+          )}>
+            <CheckIcon className='size-3 text-white' />
+          </div>
+        )}
+
         {/* Super Text */}
         <small className='absolute top-0 left-0 line-clamp-2 max-w-full -translate-y-full opacity-80'>
           {getBudgetSuperText()}
@@ -92,10 +159,10 @@ function BudgetNode({ data }: BudgetNodeProps) {
             onClick={toggleHide}
             className='shrink-0 translate-x-0.5 -translate-y-0.5 opacity-0 group-hover:opacity-70 hover:opacity-90'
             aria-label={
-              budgetItem?.hidden ? 'Unhide Budget Item' : 'Hide Budget Item'
+              isHidden ? 'Unhide Budget Item' : 'Hide Budget Item'
             }
           >
-            {budgetItem?.hidden ? (
+            {isHidden ? (
               <EyeIcon className='size-3' />
             ) : (
               <EyeClosedIcon className='size-3' />

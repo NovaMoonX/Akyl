@@ -14,7 +14,9 @@ export interface Income {
   type: string;
   cadence: BudgetItemCadence;
   notes: string;
-  hidden?: boolean; // For UI purposes, to hide/show income items
+  hidden?: boolean; // For UI purposes, to hide/show income items (global, deprecated in favor of hiddenInSheets)
+  hiddenInSheets?: string[]; // Array of sheet IDs where this item is hidden
+  sheets?: string[]; // Optional array of sheet ids
 }
 
 export interface Expense {
@@ -26,5 +28,7 @@ export interface Expense {
   subCategory: string; // i.e. Water, Electricity, Gas -> Utilities
   cadence: BudgetItemCadence;
   notes: string;
-  hidden?: boolean; // For UI purposes, to hide/show expense items
+  hidden?: boolean; // For UI purposes, to hide/show expense items (global, deprecated in favor of hiddenInSheets)
+  hiddenInSheets?: string[]; // Array of sheet IDs where this item is hidden
+  sheets?: string[]; // Optional array of sheet ids
 }

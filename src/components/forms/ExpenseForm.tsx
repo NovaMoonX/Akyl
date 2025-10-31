@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
+import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
 import { URL_PARAM_ID } from '../../lib';
 import type { Expense } from '../../lib/budget.types';
@@ -15,6 +16,9 @@ export default function ExpenseForm() {
   const expenseItemId = searchParams.get(URL_PARAM_ID);
   const { expensesMap, expenseCategories } = useBudget(); // expenseSubCategoriesMap
   const { addExpense, updateExpense } = useSpace();
+  const activeSheet = useSpace(
+    useShallow((state) => state.space?.config?.activeSheet || 'all'),
+  );
 
   // Category options: only add custom category if not already present
   const categoryOptions = useMemo(() => {
@@ -42,6 +46,8 @@ export default function ExpenseForm() {
         interval: 1,
       },
       notes: '',
+      // Pre-select active sheet if creating new item and not on 'all' view
+      sheets: !expenseItemId && activeSheet !== 'all' ? [activeSheet] : undefined,
     };
 
     const existingExpense = expensesMap[expenseItemId || ''] ?? {};
@@ -55,7 +61,7 @@ export default function ExpenseForm() {
     if (expense?.subCategory) {
       setShowSubcategory(true);
     }
-  }, [expenseItemId, expensesMap]);
+  }, [expenseItemId, expensesMap, activeSheet]);
 
   const handleFieldChange = (field: keyof Expense, val: unknown) => {
     setFormData((prev) => {
@@ -88,6 +94,7 @@ export default function ExpenseForm() {
       amount={formData?.amount}
       cadence={formData?.cadence}
       notes={formData?.notes}
+      sheets={formData?.sheets}
       onFieldChange={(field, val) =>
         handleFieldChange(field as keyof Expense, val)
       }

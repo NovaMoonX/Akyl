@@ -38,6 +38,7 @@ export function createNewSpace(userId?: string) {
     },
     incomes: [],
     expenses: [],
+    sheets: [],
     config: {
       theme,
       backgroundPattern: BackgroundVariant.Cross,
@@ -45,6 +46,7 @@ export function createNewSpace(userId?: string) {
       currency: 'USD',
       cashFlowVerbiage: 'default',
       timeWindow: DEFAULT_TIME_WINDOW,
+      activeSheet: 'all',
     },
   };
   localStorage.setItem(id, JSON.stringify(space));

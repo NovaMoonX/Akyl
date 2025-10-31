@@ -1,5 +1,5 @@
 import { Handle, Position } from '@xyflow/react';
-import { EyeClosedIcon, EyeIcon } from 'lucide-react';
+import { CheckIcon, EyeClosedIcon, EyeIcon } from 'lucide-react';
 import { memo, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
@@ -14,19 +14,36 @@ interface L1NodeProps {
 
 function L1Node({ data }: L1NodeProps) {
   const { label, amount, type } = data;
-  const [currency, listExpenses] = useSpace(
+  const [currency, listExpenses, activeSheet, sheets] = useSpace(
     useShallow((state) => [
       state?.space?.config?.currency || 'USD',
       state?.space?.config?.listExpenses,
+      state?.space?.config?.activeSheet || 'all',
+      state?.space?.sheets,
     ]),
   );
-  const { updateIncome, updateExpense } = useSpace();
+  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems, isBulkEditMode } = useSpace(
+    useShallow((state) => ({
+      updateIncome: state.updateIncome,
+      updateExpense: state.updateExpense,
+      toggleBudgetItemSelection: state.toggleBudgetItemSelection,
+      selectedBudgetItems: state.selectedBudgetItems,
+      isBulkEditMode: state.isBulkEditMode,
+    })),
+  );
   const {
     incomesSourceHiddenMap,
     expensesCategoryHiddenMap,
     incomeBySource,
     expenseByCategory,
   } = useBudget();
+
+  // Get current sheet's listExpenses or fall back to global
+  const activeSheetObj = activeSheet !== 'all' && sheets
+    ? sheets.find((s) => s.id === activeSheet)
+    : null;
+
+  const currentListExpenses = activeSheetObj?.listExpenses ?? listExpenses;
 
   const isHidden = useMemo(() => {
     if (type === 'income') {
@@ -35,26 +52,75 @@ function L1Node({ data }: L1NodeProps) {
     return expensesCategoryHiddenMap[label];
   }, [type, label, incomesSourceHiddenMap, expensesCategoryHiddenMap]);
 
-  const toggleHide = () => {
+  const toggleHide = (e: React.MouseEvent) => {
+    e.stopPropagation();
     const nowHidden = isHidden ? false : true;
 
     if (type === 'income') {
       const sourceIncomes = incomeBySource[label]?.items ?? [];
       sourceIncomes.forEach((income) => {
-        updateIncome(income.id, { hidden: nowHidden });
+        if (activeSheet === 'all') {
+          // Toggle global hidden state
+          updateIncome(income.id, { hidden: nowHidden });
+        } else {
+          // Toggle per-sheet hidden state
+          const hiddenInSheets = income.hiddenInSheets ?? [];
+          const updatedHiddenInSheets = nowHidden
+            ? [...hiddenInSheets, activeSheet]
+            : hiddenInSheets.filter((id) => id !== activeSheet);
+          updateIncome(income.id, { hiddenInSheets: updatedHiddenInSheets });
+        }
       });
       return;
     }
 
     const categoryExpenses = expenseByCategory[label]?.items ?? [];
     categoryExpenses.forEach((expense) => {
-      updateExpense(expense.id, { hidden: nowHidden });
+      if (activeSheet === 'all') {
+        // Toggle global hidden state
+        updateExpense(expense.id, { hidden: nowHidden });
+      } else {
+        // Toggle per-sheet hidden state
+        const hiddenInSheets = expense.hiddenInSheets ?? [];
+        const updatedHiddenInSheets = nowHidden
+          ? [...hiddenInSheets, activeSheet]
+          : hiddenInSheets.filter((id) => id !== activeSheet);
+        updateExpense(expense.id, { hiddenInSheets: updatedHiddenInSheets });
+      }
     });
+  };
+
+  // Check if any items in this group are selected
+  const groupItems = useMemo(() => {
+    if (type === 'income') {
+      return incomeBySource[label]?.items ?? [];
+    }
+    return expenseByCategory[label]?.items ?? [];
+  }, [type, label, incomeBySource, expenseByCategory]);
+
+  const isAllItemsSelected = useMemo(() => {
+    return groupItems.every((item) => selectedBudgetItems.includes(item.id));
+  }, [groupItems, selectedBudgetItems]);
+
+  const handleNodeClick = (e: React.MouseEvent) => {
+    // Toggle selection if:
+    // - Shift or Ctrl/Cmd is pressed (desktop multi-select), OR
+    // - Bulk edit mode is active (mobile bulk selection)
+    if (e.shiftKey || e.ctrlKey || e.metaKey || isBulkEditMode) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Toggle all items in this group
+      groupItems.forEach((item) => {
+        toggleBudgetItemSelection(item.id);
+      });
+    }
   };
 
   return (
     // Wrapper div for styling and hiding
-    <div>
+    <div 
+      onClick={handleNodeClick}
+    >
       <div
         className={join(
           isHidden &&
@@ -65,8 +131,21 @@ function L1Node({ data }: L1NodeProps) {
           className={join(
             'group bg-surface-light dark:bg-surface-dark border-node-border relative flex max-w-[160px] min-w-[120px] flex-col items-center gap-1 rounded-lg border p-4 shadow-md',
             isHidden && 'opacity-40',
+            isAllItemsSelected && type === 'income' && 'ring-2 ring-green-500',
+            isAllItemsSelected && type === 'expense' && 'ring-2 ring-red-500',
           )}
         >
+          {/* Selection indicator */}
+          {isAllItemsSelected && (
+            <div className={join(
+              'absolute -top-2 -right-2 rounded-full p-1 z-10',
+              type === 'income' && 'bg-green-500',
+              type === 'expense' && 'bg-red-500',
+            )}>
+              <CheckIcon className='size-3 text-white' />
+            </div>
+          )}
+
           <p className='text-center text-lg leading-snug font-semibold'>
             {label}
           </p>
@@ -110,7 +189,7 @@ function L1Node({ data }: L1NodeProps) {
         </div>
       </div>
 
-      {listExpenses && type === 'expense' && (
+      {currentListExpenses && type === 'expense' && (
         <div>
           {expenseByCategory[label]?.items.map((expense) => (
             <L1NodeListItem

@@ -8,18 +8,33 @@ import { useSpace } from '../../store';
 import { CalendarClockIcon } from 'lucide-react';
 
 export default function HeaderBarWindowSelector() {
-  const timeWindow = useSpace(
-    useShallow((state) => state?.space?.config?.timeWindow),
+  const [timeWindow, activeSheet, sheets] = useSpace(
+    useShallow((state) => [
+      state?.space?.config?.timeWindow,
+      state?.space?.config?.activeSheet || 'all',
+      state?.space?.sheets,
+    ]),
   );
-  const { updateConfig } = useSpace();
+  const { updateConfig, updateSheet } = useSpace();
+
+  // Get current sheet's time window or fall back to global
+  const activeSheetObj = activeSheet !== 'all' && sheets
+    ? sheets.find((s) => s.id === activeSheet)
+    : null;
+
+  const currentTimeWindow = activeSheetObj?.timeWindow ?? timeWindow;
 
   const handleChange = (field: keyof BudgetItemCadence, value: unknown) => {
-    updateConfig({
-      timeWindow: {
-        ...timeWindow,
-        [field]: value,
-      },
-    });
+    const newTimeWindow = {
+      ...currentTimeWindow,
+      [field]: value,
+    };
+    
+    if (activeSheet === 'all') {
+      updateConfig({ timeWindow: newTimeWindow });
+    } else {
+      updateSheet(activeSheet, { timeWindow: newTimeWindow });
+    }
   };
 
   return (
@@ -30,12 +45,12 @@ export default function HeaderBarWindowSelector() {
         min={1}
         className='w-12 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
         aria-description='Enter the time window interval'
-        value={timeWindow?.interval ?? DEFAULT_TIME_WINDOW.interval}
+        value={currentTimeWindow?.interval ?? DEFAULT_TIME_WINDOW.interval}
         onChange={(e) => handleChange('interval', Number(e.target.value))}
       />
       <select
         className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-        value={timeWindow?.type ?? DEFAULT_TIME_WINDOW.type}
+        value={currentTimeWindow?.type ?? DEFAULT_TIME_WINDOW.type}
         onChange={(e) =>
           handleChange('type', e.target.value as BudgetItemCadenceType)
         }
