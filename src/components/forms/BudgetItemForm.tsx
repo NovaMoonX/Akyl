@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import {
@@ -11,6 +11,7 @@ import type { BudgetItemCadence } from '../../lib/budget.types';
 import { findReferencingItems, validateFormula } from '../../lib/formula.actions';
 import { useSpace } from '../../store';
 import ConfirmationModal from '../modals/ConfirmationModal';
+import FormulaHelper from '../ui/FormulaHelper';
 
 export interface BudgetItemFormProps {
   type: BudgetType;
@@ -63,12 +64,14 @@ export default function BudgetItemForm({
   const [showDescription, setShowDescription] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showFormula, setShowFormula] = useState(false);
+  const [showFormulaHelper, setShowFormulaHelper] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [deleteWarningMessage, setDeleteWarningMessage] = useState<string>('');
   const [formulaValidation, setFormulaValidation] = useState<{
     isValid: boolean;
     error?: string;
   }>({ isValid: true });
+  const formulaInputRef = useRef<HTMLInputElement>(null);
   const itemId = searchParams.get(URL_PARAM_ID);
 
   useEffect(() => {
@@ -146,6 +149,24 @@ export default function BudgetItemForm({
       onSave();
       handleClose();
     }
+  };
+
+  const handleFormulaInsert = (text: string) => {
+    const input = formulaInputRef.current;
+    if (!input) return;
+
+    const start = input.selectionStart ?? formula.length;
+    const end = input.selectionEnd ?? formula.length;
+    const newFormula = formula.substring(0, start) + text + formula.substring(end);
+    
+    onFieldChange('formula', newFormula);
+    
+    // Set cursor position after inserted text
+    setTimeout(() => {
+      input.focus();
+      const newPos = start + text.length;
+      input.setSelectionRange(newPos, newPos);
+    }, 0);
   };
 
   // use form to save on enter key
@@ -285,6 +306,7 @@ export default function BudgetItemForm({
               Use @source:Name, @category:Name, or @item:id for references. Example: @source:Work * 0.1
             </div>
             <input
+              ref={formulaInputRef}
               type='text'
               className={`w-full rounded border px-2 py-1 focus:border-emerald-500 focus:outline-none ${
                 formulaValidation.isValid
@@ -300,18 +322,34 @@ export default function BudgetItemForm({
                 {formulaValidation.error}
               </div>
             )}
-            {formula && formula.trim() !== '' && (
-              <div className='flex justify-end mt-1'>
+            <div className='flex justify-between mt-1'>
+              <button
+                type='button'
+                className='text-xs underline opacity-70 hover:opacity-85'
+                onClick={() => setShowFormulaHelper(!showFormulaHelper)}
+              >
+                {showFormulaHelper ? 'Hide' : 'Show'} formula helper
+              </button>
+              {formula && formula.trim() !== '' && (
                 <button
                   type='button'
                   className='text-xs underline opacity-70 hover:opacity-85'
                   onClick={() => {
                     onFieldChange('formula', '');
                     setShowFormula(false);
+                    setShowFormulaHelper(false);
                   }}
                 >
                   Remove formula
                 </button>
+              )}
+            </div>
+            {showFormulaHelper && (
+              <div className='mt-2'>
+                <FormulaHelper
+                  currentItemId={itemId || undefined}
+                  onInsert={handleFormulaInsert}
+                />
               </div>
             )}
           </div>
