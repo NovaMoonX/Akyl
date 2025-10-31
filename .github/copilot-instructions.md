@@ -97,7 +97,7 @@ src/
 
 ### Build Warnings
 - Large bundle size warnings are expected due to dependencies
-- The main bundle is intentionally large (1100+ KB) - this is acceptable for this project
+- The main bundle size is intentionally large due to dependencies - this is acceptable for this project
 
 ## Making Changes
 
@@ -126,7 +126,7 @@ src/
 
 ### Key Dependencies
 - `react` & `react-dom` - UI framework
-- `@xyflow/react` - Interactive flowchart nodes
+- `@xyflow/react` - Flowchart and node-based UI library
 - `zustand` - State management
 - `tailwindcss` - Styling
 - `html-to-image` - Export functionality
