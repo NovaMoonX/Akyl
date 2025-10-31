@@ -5,10 +5,11 @@ import { useSpace } from '../../store';
 
 interface FormulaHelperProps {
   currentItemId?: string;
+  itemType: 'income' | 'expense';
   onInsert: (text: string) => void;
 }
 
-export default function FormulaHelper({ currentItemId, onInsert }: FormulaHelperProps) {
+export default function FormulaHelper({ currentItemId, itemType, onInsert }: FormulaHelperProps) {
   const { incomeSources, expenseCategories, incomesInSpace, expensesInSpace } = useBudget();
   const [activeSheet] = useSpace(
     useShallow((state) => [
@@ -40,8 +41,8 @@ export default function FormulaHelper({ currentItemId, onInsert }: FormulaHelper
         Click to insert references into your formula
       </div>
 
-      {/* Sources */}
-      {incomeSources.length > 0 && (
+      {/* Sources - Only show for income items */}
+      {itemType === 'income' && incomeSources.length > 0 && (
         <div className='mb-3'>
           <div className='text-xs font-medium mb-1 text-gray-700 dark:text-gray-300'>Sources</div>
           <div className='flex flex-wrap gap-1'>
@@ -59,8 +60,8 @@ export default function FormulaHelper({ currentItemId, onInsert }: FormulaHelper
         </div>
       )}
 
-      {/* Categories */}
-      {expenseCategories.length > 0 && (
+      {/* Categories - Only show for expense items */}
+      {itemType === 'expense' && expenseCategories.length > 0 && (
         <div className='mb-3'>
           <div className='text-xs font-medium mb-1 text-gray-700 dark:text-gray-300'>Categories</div>
           <div className='flex flex-wrap gap-1'>

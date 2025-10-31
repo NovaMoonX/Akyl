@@ -128,7 +128,10 @@ export default function BudgetItemForm({
     
     if (colonIndex === -1) {
       // Typing the reference type (@source, @category, @item)
-      const types = ['source:', 'category:', 'item:'];
+      // Only show source for income, category for expense
+      const types = type === 'income' 
+        ? ['source:', 'item:'] 
+        : ['category:', 'item:'];
       const matches = types.filter(t => t.startsWith(textAfterAt.toLowerCase()));
       if (matches.length > 0 && textAfterAt.length > 0) {
         setAutocompleteOptions(matches.map(m => ({ value: '@' + m, display: '@' + m })));
@@ -143,11 +146,14 @@ export default function BudgetItemForm({
       const searchText = textAfterAt.substring(colonIndex + 1);
       
       let options: { value: string; display: string }[] = [];
-      if (refType === 'source') {
+      // Only show source suggestions for income items
+      if (refType === 'source' && type === 'income') {
         options = incomeSources.filter(s => 
           s.toLowerCase().includes(searchText.toLowerCase())
         ).map(s => ({ value: `@source:${s}`, display: `@source:${s}` }));
-      } else if (refType === 'category') {
+      } 
+      // Only show category suggestions for expense items
+      else if (refType === 'category' && type === 'expense') {
         options = expenseCategories.filter(c => 
           c.toLowerCase().includes(searchText.toLowerCase())
         ).map(c => ({ value: `@category:${c}`, display: `@category:${c}` }));
@@ -169,7 +175,7 @@ export default function BudgetItemForm({
         setShowAutocomplete(false);
       }
     }
-  }, [formula, incomeSources, expenseCategories, incomesInSpace, expensesInSpace, itemId]);
+  }, [formula, incomeSources, expenseCategories, incomesInSpace, expensesInSpace, itemId, type]);
 
   const handleDeleteClick = () => {
     if (!itemId) return;
@@ -422,7 +428,10 @@ export default function BudgetItemForm({
           <div className='relative'>
             <label className='font-medium'>Formula</label>
             <div className='text-xs text-gray-600 dark:text-gray-400 mb-1'>
-              Use @source:Name, @category:Name, or @item:Name for references. Example: @source:Work * 0.1
+              {type === 'income' 
+                ? 'Use @source:Name or @item:Name for references. Example: @source:Work * 0.1'
+                : 'Use @category:Name or @item:Name for references. Example: @category:Housing * 0.5'
+              }
             </div>
             <input
               ref={formulaInputRef}
@@ -494,6 +503,7 @@ export default function BudgetItemForm({
               <div className='mt-2'>
                 <FormulaHelper
                   currentItemId={itemId || undefined}
+                  itemType={type}
                   onInsert={handleFormulaInsert}
                 />
               </div>
