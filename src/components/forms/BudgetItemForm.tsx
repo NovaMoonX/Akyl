@@ -450,7 +450,7 @@ export default function BudgetItemForm({
         title='Delete Budget Item'
         message={
           deleteWarningMessage
-            ? `${deleteWarningMessage}\n\nAre you sure you want to delete this ${type}? This action cannot be undone.`
+            ? `${deleteWarningMessage} Are you sure you want to delete this ${type}? This action cannot be undone.`
             : `Are you sure you want to delete this ${type}? This action cannot be undone.`
         }
         isOpen={showDeleteConfirmation}

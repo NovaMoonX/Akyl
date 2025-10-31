@@ -86,7 +86,12 @@ export function evaluateFormula(
     }
 
     // Evaluate the mathematical expression
-    // Using Function constructor as a safe alternative to eval for arithmetic
+    // Note: Using Function constructor is a calculated risk here. The formula is:
+    // 1. Strictly validated to contain only numbers and math operators
+    // 2. All user references are replaced with numeric values before evaluation
+    // 3. No external variables or functions are accessible in the evaluation context
+    // A dedicated math parser library would be more secure, but adds dependency overhead
+    // for a feature with strict input validation
     const result = new Function(`'use strict'; return (${processedFormula})`)() as number;
 
     if (!isFinite(result)) {

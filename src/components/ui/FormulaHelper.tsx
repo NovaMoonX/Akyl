@@ -21,7 +21,7 @@ export default function FormulaHelper({ currentItemId, onInsert }: FormulaHelper
     if (!incomesInSpace) return [];
     if (activeSheet === 'all') return incomesInSpace;
     return incomesInSpace.filter(income => 
-      income.sheets?.includes(activeSheet) ?? false
+      !income.sheets || income.sheets.length === 0 || income.sheets.includes(activeSheet)
     );
   }, [incomesInSpace, activeSheet]);
 
@@ -29,7 +29,7 @@ export default function FormulaHelper({ currentItemId, onInsert }: FormulaHelper
     if (!expensesInSpace) return [];
     if (activeSheet === 'all') return expensesInSpace;
     return expensesInSpace.filter(expense => 
-      expense.sheets?.includes(activeSheet) ?? false
+      !expense.sheets || expense.sheets.length === 0 || expense.sheets.includes(activeSheet)
     );
   }, [expensesInSpace, activeSheet]);
 
