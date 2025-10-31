@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
-import { URL_PARAM_ID } from '../../lib';
+import { formulaIdsToLabels, formulaLabelsToIds, URL_PARAM_ID } from '../../lib';
 import type { Income } from '../../lib/budget.types';
 import { useSpace } from '../../store';
 import { generateId } from '../../utils';
@@ -13,7 +13,7 @@ export default function IncomeForm() {
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState<Income>();
   const incomeItemId = searchParams.get(URL_PARAM_ID);
-  const { incomesMap, incomeSources } = useBudget(); // incomeTypes
+  const { incomesMap, incomeSources, incomesInSpace, expensesInSpace } = useBudget();
   const { addIncome, updateIncome } = useSpace();
   const activeSheet = useSpace(
     useShallow((state) => state.space?.config?.activeSheet || 'all'),
@@ -53,13 +53,21 @@ export default function IncomeForm() {
     };
 
     const existingIncome = incomesMap[incomeItemId || ''] ?? {};
+    
+    // Convert formula IDs to labels for display
+    let displayFormula = existingIncome.formula || '';
+    if (displayFormula && incomesInSpace && expensesInSpace) {
+      displayFormula = formulaIdsToLabels(displayFormula, incomesInSpace, expensesInSpace);
+    }
+    
     const income: Income = {
       ...defaultIncome,
       ...existingIncome,
       amount: existingIncome.originalAmount || existingIncome.amount || 0,
+      formula: displayFormula,
     };
     setFormData(income);
-  }, [incomeItemId, incomesMap, activeSheet]);
+  }, [incomeItemId, incomesMap, activeSheet, incomesInSpace, expensesInSpace]);
 
   const handleFieldChange = (field: keyof Income, val: unknown) => {
     setFormData((prev) => {
@@ -69,12 +77,23 @@ export default function IncomeForm() {
   };
 
   const handleSave = () => {
-    if (!formData) return;
-    // Save logic here, e.g., update the budget store or make an API call
+    if (!formData || !incomesInSpace || !expensesInSpace) return;
+    
+    // Convert formula labels to IDs before saving
+    let storageFormula = formData.formula || '';
+    if (storageFormula) {
+      storageFormula = formulaLabelsToIds(storageFormula, incomesInSpace, expensesInSpace);
+    }
+    
+    const dataToSave = {
+      ...formData,
+      formula: storageFormula,
+    };
+    
     if (incomeItemId) {
-      updateIncome(incomeItemId, formData);
+      updateIncome(incomeItemId, dataToSave);
     } else {
-      addIncome(formData);
+      addIncome(dataToSave);
     }
   };
 

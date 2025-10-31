@@ -27,6 +27,8 @@ export type {
 export {
   evaluateFormula,
   findReferencingItems,
+  formulaIdsToLabels,
+  formulaLabelsToIds,
   hasCircularDependency,
   validateFormula,
 } from './formula.actions';

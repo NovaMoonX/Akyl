@@ -87,7 +87,7 @@ export default function FormulaHelper({ currentItemId, onInsert }: FormulaHelper
               <button
                 key={income.id}
                 type='button'
-                onClick={() => onInsert(`@item:${income.label}`)}
+                onClick={() => onInsert(`@item:${income.id}`)}
                 className='block w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-xs mb-1'
                 title={`Income: ${income.label}`}
               >
@@ -98,7 +98,7 @@ export default function FormulaHelper({ currentItemId, onInsert }: FormulaHelper
               <button
                 key={expense.id}
                 type='button'
-                onClick={() => onInsert(`@item:${expense.label}`)}
+                onClick={() => onInsert(`@item:${expense.id}`)}
                 className='block w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-xs mb-1'
                 title={`Expense: ${expense.label}`}
               >

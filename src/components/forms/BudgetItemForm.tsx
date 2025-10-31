@@ -74,7 +74,7 @@ export default function BudgetItemForm({
     error?: string;
   }>({ isValid: true });
   const [showAutocomplete, setShowAutocomplete] = useState(false);
-  const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
+  const [autocompleteOptions, setAutocompleteOptions] = useState<{ value: string; display: string }[]>([]);
   const [selectedAutocompleteIndex, setSelectedAutocompleteIndex] = useState(0);
   const formulaInputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<HTMLDivElement>(null);
@@ -131,7 +131,7 @@ export default function BudgetItemForm({
       const types = ['source:', 'category:', 'item:'];
       const matches = types.filter(t => t.startsWith(textAfterAt.toLowerCase()));
       if (matches.length > 0 && textAfterAt.length > 0) {
-        setAutocompleteOptions(matches.map(m => '@' + m));
+        setAutocompleteOptions(matches.map(m => ({ value: '@' + m, display: '@' + m })));
         setShowAutocomplete(true);
         setSelectedAutocompleteIndex(0);
       } else {
@@ -142,23 +142,23 @@ export default function BudgetItemForm({
       const refType = textAfterAt.substring(0, colonIndex);
       const searchText = textAfterAt.substring(colonIndex + 1);
       
-      let options: string[] = [];
+      let options: { value: string; display: string }[] = [];
       if (refType === 'source') {
         options = incomeSources.filter(s => 
           s.toLowerCase().includes(searchText.toLowerCase())
-        ).map(s => `@source:${s}`);
+        ).map(s => ({ value: `@source:${s}`, display: `@source:${s}` }));
       } else if (refType === 'category') {
         options = expenseCategories.filter(c => 
           c.toLowerCase().includes(searchText.toLowerCase())
-        ).map(c => `@category:${c}`);
+        ).map(c => ({ value: `@category:${c}`, display: `@category:${c}` }));
       } else if (refType === 'item') {
         const allItems = [
-          ...(incomesInSpace || []).filter(i => i.id !== itemId).map(i => ({ label: i.label, type: 'income' })),
-          ...(expensesInSpace || []).filter(e => e.id !== itemId).map(e => ({ label: e.label, type: 'expense' })),
+          ...(incomesInSpace || []).filter(i => i.id !== itemId).map(i => ({ id: i.id, label: i.label, type: 'income' })),
+          ...(expensesInSpace || []).filter(e => e.id !== itemId).map(e => ({ id: e.id, label: e.label, type: 'expense' })),
         ];
         options = allItems
           .filter(item => item.label.toLowerCase().includes(searchText.toLowerCase()))
-          .map(item => `@item:${item.label}`);
+          .map(item => ({ value: `@item:${item.id}`, display: `@item:${item.label}` }));
       }
       
       if (options.length > 0) {
@@ -172,12 +172,12 @@ export default function BudgetItemForm({
   }, [formula, incomeSources, expenseCategories, incomesInSpace, expensesInSpace, itemId]);
 
   const handleDeleteClick = () => {
-    if (!itemId || !label) return;
+    if (!itemId) return;
 
-    // Check if this item is referenced in any formulas (using label, not ID)
+    // Check if this item is referenced in any formulas (using ID)
     const referencingItems = findReferencingItems(
       type,
-      label,
+      itemId,
       incomes,
       expenses,
     );
@@ -200,7 +200,7 @@ export default function BudgetItemForm({
     setShowDeleteConfirmation(true);
   };
 
-  const handleAutocompleteSelect = (option: string) => {
+  const handleAutocompleteSelect = (option: { value: string; display: string }) => {
     const input = formulaInputRef.current;
     if (!input) return;
 
@@ -209,14 +209,14 @@ export default function BudgetItemForm({
     const textAfterCursor = formula.substring(cursorPosition);
     
     const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-    const newFormula = formula.substring(0, lastAtIndex) + option + textAfterCursor;
+    const newFormula = formula.substring(0, lastAtIndex) + option.value + textAfterCursor;
     
     onFieldChange('formula', newFormula);
     setShowAutocomplete(false);
     
     // Set cursor position after the inserted text
     setTimeout(() => {
-      const newPosition = lastAtIndex + option.length;
+      const newPosition = lastAtIndex + option.value.length;
       input.setSelectionRange(newPosition, newPosition);
       input.focus();
     }, 0);
@@ -447,7 +447,7 @@ export default function BudgetItemForm({
               >
                 {autocompleteOptions.map((option, index) => (
                   <button
-                    key={option}
+                    key={option.value}
                     type='button'
                     className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
                       index === selectedAutocompleteIndex
@@ -457,7 +457,7 @@ export default function BudgetItemForm({
                     onClick={() => handleAutocompleteSelect(option)}
                     onMouseEnter={() => setSelectedAutocompleteIndex(index)}
                   >
-                    {option}
+                    {option.display}
                   </button>
                 ))}
               </div>

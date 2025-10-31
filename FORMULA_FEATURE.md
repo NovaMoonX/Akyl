@@ -16,6 +16,7 @@ You can reference other budget data in your formulas:
   
 - **Specific Items**: `@item:Name` - References a specific income or expense by its name
   - Example: `@item:Salary` references the amount of a budget item named "Salary"
+  - Note: Item names are displayed for ease of use, but internally stored by ID to handle renames
 
 ### Operators
 Standard arithmetic operators are supported:
@@ -90,6 +91,12 @@ When deleting:
 2. If a formula exists but has an error, the amount is set to 0 (with error shown)
 3. If no formula exists, the static `amount` field is used
 
+### Item Reference Storage
+- **User Interface**: Budget items are referenced by their display name (label) for ease of use
+- **Internal Storage**: Formulas store item references using internal IDs
+- **Benefits**: When you rename a budget item, all formulas referencing it continue to work correctly
+- **Autocomplete**: Shows item labels but inserts IDs automatically
+
 ### Circular Dependency Detection
 The system checks for circular dependencies when items reference each other. While the basic implementation is in place, complex circular references may cause calculation errors.
 
@@ -99,9 +106,9 @@ Calculated amounts respect the time window settings just like static amounts. Th
 ## Known Limitations
 
 1. **Case Sensitivity**: Source and category names in formulas are case-insensitive, but exact matching is recommended
-2. **Item Names**: When referencing specific items, you need the exact item name (label). If you have multiple items with the same name, the first match will be used
+2. **Item Names**: When referencing specific items using autocomplete or the formula helper, you see and select item names (labels). The system stores internal IDs, so renaming an item won't break formulas
 3. **Calculation Order**: Items are calculated independently; complex interdependencies may not evaluate in optimal order
-4. **Error Recovery**: If a referenced item is deleted or renamed, formulas referencing it will show errors but won't crash the app
+4. **Error Recovery**: If a referenced item is deleted, formulas referencing it will show errors but won't crash the app
 
 ## Future Enhancements
 

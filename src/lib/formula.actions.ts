@@ -60,16 +60,16 @@ export function evaluateFormula(
         );
         references.push({ type: 'category', name: refValue });
       } else if (refType === 'item') {
-        // Get specific budget item by name (label)
-        const income = incomes.find((inc) => inc.label.toLowerCase() === refValue.toLowerCase());
-        const expense = expenses.find((exp) => exp.label.toLowerCase() === refValue.toLowerCase());
+        // Get specific budget item by ID
+        const income = incomes.find((inc) => inc.id === refValue);
+        const expense = expenses.find((exp) => exp.id === refValue);
 
         if (income) {
           resolvedValue = income.amount;
-          references.push({ type: 'income', name: refValue });
+          references.push({ type: 'income', id: refValue });
         } else if (expense) {
           resolvedValue = expense.amount;
-          references.push({ type: 'expense', name: refValue });
+          references.push({ type: 'expense', id: refValue });
         } else {
           throw new Error(`Budget item not found: ${refValue}`);
         }
@@ -184,7 +184,7 @@ export function validateFormula(formula: string): FormulaValidationResult {
  */
 export function findReferencingItems(
   targetType: 'source' | 'category' | 'income' | 'expense',
-  targetIdentifier: string, // source/category/item name (label)
+  targetIdentifier: string, // source/category name or item ID
   incomes: Income[],
   expenses: Expense[],
 ): { incomes: Income[]; expenses: Expense[] } {
@@ -206,7 +206,7 @@ export function findReferencingItems(
       if (
         (targetType === 'source' && refType === 'source' && refValue.toLowerCase() === targetIdentifier.toLowerCase()) ||
         (targetType === 'category' && refType === 'category' && refValue.toLowerCase() === targetIdentifier.toLowerCase()) ||
-        ((targetType === 'income' || targetType === 'expense') && refType === 'item' && refValue.toLowerCase() === targetIdentifier.toLowerCase())
+        ((targetType === 'income' || targetType === 'expense') && refType === 'item' && refValue === targetIdentifier)
       ) {
         // Found a reference
         if ('source' in item) {
@@ -266,4 +266,77 @@ export function hasCircularDependency(
   }
 
   return false;
+}
+
+/**
+ * Convert a formula with item IDs to one with item labels for display
+ */
+export function formulaIdsToLabels(
+  formula: string,
+  incomes: Income[],
+  expenses: Expense[],
+): string {
+  let displayFormula = formula;
+  const referencePattern = /@item:([^@+\-*/()]+)/g;
+  const matches: { id: string; label: string; fullMatch: string }[] = [];
+  
+  let match;
+  while ((match = referencePattern.exec(formula)) !== null) {
+    const refId = match[1].trim();
+    const fullMatch = match[0];
+    
+    const income = incomes.find((inc) => inc.id === refId);
+    const expense = expenses.find((exp) => exp.id === refId);
+    
+    if (income) {
+      matches.push({ id: refId, label: income.label, fullMatch });
+    } else if (expense) {
+      matches.push({ id: refId, label: expense.label, fullMatch });
+    }
+  }
+  
+  // Replace in reverse order to maintain positions
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const { label, fullMatch } = matches[i];
+    displayFormula = displayFormula.replace(fullMatch, `@item:${label}`);
+  }
+  
+  return displayFormula;
+}
+
+/**
+ * Convert a formula with item labels to one with item IDs for storage
+ */
+export function formulaLabelsToIds(
+  formula: string,
+  incomes: Income[],
+  expenses: Expense[],
+): string {
+  let storageFormula = formula;
+  const referencePattern = /@item:([^@+\-*/()]+)/g;
+  const matches: { label: string; id: string; fullMatch: string }[] = [];
+  
+  let match;
+  while ((match = referencePattern.exec(formula)) !== null) {
+    const refLabel = match[1].trim();
+    const fullMatch = match[0];
+    
+    // Try to find by label (case-insensitive)
+    const income = incomes.find((inc) => inc.label.toLowerCase() === refLabel.toLowerCase());
+    const expense = expenses.find((exp) => exp.label.toLowerCase() === refLabel.toLowerCase());
+    
+    if (income) {
+      matches.push({ label: refLabel, id: income.id, fullMatch });
+    } else if (expense) {
+      matches.push({ label: refLabel, id: expense.id, fullMatch });
+    }
+  }
+  
+  // Replace in reverse order to maintain positions
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const { id, fullMatch } = matches[i];
+    storageFormula = storageFormula.replace(fullMatch, `@item:${id}`);
+  }
+  
+  return storageFormula;
 }
