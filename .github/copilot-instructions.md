@@ -9,6 +9,14 @@ Key features:
 - 100% private - data stored entirely in the browser
 - Save & load functionality (download as file or image)
 
+## Domain Terminology
+Understanding the key terms used in this application:
+- **Budget Item**: A generic term referring to either an income or an expense
+- **Income**: Money coming in, grouped by "source" (e.g., salary, freelance work, investments)
+- **Expense**: Money going out, grouped by "category" (e.g., rent, groceries, entertainment)
+- **Source**: A grouping mechanism for income items
+- **Category**: A grouping mechanism for expense items
+
 ## Technologies
 - **Frontend Framework:** React 19 with TypeScript
 - **Build Tool:** Vite 6
