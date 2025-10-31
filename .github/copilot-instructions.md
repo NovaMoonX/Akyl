@@ -48,6 +48,13 @@ The build process includes:
 - Use proper React hooks patterns (useState, useEffect, etc.)
 - When creating context providers, be aware that fast refresh warnings may occur if non-component exports are included
 
+### Zustand State Management
+- When using `useShallow` to fetch values from the store, do NOT set default values for objects or arrays
+- Default values can be set for primitive types (strings, numbers, booleans, etc.)
+- ✅ Correct for primitives: `useSpace(useShallow((state) => state.space?.config?.currency || 'USD'))`
+- ❌ Incorrect for objects/arrays: `useSpace(useShallow((state) => state?.space?.sheets || []))`
+- ✅ Correct for objects/arrays: `useSpace(useShallow((state) => state?.space?.sheets))`
+
 ### Linting
 - ESLint is configured with TypeScript support
 - React hooks rules are enforced
@@ -159,3 +166,4 @@ The project uses Firebase Hosting with GitHub Actions:
 - **Follow existing patterns** - maintain consistency with the current codebase
 - **Document complex changes** - add comments for non-obvious logic
 - **Respect privacy** - never introduce features that send user data to external servers
+- **Backwards compatibility** - all changes must be backwards compatible to preserve existing user data and functionality
