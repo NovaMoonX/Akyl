@@ -224,12 +224,17 @@ export default function BudgetItemForm({
 
         <div>
           <label className='font-medium'>Amount</label>
+          {formula && formula.trim() !== '' && (
+            <div className='text-xs text-gray-600 dark:text-gray-400 mb-1'>
+              Amount is calculated from formula
+            </div>
+          )}
           <div className='mt-1 flex flex-wrap items-center gap-2'>
             <input
               type='number'
               min={0}
               step='0.01'
-              className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+              className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed'
               value={amount === 0 ? '' : amount}
               onChange={(e) => {
                 const val = e.target.value;
@@ -240,6 +245,7 @@ export default function BudgetItemForm({
                 }
               }}
               placeholder='0.00'
+              disabled={!!(formula && formula.trim() !== '')}
             />
             <span className='text-gray-700 dark:text-gray-200'>
               {getCurrencySymbol(currency)}
