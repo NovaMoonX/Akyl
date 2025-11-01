@@ -23,6 +23,22 @@ export type {
   Income,
 } from './budget.types';
 
+// Formula
+export {
+  evaluateFormula,
+  findReferencingItems,
+  formulaIdsToLabels,
+  formulaLabelsToIds,
+  hasCircularDependency,
+  validateFormula,
+} from './formula.actions';
+export type {
+  CalculatedAmountResult,
+  FormulaError,
+  FormulaReference,
+  FormulaValidationResult,
+} from './formula.types';
+
 // Cryptography
 export { decryptData, encryptData, getUserCryptoKey } from './crypt.actions';
 

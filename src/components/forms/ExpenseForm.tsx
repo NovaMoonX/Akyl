@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
-import { URL_PARAM_ID } from '../../lib';
+import { formulaIdsToLabels, formulaLabelsToIds, URL_PARAM_ID } from '../../lib';
 import type { Expense } from '../../lib/budget.types';
 import { useSpace } from '../../store';
 import { generateId } from '../../utils';
@@ -14,7 +14,7 @@ export default function ExpenseForm() {
   const [formData, setFormData] = useState<Expense>();
   const [, setShowSubcategory] = useState(false);
   const expenseItemId = searchParams.get(URL_PARAM_ID);
-  const { expensesMap, expenseCategories } = useBudget(); // expenseSubCategoriesMap
+  const { expensesMap, expenseCategories, incomesInSpace, expensesInSpace } = useBudget();
   const { addExpense, updateExpense } = useSpace();
   const activeSheet = useSpace(
     useShallow((state) => state.space?.config?.activeSheet || 'all'),
@@ -46,22 +46,31 @@ export default function ExpenseForm() {
         interval: 1,
       },
       notes: '',
+      formula: '',
       // Pre-select active sheet if creating new item and not on 'all' view
       sheets: !expenseItemId && activeSheet !== 'all' ? [activeSheet] : undefined,
     };
 
     const existingExpense = expensesMap[expenseItemId || ''] ?? {};
+    
+    // Convert formula IDs to labels for display
+    let displayFormula = existingExpense.formula || '';
+    if (displayFormula && incomesInSpace && expensesInSpace) {
+      displayFormula = formulaIdsToLabels(displayFormula, incomesInSpace, expensesInSpace);
+    }
+    
     const expense: Expense = {
       ...defaultExpense,
       ...existingExpense,
-      amount: existingExpense.originalAmount || 0,
+      amount: existingExpense.originalAmount || existingExpense.amount || 0,
+      formula: displayFormula,
     };
     setFormData(expense);
 
     if (expense?.subCategory) {
       setShowSubcategory(true);
     }
-  }, [expenseItemId, expensesMap, activeSheet]);
+  }, [expenseItemId, expensesMap, activeSheet, incomesInSpace, expensesInSpace]);
 
   const handleFieldChange = (field: keyof Expense, val: unknown) => {
     setFormData((prev) => {
@@ -71,18 +80,29 @@ export default function ExpenseForm() {
   };
 
   const handleSave = () => {
-    if (!formData) return;
+    if (!formData || !incomesInSpace || !expensesInSpace) return;
+    
+    // Convert formula labels to IDs before saving
+    let storageFormula = formData.formula || '';
+    if (storageFormula) {
+      storageFormula = formulaLabelsToIds(storageFormula, incomesInSpace, expensesInSpace);
+    }
+    
+    const dataToSave = {
+      ...formData,
+      formula: storageFormula,
+    };
+    
     if (expenseItemId) {
-      updateExpense(expenseItemId, formData);
+      updateExpense(expenseItemId, dataToSave);
     } else {
-      addExpense(formData);
+      addExpense(dataToSave);
     }
   };
 
   const isSaveDisabled =
     !formData?.label ||
-    !formData?.amount ||
-    formData?.amount <= 0 ||
+    (!formData?.formula && (!formData?.amount || formData?.amount <= 0)) ||
     !formData?.category ||
     !formData?.cadence?.interval;
 
@@ -95,6 +115,7 @@ export default function ExpenseForm() {
       cadence={formData?.cadence}
       notes={formData?.notes}
       sheets={formData?.sheets}
+      formula={formData?.formula}
       onFieldChange={(field, val) =>
         handleFieldChange(field as keyof Expense, val)
       }

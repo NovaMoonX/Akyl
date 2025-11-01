@@ -17,6 +17,7 @@ export interface Income {
   hidden?: boolean; // For UI purposes, to hide/show income items (global, deprecated in favor of hiddenInSheets)
   hiddenInSheets?: string[]; // Array of sheet IDs where this item is hidden
   sheets?: string[]; // Optional array of sheet ids
+  formula?: string; // Optional formula for calculated amounts (e.g., "@source:Work * 0.1")
 }
 
 export interface Expense {
@@ -31,4 +32,5 @@ export interface Expense {
   hidden?: boolean; // For UI purposes, to hide/show expense items (global, deprecated in favor of hiddenInSheets)
   hiddenInSheets?: string[]; // Array of sheet IDs where this item is hidden
   sheets?: string[]; // Optional array of sheet ids
+  formula?: string; // Optional formula for calculated amounts (e.g., "@category:Housing * 0.5")
 }

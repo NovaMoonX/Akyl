@@ -188,6 +188,20 @@ function BudgetNode({ data }: BudgetNodeProps) {
           >
             {formatCurrency(budgetItem.amount, currency)}
           </span>
+          {/* Show formula indicator or error */}
+          {'formula' in budgetItem && budgetItem.formula && (
+            <div className='mt-1 text-xs opacity-60 text-center'>
+              {'formulaError' in budgetItem && budgetItem.formulaError ? (
+                <span className='text-red-600 dark:text-red-400' title={String(budgetItem.formulaError)}>
+                  ⚠️ Formula error
+                </span>
+              ) : (
+                <span title={String(budgetItem.formula)}>
+                  📊 Calculated
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* move handle inward for smoother edge animation */}

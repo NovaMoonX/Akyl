@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
+import { useBudget } from '../../hooks';
 import {
   CashFlowVerbiagePairs,
   getCurrencySymbol,
@@ -8,8 +9,10 @@ import {
   type BudgetType,
 } from '../../lib';
 import type { BudgetItemCadence } from '../../lib/budget.types';
+import { findReferencingItems, validateFormula } from '../../lib/formula.actions';
 import { useSpace } from '../../store';
 import ConfirmationModal from '../modals/ConfirmationModal';
+import FormulaHelper from '../ui/FormulaHelper';
 
 export interface BudgetItemFormProps {
   type: BudgetType;
@@ -19,8 +22,9 @@ export interface BudgetItemFormProps {
   cadence?: BudgetItemCadence;
   notes?: string;
   sheets?: string[];
+  formula?: string;
   onFieldChange: (
-    field: 'label' | 'description' | 'amount' | 'cadence' | 'notes' | 'sheets',
+    field: 'label' | 'description' | 'amount' | 'cadence' | 'notes' | 'sheets' | 'formula',
     value: unknown,
   ) => void;
   children?: React.ReactNode;
@@ -37,6 +41,7 @@ export default function BudgetItemForm({
   cadence = { type: 'month', interval: 1 },
   notes = '',
   sheets = [],
+  formula = '',
   onFieldChange,
   children,
   saveButtonDisabled = false,
@@ -52,11 +57,27 @@ export default function BudgetItemForm({
   const availableSheets = useSpace(
     useShallow((state) => state?.space?.sheets || []),
   );
+  const [incomes, expenses] = useSpace(
+    useShallow((state) => [state.space?.incomes || [], state.space?.expenses || []]),
+  );
+  const { incomeSources, expenseCategories, incomesInSpace, expensesInSpace } = useBudget();
   const { removeExpense, removeIncome } = useSpace();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showDescription, setShowDescription] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [showFormula, setShowFormula] = useState(false);
+  const [showFormulaHelper, setShowFormulaHelper] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [deleteWarningMessage, setDeleteWarningMessage] = useState<string>('');
+  const [formulaValidation, setFormulaValidation] = useState<{
+    isValid: boolean;
+    error?: string;
+  }>({ isValid: true });
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [autocompleteOptions, setAutocompleteOptions] = useState<{ value: string; display: string }[]>([]);
+  const [selectedAutocompleteIndex, setSelectedAutocompleteIndex] = useState(0);
+  const formulaInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<HTMLDivElement>(null);
   const itemId = searchParams.get(URL_PARAM_ID);
 
   useEffect(() => {
@@ -66,7 +87,166 @@ export default function BudgetItemForm({
     if (notes.length > 0) {
       setShowNotes(true);
     }
-  }, [description, notes]);
+    if (formula && formula.length > 0) {
+      setShowFormula(true);
+    }
+  }, [description, notes, formula]);
+
+  // Validate formula when it changes
+  useEffect(() => {
+    if (!formula || formula.trim() === '') {
+      setFormulaValidation({ isValid: true });
+      return;
+    }
+
+    const result = validateFormula(formula);
+    setFormulaValidation({
+      isValid: result.isValid,
+      error: result.error?.message,
+    });
+  }, [formula]);
+
+  // Autocomplete logic
+  useEffect(() => {
+    if (!formula || !formulaInputRef.current) {
+      setShowAutocomplete(false);
+      return;
+    }
+
+    const cursorPosition = formulaInputRef.current.selectionStart || 0;
+    const textBeforeCursor = formula.substring(0, cursorPosition);
+    
+    // Check if we're typing a reference
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    if (lastAtIndex === -1) {
+      setShowAutocomplete(false);
+      return;
+    }
+
+    const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+    const colonIndex = textAfterAt.indexOf(':');
+    
+    if (colonIndex === -1) {
+      // Typing the reference type (@source, @category, @item)
+      // Only show source for income, category for expense
+      const types = type === 'income' 
+        ? ['source:', 'item:'] 
+        : ['category:', 'item:'];
+      const matches = types.filter(t => t.startsWith(textAfterAt.toLowerCase()));
+      if (matches.length > 0 && textAfterAt.length > 0) {
+        setAutocompleteOptions(matches.map(m => ({ value: '@' + m, display: '@' + m })));
+        setShowAutocomplete(true);
+        setSelectedAutocompleteIndex(0);
+      } else {
+        setShowAutocomplete(false);
+      }
+    } else {
+      // Typing the value after colon
+      const refType = textAfterAt.substring(0, colonIndex);
+      const searchText = textAfterAt.substring(colonIndex + 1);
+      
+      let options: { value: string; display: string }[] = [];
+      // Only show source suggestions for income items
+      if (refType === 'source' && type === 'income') {
+        options = incomeSources.filter(s => 
+          s.toLowerCase().includes(searchText.toLowerCase())
+        ).map(s => ({ value: `@source:${s}`, display: `@source:${s}` }));
+      } 
+      // Only show category suggestions for expense items
+      else if (refType === 'category' && type === 'expense') {
+        options = expenseCategories.filter(c => 
+          c.toLowerCase().includes(searchText.toLowerCase())
+        ).map(c => ({ value: `@category:${c}`, display: `@category:${c}` }));
+      } else if (refType === 'item') {
+        const allItems = [
+          ...(incomesInSpace || []).filter(i => i.id !== itemId).map(i => ({ id: i.id, label: i.label, type: 'income' })),
+          ...(expensesInSpace || []).filter(e => e.id !== itemId).map(e => ({ id: e.id, label: e.label, type: 'expense' })),
+        ];
+        options = allItems
+          .filter(item => item.label.toLowerCase().includes(searchText.toLowerCase()))
+          .map(item => ({ value: `@item:${item.id}`, display: `@item:${item.label}` }));
+      }
+      
+      if (options.length > 0) {
+        setAutocompleteOptions(options);
+        setShowAutocomplete(true);
+        setSelectedAutocompleteIndex(0);
+      } else {
+        setShowAutocomplete(false);
+      }
+    }
+  }, [formula, incomeSources, expenseCategories, incomesInSpace, expensesInSpace, itemId, type]);
+
+  const handleDeleteClick = () => {
+    if (!itemId) return;
+
+    // Check if this item is referenced in any formulas (using ID)
+    const referencingItems = findReferencingItems(
+      type,
+      itemId,
+      incomes,
+      expenses,
+    );
+
+    const totalReferences = referencingItems.incomes.length + referencingItems.expenses.length;
+
+    if (totalReferences > 0) {
+      const itemNames = [
+        ...referencingItems.incomes.map((i) => i.label),
+        ...referencingItems.expenses.map((e) => e.label),
+      ].join(', ');
+      
+      setDeleteWarningMessage(
+        `This item is referenced in ${totalReferences} formula(s): ${itemNames}. Deleting it may cause errors in those calculations.`,
+      );
+    } else {
+      setDeleteWarningMessage('');
+    }
+
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleAutocompleteSelect = (option: { value: string; display: string }) => {
+    const input = formulaInputRef.current;
+    if (!input) return;
+
+    const cursorPosition = input.selectionStart || 0;
+    const textBeforeCursor = formula.substring(0, cursorPosition);
+    const textAfterCursor = formula.substring(cursorPosition);
+    
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    const newFormula = formula.substring(0, lastAtIndex) + option.value + textAfterCursor;
+    
+    onFieldChange('formula', newFormula);
+    setShowAutocomplete(false);
+    
+    // Set cursor position after the inserted text
+    setTimeout(() => {
+      const newPosition = lastAtIndex + option.value.length;
+      input.setSelectionRange(newPosition, newPosition);
+      input.focus();
+    }, 0);
+  };
+
+  const handleFormulaKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showAutocomplete) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedAutocompleteIndex(prev => 
+        prev < autocompleteOptions.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedAutocompleteIndex(prev => prev > 0 ? prev - 1 : prev);
+    } else if (e.key === 'Enter' && autocompleteOptions.length > 0) {
+      e.preventDefault();
+      handleAutocompleteSelect(autocompleteOptions[selectedAutocompleteIndex]);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setShowAutocomplete(false);
+    }
+  };
 
   const handleDelete = () => {
     if (!itemId) return;
@@ -88,6 +268,24 @@ export default function BudgetItemForm({
       onSave();
       handleClose();
     }
+  };
+
+  const handleFormulaInsert = (text: string) => {
+    const input = formulaInputRef.current;
+    if (!input) return;
+
+    const start = input.selectionStart ?? formula.length;
+    const end = input.selectionEnd ?? formula.length;
+    const newFormula = formula.substring(0, start) + text + formula.substring(end);
+    
+    onFieldChange('formula', newFormula);
+    
+    // Set cursor position after inserted text
+    setTimeout(() => {
+      input.focus();
+      const newPos = start + text.length;
+      input.setSelectionRange(newPos, newPos);
+    }, 0);
   };
 
   // use form to save on enter key
@@ -145,12 +343,17 @@ export default function BudgetItemForm({
 
         <div>
           <label className='font-medium'>Amount</label>
+          {formula && formula.trim() !== '' && (
+            <div className='text-xs text-gray-600 dark:text-gray-400 mb-1'>
+              Amount is calculated from formula
+            </div>
+          )}
           <div className='mt-1 flex flex-wrap items-center gap-2'>
             <input
               type='number'
               min={0}
               step='0.01'
-              className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+              className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed'
               value={amount === 0 ? '' : amount}
               onChange={(e) => {
                 const val = e.target.value;
@@ -161,6 +364,7 @@ export default function BudgetItemForm({
                 }
               }}
               placeholder='0.00'
+              disabled={!!(formula && formula.trim() !== '')}
             />
             <span className='text-gray-700 dark:text-gray-200'>
               {getCurrencySymbol(currency)}
@@ -206,6 +410,106 @@ export default function BudgetItemForm({
             </select>
           </div>
         </div>
+
+        {/* Formula Field */}
+        {!showFormula && (
+          <div className='flex justify-end'>
+            <button
+              type='button'
+              className='text-sm underline opacity-70 hover:opacity-85'
+              onClick={() => setShowFormula(true)}
+            >
+              Use calculated amount
+            </button>
+          </div>
+        )}
+
+        {showFormula && (
+          <div className='relative'>
+            <label className='font-medium'>Formula</label>
+            <div className='text-xs text-gray-600 dark:text-gray-400 mb-1'>
+              {type === 'income' 
+                ? 'Use @source:Name or @item:Name for references. Example: @source:Work * 0.1'
+                : 'Use @category:Name or @item:Name for references. Example: @category:Housing * 0.5'
+              }
+            </div>
+            <input
+              ref={formulaInputRef}
+              type='text'
+              className={`w-full rounded border px-2 py-1 focus:border-emerald-500 focus:outline-none ${
+                formulaValidation.isValid
+                  ? 'border-gray-300 dark:border-gray-700'
+                  : 'border-red-500'
+              }`}
+              value={formula}
+              onChange={(e) => onFieldChange('formula', e.target.value)}
+              onKeyDown={handleFormulaKeyDown}
+              placeholder='e.g., 1000 + 500 or @source:Work * 0.5'
+              autoComplete='off'
+            />
+            
+            {/* Autocomplete dropdown */}
+            {showAutocomplete && autocompleteOptions.length > 0 && (
+              <div
+                ref={autocompleteRef}
+                className='absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow-lg max-h-60 overflow-y-auto'
+              >
+                {autocompleteOptions.map((option, index) => (
+                  <button
+                    key={option.value}
+                    type='button'
+                    className={`block w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                      index === selectedAutocompleteIndex
+                        ? 'bg-emerald-50 dark:bg-emerald-900/30'
+                        : ''
+                    }`}
+                    onClick={() => handleAutocompleteSelect(option)}
+                    onMouseEnter={() => setSelectedAutocompleteIndex(index)}
+                  >
+                    {option.display}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {!formulaValidation.isValid && formulaValidation.error && (
+              <div className='mt-1 text-xs text-red-600 dark:text-red-400'>
+                {formulaValidation.error}
+              </div>
+            )}
+            <div className='flex justify-between mt-1'>
+              <button
+                type='button'
+                className='text-xs underline opacity-70 hover:opacity-85'
+                onClick={() => setShowFormulaHelper(!showFormulaHelper)}
+              >
+                {showFormulaHelper ? 'Hide' : 'Show'} formula helper
+              </button>
+              {formula && formula.trim() !== '' && (
+                <button
+                  type='button'
+                  className='text-xs underline opacity-70 hover:opacity-85'
+                  onClick={() => {
+                    onFieldChange('formula', '');
+                    setShowFormula(false);
+                    setShowFormulaHelper(false);
+                  }}
+                >
+                  Remove formula
+                </button>
+              )}
+            </div>
+            {showFormulaHelper && (
+              <div className='mt-2'>
+                <FormulaHelper
+                  currentItemId={itemId || undefined}
+                  itemType={type}
+                  onInsert={handleFormulaInsert}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Children for custom fields */}
         {children}
@@ -269,7 +573,7 @@ export default function BudgetItemForm({
             <button
               type='button'
               className='btn btn-danger mr-auto'
-              onClick={() => setShowDeleteConfirmation(true)}
+              onClick={handleDeleteClick}
             >
               Delete
             </button>
@@ -294,7 +598,11 @@ export default function BudgetItemForm({
 
       <ConfirmationModal
         title='Delete Budget Item'
-        message={`Are you sure you want to delete this ${type}? This action cannot be undone.`}
+        message={
+          deleteWarningMessage
+            ? `${deleteWarningMessage} Are you sure you want to delete this ${type}? This action cannot be undone.`
+            : `Are you sure you want to delete this ${type}? This action cannot be undone.`
+        }
         isOpen={showDeleteConfirmation}
         onClose={() => setShowDeleteConfirmation(false)}
         onCancel={() => setShowDeleteConfirmation(false)}

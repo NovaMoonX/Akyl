@@ -8,6 +8,7 @@ import {
   type Expense,
   type Income,
 } from '../lib';
+import { evaluateFormula } from '../lib/formula.actions';
 import type { BudgetType } from '../lib/node.types';
 import { useSpace } from '../store';
 
@@ -49,16 +50,41 @@ export default function useBudget() {
     }
     
     const itemsAdjustedAmount = items.map((income) => {
+      let baseAmount = income.amount;
+      let formulaError: string | undefined;
+      
+      // If item has a formula, calculate the amount from it
+      if (income.formula) {
+        const result = evaluateFormula(
+          income.formula,
+          incomesInSpace ?? [],
+          expensesInSpace ?? [],
+        );
+        
+        if (result.error) {
+          formulaError = result.error.message;
+          baseAmount = 0; // Use 0 if formula has error
+        } else {
+          baseAmount = result.value;
+        }
+      }
+      
       const adjustedAmount = getBudgetItemWindowAmount(
-        income.amount,
+        baseAmount,
         income.cadence,
         timeWindow,
       );
-      return { ...income, amount: adjustedAmount, originalAmount: income.amount };
+      return { 
+        ...income, 
+        amount: adjustedAmount, 
+        originalAmount: income.amount,
+        calculatedAmount: baseAmount,
+        formulaError,
+      };
     });
     itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
-  }, [incomesInSpace, timeWindow, activeSheet]);
+  }, [incomesInSpace, expensesInSpace, timeWindow, activeSheet]);
 
   const expenses = useMemo(() => {
     let items = expensesInSpace ?? [];
@@ -71,16 +97,41 @@ export default function useBudget() {
     }
     
     const itemsAdjustedAmount = items.map((expense) => {
+      let baseAmount = expense.amount;
+      let formulaError: string | undefined;
+      
+      // If item has a formula, calculate the amount from it
+      if (expense.formula) {
+        const result = evaluateFormula(
+          expense.formula,
+          incomesInSpace ?? [],
+          expensesInSpace ?? [],
+        );
+        
+        if (result.error) {
+          formulaError = result.error.message;
+          baseAmount = 0; // Use 0 if formula has error
+        } else {
+          baseAmount = result.value;
+        }
+      }
+      
       const adjustedAmount = getBudgetItemWindowAmount(
-        expense.amount,
+        baseAmount,
         expense.cadence,
         timeWindow,
       );
-      return { ...expense, amount: adjustedAmount, originalAmount: expense.amount };
+      return { 
+        ...expense, 
+        amount: adjustedAmount, 
+        originalAmount: expense.amount,
+        calculatedAmount: baseAmount,
+        formulaError,
+      };
     });
     itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
-  }, [expensesInSpace, timeWindow, activeSheet]);
+  }, [expensesInSpace, incomesInSpace, timeWindow, activeSheet]);
 
   const incomeSources = useMemo(() => {
     const sourceCount = new Map<string, number>();
