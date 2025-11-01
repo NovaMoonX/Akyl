@@ -102,8 +102,7 @@ export default function ExpenseForm() {
 
   const isSaveDisabled =
     !formData?.label ||
-    !formData?.amount ||
-    formData?.amount <= 0 ||
+    (!formData?.formula && (!formData?.amount || formData?.amount <= 0)) ||
     !formData?.category ||
     !formData?.cadence?.interval;
 

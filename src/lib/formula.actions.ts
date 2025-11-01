@@ -31,7 +31,8 @@ export function evaluateFormula(
 
   try {
     // Replace references with their values
-    // Pattern: @source:Name, @category:Name, @item:Name
+    // Pattern: @source:Name, @category:Name, @item:ID
+    // The pattern now trims whitespace from the reference value
     const referencePattern = /@(source|category|item):([^@+\-*/()]+)/g;
     let match;
 
@@ -83,6 +84,12 @@ export function evaluateFormula(
     const allowedPattern = /^[\d+\-*/().\s]+$/;
     if (!allowedPattern.test(processedFormula)) {
       throw new Error('Invalid characters in formula');
+    }
+
+    // Check for incomplete expressions (e.g., trailing operators)
+    const incompletePattern = /[+\-*/]\s*$/;
+    if (incompletePattern.test(processedFormula.trim())) {
+      throw new Error('Incomplete formula: operator at end');
     }
 
     // Evaluate the mathematical expression
@@ -278,28 +285,21 @@ export function formulaIdsToLabels(
 ): string {
   let displayFormula = formula;
   const referencePattern = /@item:([^@+\-*/()]+)/g;
-  const matches: { id: string; label: string; fullMatch: string }[] = [];
   
-  let match;
-  while ((match = referencePattern.exec(formula)) !== null) {
-    const refId = match[1].trim();
-    const fullMatch = match[0];
-    
-    const income = incomes.find((inc) => inc.id === refId);
-    const expense = expenses.find((exp) => exp.id === refId);
+  // Replace all matches
+  displayFormula = displayFormula.replace(referencePattern, (match, refId) => {
+    const trimmedId = refId.trim();
+    const income = incomes.find((inc) => inc.id === trimmedId);
+    const expense = expenses.find((exp) => exp.id === trimmedId);
     
     if (income) {
-      matches.push({ id: refId, label: income.label, fullMatch });
+      return `@item:${income.label}`;
     } else if (expense) {
-      matches.push({ id: refId, label: expense.label, fullMatch });
+      return `@item:${expense.label}`;
     }
-  }
-  
-  // Replace in reverse order to maintain positions
-  for (let i = matches.length - 1; i >= 0; i--) {
-    const { label, fullMatch } = matches[i];
-    displayFormula = displayFormula.replace(fullMatch, `@item:${label}`);
-  }
+    // If not found, keep the original
+    return match;
+  });
   
   return displayFormula;
 }
@@ -314,29 +314,22 @@ export function formulaLabelsToIds(
 ): string {
   let storageFormula = formula;
   const referencePattern = /@item:([^@+\-*/()]+)/g;
-  const matches: { label: string; id: string; fullMatch: string }[] = [];
   
-  let match;
-  while ((match = referencePattern.exec(formula)) !== null) {
-    const refLabel = match[1].trim();
-    const fullMatch = match[0];
-    
+  // Replace all matches
+  storageFormula = storageFormula.replace(referencePattern, (match, refLabel) => {
+    const trimmedLabel = refLabel.trim();
     // Try to find by label (case-insensitive)
-    const income = incomes.find((inc) => inc.label.toLowerCase() === refLabel.toLowerCase());
-    const expense = expenses.find((exp) => exp.label.toLowerCase() === refLabel.toLowerCase());
+    const income = incomes.find((inc) => inc.label.toLowerCase() === trimmedLabel.toLowerCase());
+    const expense = expenses.find((exp) => exp.label.toLowerCase() === trimmedLabel.toLowerCase());
     
     if (income) {
-      matches.push({ label: refLabel, id: income.id, fullMatch });
+      return `@item:${income.id}`;
     } else if (expense) {
-      matches.push({ label: refLabel, id: expense.id, fullMatch });
+      return `@item:${expense.id}`;
     }
-  }
-  
-  // Replace in reverse order to maintain positions
-  for (let i = matches.length - 1; i >= 0; i--) {
-    const { id, fullMatch } = matches[i];
-    storageFormula = storageFormula.replace(fullMatch, `@item:${id}`);
-  }
+    // If not found, keep the original
+    return match;
+  });
   
   return storageFormula;
 }
