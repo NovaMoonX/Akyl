@@ -50,7 +50,7 @@ export default function FormulaHelper({ currentItemId, itemType, onInsert }: For
               <button
                 key={source}
                 type='button'
-                onClick={() => onInsert(`@source:${source}`)}
+                onClick={() => onInsert(`@src:${source}`)}
                 className='px-2 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50 text-xs'
               >
                 {source}
@@ -69,7 +69,7 @@ export default function FormulaHelper({ currentItemId, itemType, onInsert }: For
               <button
                 key={category}
                 type='button'
-                onClick={() => onInsert(`@category:${category}`)}
+                onClick={() => onInsert(`@cat:${category}`)}
                 className='px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50 text-xs'
               >
                 {category}
@@ -88,7 +88,7 @@ export default function FormulaHelper({ currentItemId, itemType, onInsert }: For
               <button
                 key={income.id}
                 type='button'
-                onClick={() => onInsert(`@item:${income.id}`)}
+                onClick={() => onInsert(`@in:${income.id}`)}
                 className='block w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-xs mb-1'
                 title={`Income: ${income.label}`}
               >
@@ -99,7 +99,7 @@ export default function FormulaHelper({ currentItemId, itemType, onInsert }: For
               <button
                 key={expense.id}
                 type='button'
-                onClick={() => onInsert(`@item:${expense.id}`)}
+                onClick={() => onInsert(`@out:${expense.id}`)}
                 className='block w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-xs mb-1'
                 title={`Expense: ${expense.label}`}
               >

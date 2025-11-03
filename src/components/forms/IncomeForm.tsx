@@ -99,7 +99,7 @@ export default function IncomeForm() {
 
   const isSaveDisabled =
     !formData?.label ||
-    (!formData?.formula && (!formData?.amount || formData?.amount <= 0)) ||
+    (!(formData?.formula && formData.formula.trim() !== '') && (!formData?.amount || formData?.amount <= 0)) ||
     !formData?.source ||
     !formData?.type ||
     !formData?.cadence?.interval;

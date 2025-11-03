@@ -127,11 +127,11 @@ export default function BudgetItemForm({
     const colonIndex = textAfterAt.indexOf(':');
     
     if (colonIndex === -1) {
-      // Typing the reference type (@source, @category, @item)
-      // Only show source for income, category for expense
+      // Typing the reference type (@src, @cat, @in, @out)
+      // Only show src for income, cat for expense
       const types = type === 'income' 
-        ? ['source:', 'item:'] 
-        : ['category:', 'item:'];
+        ? ['src:', 'in:'] 
+        : ['cat:', 'out:'];
       const matches = types.filter(t => t.startsWith(textAfterAt.toLowerCase()));
       if (matches.length > 0 && textAfterAt.length > 0) {
         setAutocompleteOptions(matches.map(m => ({ value: '@' + m, display: '@' + m })));
@@ -147,24 +147,30 @@ export default function BudgetItemForm({
       
       let options: { value: string; display: string }[] = [];
       // Only show source suggestions for income items
-      if (refType === 'source' && type === 'income') {
+      if (refType === 'src' && type === 'income') {
         options = incomeSources.filter(s => 
           s.toLowerCase().includes(searchText.toLowerCase())
-        ).map(s => ({ value: `@source:${s}`, display: `@source:${s}` }));
+        ).map(s => ({ value: `@src:${s}`, display: `@src:${s}` }));
       } 
       // Only show category suggestions for expense items
-      else if (refType === 'category' && type === 'expense') {
+      else if (refType === 'cat' && type === 'expense') {
         options = expenseCategories.filter(c => 
           c.toLowerCase().includes(searchText.toLowerCase())
-        ).map(c => ({ value: `@category:${c}`, display: `@category:${c}` }));
-      } else if (refType === 'item') {
+        ).map(c => ({ value: `@cat:${c}`, display: `@cat:${c}` }));
+      } else if (refType === 'in' || refType === 'out') {
         const allItems = [
           ...(incomesInSpace || []).filter(i => i.id !== itemId).map(i => ({ id: i.id, label: i.label, type: 'income' })),
           ...(expensesInSpace || []).filter(e => e.id !== itemId).map(e => ({ id: e.id, label: e.label, type: 'expense' })),
         ];
         options = allItems
           .filter(item => item.label.toLowerCase().includes(searchText.toLowerCase()))
-          .map(item => ({ value: `@item:${item.id}`, display: `@item:${item.label}` }));
+          .map(item => {
+            const isIncome = item.type === 'income';
+            return {
+              value: `@${isIncome ? 'in' : 'out'}:${item.id}`,
+              display: `@${isIncome ? 'in' : 'out'}:${item.label}`
+            };
+          });
       }
       
       if (options.length > 0) {
@@ -429,8 +435,8 @@ export default function BudgetItemForm({
             <label className='font-medium'>Formula</label>
             <div className='text-xs text-gray-600 dark:text-gray-400 mb-1'>
               {type === 'income' 
-                ? 'Use @source:Name or @item:Name for references. Example: @source:Work * 0.1'
-                : 'Use @category:Name or @item:Name for references. Example: @category:Housing * 0.5'
+                ? 'Use @src:Name or @in:Name for references. Example: @src:Work * 0.1'
+                : 'Use @cat:Name or @out:Name for references. Example: @cat:Housing * 0.5'
               }
             </div>
             <input

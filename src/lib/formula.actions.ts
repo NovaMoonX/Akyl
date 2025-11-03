@@ -31,26 +31,26 @@ export function evaluateFormula(
 
   try {
     // Replace references with their values
-    // Pattern: @source:Name, @category:Name, @item:ID
+    // Pattern: @src:Name, @cat:Name, @in:ID, @out:ID
     // The pattern now trims whitespace from the reference value
-    const referencePattern = /@(source|category|item):([^@+\-*/()]+)/g;
+    const referencePattern = /@(src|cat|in|out):([^@+\-*/()]+)/g;
     let match;
 
     while ((match = referencePattern.exec(formula)) !== null) {
-      const refType = match[1] as 'source' | 'category' | 'item';
+      const refType = match[1] as 'src' | 'cat' | 'in' | 'out';
       const refValue = match[2].trim();
       const fullMatch = match[0];
 
       let resolvedValue = 0;
 
-      if (refType === 'source') {
+      if (refType === 'src') {
         // Sum all incomes from this source
         const sourceIncomes = incomes.filter(
           (inc) => inc.source.toLowerCase() === refValue.toLowerCase(),
         );
         resolvedValue = sourceIncomes.reduce((sum, inc) => sum + inc.amount, 0);
         references.push({ type: 'source', name: refValue });
-      } else if (refType === 'category') {
+      } else if (refType === 'cat') {
         // Sum all expenses from this category
         const categoryExpenses = expenses.filter(
           (exp) => exp.category.toLowerCase() === refValue.toLowerCase(),
@@ -60,7 +60,7 @@ export function evaluateFormula(
           0,
         );
         references.push({ type: 'category', name: refValue });
-      } else if (refType === 'item') {
+      } else if (refType === 'in' || refType === 'out') {
         // Get specific budget item by ID
         const income = incomes.find((inc) => inc.id === refValue);
         const expense = expenses.find((exp) => exp.id === refValue);
@@ -86,10 +86,16 @@ export function evaluateFormula(
       throw new Error('Invalid characters in formula');
     }
 
-    // Check for incomplete expressions (e.g., trailing operators)
+    // Check for incomplete expressions (e.g., trailing operators) BEFORE evaluation
+    const trimmedFormula = processedFormula.trim();
     const incompletePattern = /[+\-*/]\s*$/;
-    if (incompletePattern.test(processedFormula.trim())) {
+    if (incompletePattern.test(trimmedFormula)) {
       throw new Error('Incomplete formula: operator at end');
+    }
+
+    // Check for empty parentheses or unbalanced parentheses
+    if (trimmedFormula.includes('()')) {
+      throw new Error('Empty parentheses in formula');
     }
 
     // Evaluate the mathematical expression
@@ -203,7 +209,7 @@ export function findReferencingItems(
   for (const item of allItems) {
     if (!item.formula) continue;
 
-    const referencePattern = /@(source|category|item):([^@+\-*/()]+)/g;
+    const referencePattern = /@(src|cat|in|out):([^@+\-*/()]+)/g;
     let match;
 
     while ((match = referencePattern.exec(item.formula)) !== null) {
@@ -211,9 +217,10 @@ export function findReferencingItems(
       const refValue = match[2].trim();
 
       if (
-        (targetType === 'source' && refType === 'source' && refValue.toLowerCase() === targetIdentifier.toLowerCase()) ||
-        (targetType === 'category' && refType === 'category' && refValue.toLowerCase() === targetIdentifier.toLowerCase()) ||
-        ((targetType === 'income' || targetType === 'expense') && refType === 'item' && refValue === targetIdentifier)
+        (targetType === 'source' && refType === 'src' && refValue.toLowerCase() === targetIdentifier.toLowerCase()) ||
+        (targetType === 'category' && refType === 'cat' && refValue.toLowerCase() === targetIdentifier.toLowerCase()) ||
+        (targetType === 'income' && refType === 'in' && refValue === targetIdentifier) ||
+        (targetType === 'expense' && refType === 'out' && refValue === targetIdentifier)
       ) {
         // Found a reference
         if ('source' in item) {
@@ -284,18 +291,18 @@ export function formulaIdsToLabels(
   expenses: Expense[],
 ): string {
   let displayFormula = formula;
-  const referencePattern = /@item:([^@+\-*/()]+)/g;
+  const referencePattern = /@(in|out):([^@+\-*/()]+)/g;
   
   // Replace all matches
-  displayFormula = displayFormula.replace(referencePattern, (match, refId) => {
+  displayFormula = displayFormula.replace(referencePattern, (match, _refType, refId) => {
     const trimmedId = refId.trim();
     const income = incomes.find((inc) => inc.id === trimmedId);
     const expense = expenses.find((exp) => exp.id === trimmedId);
     
     if (income) {
-      return `@item:${income.label}`;
+      return `@in:${income.label}`;
     } else if (expense) {
-      return `@item:${expense.label}`;
+      return `@out:${expense.label}`;
     }
     // If not found, keep the original
     return match;
@@ -313,19 +320,19 @@ export function formulaLabelsToIds(
   expenses: Expense[],
 ): string {
   let storageFormula = formula;
-  const referencePattern = /@item:([^@+\-*/()]+)/g;
+  const referencePattern = /@(in|out):([^@+\-*/()]+)/g;
   
   // Replace all matches
-  storageFormula = storageFormula.replace(referencePattern, (match, refLabel) => {
+  storageFormula = storageFormula.replace(referencePattern, (match, _refType, refLabel) => {
     const trimmedLabel = refLabel.trim();
     // Try to find by label (case-insensitive)
     const income = incomes.find((inc) => inc.label.toLowerCase() === trimmedLabel.toLowerCase());
     const expense = expenses.find((exp) => exp.label.toLowerCase() === trimmedLabel.toLowerCase());
     
     if (income) {
-      return `@item:${income.id}`;
+      return `@in:${income.id}`;
     } else if (expense) {
-      return `@item:${expense.id}`;
+      return `@out:${expense.id}`;
     }
     // If not found, keep the original
     return match;
