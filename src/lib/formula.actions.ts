@@ -80,17 +80,17 @@ export function evaluateFormula(
       processedFormula = processedFormula.replace(fullMatch, String(resolvedValue));
     }
 
-    // Validate the expression has only allowed characters
-    const allowedPattern = /^[\d+\-*/().\s]+$/;
-    if (!allowedPattern.test(processedFormula)) {
-      throw new Error('Invalid characters in formula');
-    }
-
-    // Check for incomplete expressions (e.g., trailing operators) BEFORE evaluation
+    // Check for incomplete expressions (e.g., trailing operators) BEFORE other validation
     const trimmedFormula = processedFormula.trim();
     const incompletePattern = /[+\-*/]\s*$/;
     if (incompletePattern.test(trimmedFormula)) {
       throw new Error('Incomplete formula: operator at end');
+    }
+
+    // Validate the expression has only allowed characters
+    const allowedPattern = /^[\d+\-*/().\s]+$/;
+    if (!allowedPattern.test(processedFormula)) {
+      throw new Error('Invalid characters in formula');
     }
 
     // Check for empty parentheses or unbalanced parentheses

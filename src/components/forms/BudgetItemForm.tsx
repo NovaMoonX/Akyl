@@ -158,11 +158,13 @@ export default function BudgetItemForm({
           c.toLowerCase().includes(searchText.toLowerCase())
         ).map(c => ({ value: `@cat:${c}`, display: `@cat:${c}` }));
       } else if (refType === 'in' || refType === 'out') {
-        const allItems = [
-          ...(incomesInSpace || []).filter(i => i.id !== itemId).map(i => ({ id: i.id, label: i.label, type: 'income' })),
-          ...(expensesInSpace || []).filter(e => e.id !== itemId).map(e => ({ id: e.id, label: e.label, type: 'expense' })),
-        ];
-        options = allItems
+        // Filter items based on the reference type
+        const isInType = refType === 'in';
+        const filteredItems = isInType
+          ? (incomesInSpace || []).filter(i => i.id !== itemId).map(i => ({ id: i.id, label: i.label, type: 'income' as const }))
+          : (expensesInSpace || []).filter(e => e.id !== itemId).map(e => ({ id: e.id, label: e.label, type: 'expense' as const }));
+        
+        options = filteredItems
           .filter(item => item.label.toLowerCase().includes(searchText.toLowerCase()))
           .map(item => {
             const isIncome = item.type === 'income';
