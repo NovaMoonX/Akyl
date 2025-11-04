@@ -138,15 +138,17 @@ export function validateFormula(formula: string): FormulaValidationResult {
   }
 
   const references: FormulaReference[] = [];
-  let processedFormula = formula.trim();
+  const processedFormula = formula.trim();
 
   try {
-    // Extract and validate references
-    const referencePattern = /@(source|category|item):([^@+\-*/()]+)/g;
+    // Check for incomplete expressions (e.g., trailing operators) BEFORE other validation
+    // Do a preliminary check by replacing references with '1'
+    let preliminaryFormula = processedFormula;
+    const referencePattern = /@(src|cat|in|out):([^@+\-*/()]+)/g;
     let match;
 
     while ((match = referencePattern.exec(formula)) !== null) {
-      const refType = match[1] as 'source' | 'category' | 'item';
+      const refType = match[1] as 'src' | 'cat' | 'in' | 'out';
       const refValue = match[2].trim();
       const fullMatch = match[0];
 
@@ -154,28 +156,34 @@ export function validateFormula(formula: string): FormulaValidationResult {
         throw new Error(`Empty reference: ${fullMatch}`);
       }
 
-      if (refType === 'source') {
+      if (refType === 'src') {
         references.push({ type: 'source', name: refValue });
-      } else if (refType === 'category') {
+      } else if (refType === 'cat') {
         references.push({ type: 'category', name: refValue });
-      } else if (refType === 'item') {
-        // For validation, we just store as 'income' since we don't know the actual type
-        // The actual type will be determined during evaluation
-        references.push({ type: 'income', id: refValue });
+      } else if (refType === 'in' || refType === 'out') {
+        // For validation, we store as income/expense based on the ref type
+        references.push({ type: refType === 'in' ? 'income' : 'expense', id: refValue });
       }
 
       // Replace with placeholder for validation
-      processedFormula = processedFormula.replace(fullMatch, '1');
+      preliminaryFormula = preliminaryFormula.replace(fullMatch, '1');
+    }
+
+    // Check for incomplete expressions BEFORE character validation
+    const trimmedFormula = preliminaryFormula.trim();
+    const incompletePattern = /[+\-*/]\s*$/;
+    if (incompletePattern.test(trimmedFormula)) {
+      throw new Error('Incomplete formula: operator at end');
     }
 
     // Validate the expression syntax
     const allowedPattern = /^[\d+\-*/().\s]+$/;
-    if (!allowedPattern.test(processedFormula)) {
+    if (!allowedPattern.test(preliminaryFormula)) {
       throw new Error('Invalid characters in formula');
     }
 
     // Try to parse it
-    new Function(`'use strict'; return (${processedFormula})`)();
+    new Function(`'use strict'; return (${preliminaryFormula})`)();
 
     return {
       isValid: true,
