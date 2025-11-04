@@ -223,14 +223,15 @@ export default function BudgetItemForm({
     const textAfterCursor = formula.substring(cursorPosition);
     
     const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-    const newFormula = formula.substring(0, lastAtIndex) + option.value + textAfterCursor;
+    // Use display value (with label) instead of value (with ID) for user-facing formula
+    const newFormula = formula.substring(0, lastAtIndex) + option.display + textAfterCursor;
     
     onFieldChange('formula', newFormula);
     setShowAutocomplete(false);
     
     // Set cursor position after the inserted text
     setTimeout(() => {
-      const newPosition = lastAtIndex + option.value.length;
+      const newPosition = lastAtIndex + option.display.length;
       input.setSelectionRange(newPosition, newPosition);
       input.focus();
     }, 0);

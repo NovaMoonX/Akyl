@@ -6,15 +6,21 @@ export function formatCurrency(amount: number, currency: string): string {
   const formatted = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(amount);
 
   const negativeZero = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(-0);
   const positiveZero = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(0);
 
   if (formatted === negativeZero) {
