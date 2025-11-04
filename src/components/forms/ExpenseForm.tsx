@@ -83,9 +83,14 @@ export default function ExpenseForm() {
     if (!formData || !incomesInSpace || !expensesInSpace) return;
     
     // Convert formula labels to IDs before saving
+    // Include the current item in the list so self-references work
+    const expensesWithCurrent = expenseItemId
+      ? expensesInSpace.map(exp => exp.id === expenseItemId ? formData : exp)
+      : [...expensesInSpace, formData];
+    
     let storageFormula = formData.formula || '';
     if (storageFormula) {
-      storageFormula = formulaLabelsToIds(storageFormula, incomesInSpace, expensesInSpace);
+      storageFormula = formulaLabelsToIds(storageFormula, incomesInSpace, expensesWithCurrent);
     }
     
     const dataToSave = {
