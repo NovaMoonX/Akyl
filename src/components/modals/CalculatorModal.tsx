@@ -1,5 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
+import { ChevronDownIcon } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
+import { useBudget } from '../../hooks';
 import { formatCurrency } from '../../lib';
 import { useSpace } from '../../store';
 import { join } from '../../utils';
@@ -25,11 +27,13 @@ export default function CalculatorModal({
       state.setCalculatorAmount,
     ]),
   );
+  const { incomes, expenses, incomesTotal, expensesTotal, incomeBySource, expenseByCategory } = useBudget();
 
   const [display, setDisplay] = useState(initialValue.toString());
   const [operation, setOperation] = useState<string | null>(null);
   const [previousValue, setPreviousValue] = useState<number | null>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
+  const [showAmountPicker, setShowAmountPicker] = useState(false);
 
   const calculate = useCallback((prevValue: number, currValue: number, op: string): number => {
     switch (op) {
@@ -78,6 +82,25 @@ export default function CalculatorModal({
       setCalculatorAmount(null);
     }
   }, [calculatorAmount, isOpen, waitingForOperand, display, operation, previousValue, setCalculatorAmount, calculate]);
+
+  const handleAmountSelect = useCallback((amount: number) => {
+    if (waitingForOperand || display === '0') {
+      setDisplay(String(amount));
+      setWaitingForOperand(false);
+    } else {
+      // If we have an operation pending, use it
+      if (operation && previousValue !== null) {
+        const newValue = calculate(previousValue, parseFloat(display), operation);
+        setPreviousValue(newValue);
+        setDisplay(String(amount));
+        setWaitingForOperand(false);
+      } else {
+        // Otherwise, start a new calculation
+        setDisplay(String(amount));
+      }
+    }
+    setShowAmountPicker(false);
+  }, [waitingForOperand, display, operation, previousValue, calculate]);
 
   const handleNumber = useCallback((num: string) => {
     if (waitingForOperand) {
@@ -146,6 +169,64 @@ export default function CalculatorModal({
     }
   }, [display, onUseResult, onClose]);
 
+  // Keyboard support
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in an input field
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Numbers
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        handleNumber(e.key);
+      }
+      // Operators
+      else if (e.key === '+') {
+        e.preventDefault();
+        handleOperation('+');
+      }
+      else if (e.key === '-') {
+        e.preventDefault();
+        handleOperation('-');
+      }
+      else if (e.key === '*' || e.key === 'x' || e.key === 'X') {
+        e.preventDefault();
+        handleOperation('*');
+      }
+      else if (e.key === '/') {
+        e.preventDefault();
+        handleOperation('/');
+      }
+      // Decimal point
+      else if (e.key === '.' || e.key === ',') {
+        e.preventDefault();
+        handleDecimal();
+      }
+      // Equals
+      else if (e.key === 'Enter' || e.key === '=') {
+        e.preventDefault();
+        handleEquals();
+      }
+      // Clear
+      else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+        e.preventDefault();
+        handleClear();
+      }
+      // Backspace
+      else if (e.key === 'Backspace') {
+        e.preventDefault();
+        handleBackspace();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleNumber, handleOperation, handleDecimal, handleEquals, handleClear, handleBackspace]);
+
   const ButtonRow = ({ children }: { children: React.ReactNode }) => (
     <div className='grid grid-cols-4 gap-2'>{children}</div>
   );
@@ -188,6 +269,119 @@ export default function CalculatorModal({
           <div className='text-right text-2xl font-bold'>
             {formatCurrency(parseFloat(display) || 0, currency)}
           </div>
+        </div>
+
+        {/* Amount Picker - Select from existing budget items */}
+        <div className='relative'>
+          <button
+            onClick={() => setShowAmountPicker(!showAmountPicker)}
+            className='w-full flex items-center justify-between gap-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 px-3 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors'
+          >
+            <span>💰 Use amount from budget</span>
+            <ChevronDownIcon className={join('size-4 transition-transform', showAmountPicker && 'rotate-180')} />
+          </button>
+          
+          {showAmountPicker && (
+            <div className='absolute top-full left-0 right-0 mt-1 z-10 max-h-64 overflow-y-auto rounded-lg border border-gray-300 dark:border-gray-700 bg-surface-light dark:bg-surface-dark shadow-lg'>
+              {/* Income Total */}
+              {incomesTotal > 0 && (
+                <button
+                  onClick={() => handleAmountSelect(incomesTotal)}
+                  className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
+                >
+                  <span className='font-medium text-green-600 dark:text-green-400'>Total Income</span>
+                  <span className='text-green-600 dark:text-green-400'>{formatCurrency(incomesTotal, currency)}</span>
+                </button>
+              )}
+              
+              {/* Expense Total */}
+              {expensesTotal > 0 && (
+                <button
+                  onClick={() => handleAmountSelect(expensesTotal)}
+                  className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
+                >
+                  <span className='font-medium text-red-600 dark:text-red-400'>Total Expenses</span>
+                  <span className='text-red-600 dark:text-red-400'>{formatCurrency(expensesTotal, currency)}</span>
+                </button>
+              )}
+              
+              {/* Income Sources */}
+              {Object.keys(incomeBySource).length > 0 && (
+                <>
+                  <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
+                    Income Sources
+                  </div>
+                  {Object.entries(incomeBySource).map(([source, data]) => (
+                    <button
+                      key={source}
+                      onClick={() => handleAmountSelect(data.total)}
+                      className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
+                    >
+                      <span className='truncate'>{source}</span>
+                      <span className='text-green-600 dark:text-green-400 ml-2'>{formatCurrency(data.total, currency)}</span>
+                    </button>
+                  ))}
+                </>
+              )}
+              
+              {/* Expense Categories */}
+              {Object.keys(expenseByCategory).length > 0 && (
+                <>
+                  <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
+                    Expense Categories
+                  </div>
+                  {Object.entries(expenseByCategory).map(([category, data]) => (
+                    <button
+                      key={category}
+                      onClick={() => handleAmountSelect(data.total)}
+                      className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
+                    >
+                      <span className='truncate'>{category}</span>
+                      <span className='text-red-600 dark:text-red-400 ml-2'>{formatCurrency(data.total, currency)}</span>
+                    </button>
+                  ))}
+                </>
+              )}
+              
+              {/* Individual Income Items */}
+              {incomes.length > 0 && (
+                <>
+                  <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
+                    Income Items
+                  </div>
+                  {incomes.slice(0, 10).map((income) => (
+                    <button
+                      key={income.id}
+                      onClick={() => handleAmountSelect(income.amount)}
+                      className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
+                    >
+                      <span className='truncate'>{income.label}</span>
+                      <span className='text-green-600 dark:text-green-400 ml-2'>{formatCurrency(income.amount, currency)}</span>
+                    </button>
+                  ))}
+                </>
+              )}
+              
+              {/* Individual Expense Items */}
+              {expenses.length > 0 && (
+                <>
+                  <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
+                    Expense Items
+                  </div>
+                  {expenses.slice(0, 10).map((expense) => (
+                    <button
+                      key={expense.id}
+                      onClick={() => handleAmountSelect(expense.amount)}
+                      className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
+                    >
+                      <span className='truncate'>{expense.label}</span>
+                      <span className='text-red-600 dark:text-red-400 ml-2'>{formatCurrency(expense.amount, currency)}</span>
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Calculator Buttons */}
@@ -268,12 +462,12 @@ export default function CalculatorModal({
         <div className='flex flex-col gap-1'>
           {onUseResult && (
             <p className='text-center text-xs text-gray-500 dark:text-gray-400'>
-              Click "Use" to apply this amount to your budget item
+              💡 Tip: Use keyboard to type numbers and operators
             </p>
           )}
           {!onUseResult && (
             <p className='text-center text-xs text-gray-500 dark:text-gray-400'>
-              💡 Alt+Click any node in the flowchart to add its amount
+              💡 Use keyboard or click buttons • Alt+Click nodes to add amounts
             </p>
           )}
         </div>
