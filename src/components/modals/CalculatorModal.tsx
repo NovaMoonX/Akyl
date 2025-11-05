@@ -102,8 +102,10 @@ export default function CalculatorModal({
       setPreviousValue(inputValue);
     } else if (operation) {
       const newValue = calculate(previousValue, inputValue, operation);
-      setDisplay(String(newValue));
-      setPreviousValue(newValue);
+      // Round to reasonable precision for display
+      const roundedValue = Math.round(newValue * 1e10) / 1e10;
+      setDisplay(String(roundedValue));
+      setPreviousValue(roundedValue);
     }
 
     setWaitingForOperand(true);
@@ -115,7 +117,9 @@ export default function CalculatorModal({
 
     if (previousValue !== null && operation) {
       const newValue = calculate(previousValue, inputValue, operation);
-      setDisplay(String(newValue));
+      // Round to reasonable precision for display
+      const roundedValue = Math.round(newValue * 1e10) / 1e10;
+      setDisplay(String(roundedValue));
       setPreviousValue(null);
       setOperation(null);
       setWaitingForOperand(true);
@@ -139,7 +143,9 @@ export default function CalculatorModal({
   const handleUseResult = useCallback(() => {
     const result = parseFloat(display);
     if (!isNaN(result) && onUseResult) {
-      onUseResult(result);
+      // Round to 2 decimal places
+      const roundedResult = Math.round(result * 100) / 100;
+      onUseResult(roundedResult);
       onClose();
     }
   }, [display, onUseResult, onClose]);
@@ -241,9 +247,20 @@ export default function CalculatorModal({
               </>
             )}
           </div>
-          <div className='text-right text-2xl font-bold'>
-            {formatCurrency(parseFloat(display) || 0, currency)}
-          </div>
+          <input
+            type='text'
+            value={display}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Allow only numbers, decimal point, and minus sign
+              if (value === '' || /^-?\d*\.?\d*$/.test(value)) {
+                setDisplay(value || '0');
+              }
+            }}
+            onFocus={(e) => e.target.select()}
+            className='w-full text-right text-2xl font-bold bg-transparent border-none outline-none focus:ring-2 focus:ring-emerald-500 rounded px-2'
+            placeholder='0'
+          />
         </div>
 
         {/* Amount Picker - Select from existing budget items */}
@@ -460,7 +477,7 @@ export default function CalculatorModal({
                   ? 'bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-600 dark:hover:bg-blue-700'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
               )}
-              title='Use this result as amount'
+              title={onUseResult ? 'Use this result as amount' : 'Available when adding/editing budget items'}
             >
               Use
             </button>
@@ -472,6 +489,11 @@ export default function CalculatorModal({
           <p className='text-center text-xs text-gray-500 dark:text-gray-400'>
             💡 Tip: Use keyboard to type or select from budget amounts above
           </p>
+          {!onUseResult && (
+            <p className='text-center text-xs text-gray-500 dark:text-gray-400'>
+              ℹ️ "Use" is available when adding/editing a budget item
+            </p>
+          )}
         </div>
       </div>
     </Modal>
