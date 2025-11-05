@@ -4,6 +4,7 @@ import {
   CheckSquareIcon,
   XIcon,
   ArrowRightIcon,
+  CalculatorIcon,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
@@ -14,6 +15,7 @@ import HeaderBarSheets from './header/HeaderBarSheets';
 import Modal from './ui/Modal';
 import BottomActions from './BottomActions';
 import HeaderBarTimeWindow from './header/HeaderBarTimeWindow';
+import CalculatorModal from './modals/CalculatorModal';
 
 export default function BottomBar() {
   const [
@@ -48,6 +50,7 @@ export default function BottomBar() {
   );
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAddSheetModalOpen, setIsAddSheetModalOpen] = useState(false);
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newSheetName, setNewSheetName] = useState('');
   const [editingSheetId, setEditingSheetId] = useState<string | null>(null);
@@ -197,6 +200,17 @@ export default function BottomBar() {
               <CheckSquareIcon className='size-4' />
             </button>
           </div>
+
+          <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
+
+          {/* Calculator Button */}
+          <button
+            onClick={() => setIsCalculatorOpen(true)}
+            className='rounded-full p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+            aria-label='Open Calculator'
+          >
+            <CalculatorIcon className='size-5' />
+          </button>
 
           <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
 
@@ -517,6 +531,12 @@ export default function BottomBar() {
           </div>
         </div>
       </Modal>
+
+      {/* Calculator Modal */}
+      <CalculatorModal
+        isOpen={isCalculatorOpen}
+        onClose={() => setIsCalculatorOpen(false)}
+      />
     </>
   );
 }

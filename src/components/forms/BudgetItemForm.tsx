@@ -1,3 +1,4 @@
+import { CalculatorIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
@@ -10,6 +11,7 @@ import {
 import type { BudgetItemCadence } from '../../lib/budget.types';
 import { useSpace } from '../../store';
 import ConfirmationModal from '../modals/ConfirmationModal';
+import CalculatorModal from '../modals/CalculatorModal';
 
 export interface BudgetItemFormProps {
   type: BudgetType;
@@ -57,6 +59,7 @@ export default function BudgetItemForm({
   const [showDescription, setShowDescription] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
   const itemId = searchParams.get(URL_PARAM_ID);
 
   useEffect(() => {
@@ -146,22 +149,33 @@ export default function BudgetItemForm({
         <div>
           <label className='font-medium'>Amount</label>
           <div className='mt-1 flex flex-wrap items-center gap-2'>
-            <input
-              type='number'
-              min={0}
-              step='0.01'
-              className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-              value={amount === 0 ? '' : amount}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === '') {
-                  onFieldChange('amount', 0);
-                } else {
-                  onFieldChange('amount', Number(val));
-                }
-              }}
-              placeholder='0.00'
-            />
+            <div className='flex items-center gap-1'>
+              <input
+                type='number'
+                min={0}
+                step='0.01'
+                className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                value={amount === 0 ? '' : amount}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    onFieldChange('amount', 0);
+                  } else {
+                    onFieldChange('amount', Number(val));
+                  }
+                }}
+                placeholder='0.00'
+              />
+              <button
+                type='button'
+                onClick={() => setShowCalculator(true)}
+                className='rounded p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+                aria-label='Open calculator'
+                title='Open calculator'
+              >
+                <CalculatorIcon className='size-4' />
+              </button>
+            </div>
             <span className='text-gray-700 dark:text-gray-200'>
               {getCurrencySymbol(currency)}
             </span>
@@ -299,6 +313,15 @@ export default function BudgetItemForm({
         onClose={() => setShowDeleteConfirmation(false)}
         onCancel={() => setShowDeleteConfirmation(false)}
         onConfirm={handleDelete}
+      />
+
+      <CalculatorModal
+        isOpen={showCalculator}
+        onClose={() => setShowCalculator(false)}
+        initialValue={amount}
+        onUseResult={(result) => {
+          onFieldChange('amount', result);
+        }}
       />
     </>
   );
