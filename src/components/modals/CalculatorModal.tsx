@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ChevronDownIcon } from 'lucide-react';
+import { ChevronDownIcon, SearchIcon } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
 import { formatCurrency } from '../../lib';
@@ -20,12 +20,8 @@ export default function CalculatorModal({
   onUseResult,
   initialValue = 0,
 }: CalculatorModalProps) {
-  const [currency, calculatorAmount, setCalculatorAmount] = useSpace(
-    useShallow((state) => [
-      state.space?.config?.currency || 'USD',
-      state.calculatorAmount,
-      state.setCalculatorAmount,
-    ]),
+  const currency = useSpace(
+    useShallow((state) => state.space?.config?.currency || 'USD'),
   );
   const { incomes, expenses, incomesTotal, expensesTotal, incomeBySource, expenseByCategory } = useBudget();
 
@@ -34,6 +30,7 @@ export default function CalculatorModal({
   const [previousValue, setPreviousValue] = useState<number | null>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
   const [showAmountPicker, setShowAmountPicker] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const calculate = useCallback((prevValue: number, currValue: number, op: string): number => {
     switch (op) {
@@ -57,31 +54,9 @@ export default function CalculatorModal({
       setOperation(null);
       setPreviousValue(null);
       setWaitingForOperand(false);
+      setSearchQuery('');
     }
   }, [isOpen, initialValue]);
-
-  // Handle amounts received from node clicks
-  useEffect(() => {
-    if (calculatorAmount !== null && isOpen) {
-      if (waitingForOperand || display === '0') {
-        setDisplay(String(calculatorAmount));
-        setWaitingForOperand(false);
-      } else {
-        // If we have an operation pending, use it
-        if (operation && previousValue !== null) {
-          const newValue = calculate(previousValue, parseFloat(display), operation);
-          setPreviousValue(newValue);
-          setDisplay(String(calculatorAmount));
-          setWaitingForOperand(false);
-        } else {
-          // Otherwise, start a new calculation
-          setDisplay(String(calculatorAmount));
-        }
-      }
-      // Clear the calculator amount after using it
-      setCalculatorAmount(null);
-    }
-  }, [calculatorAmount, isOpen, waitingForOperand, display, operation, previousValue, setCalculatorAmount, calculate]);
 
   const handleAmountSelect = useCallback((amount: number) => {
     if (waitingForOperand || display === '0') {
@@ -283,8 +258,22 @@ export default function CalculatorModal({
           
           {showAmountPicker && (
             <div className='absolute top-full left-0 right-0 mt-1 z-10 max-h-64 overflow-y-auto rounded-lg border border-gray-300 dark:border-gray-700 bg-surface-light dark:bg-surface-dark shadow-lg'>
+              {/* Search Box */}
+              <div className='sticky top-0 bg-surface-light dark:bg-surface-dark border-b border-gray-300 dark:border-gray-700 p-2'>
+                <div className='relative'>
+                  <SearchIcon className='absolute left-2 top-1/2 -translate-y-1/2 size-4 text-gray-400' />
+                  <input
+                    type='text'
+                    placeholder='Search budget items...'
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className='w-full pl-8 pr-3 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:border-emerald-500'
+                  />
+                </div>
+              </div>
+              
               {/* Income Total */}
-              {incomesTotal > 0 && (
+              {incomesTotal > 0 && 'Total Income'.toLowerCase().includes(searchQuery.toLowerCase()) && (
                 <button
                   onClick={() => handleAmountSelect(incomesTotal)}
                   className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -295,7 +284,7 @@ export default function CalculatorModal({
               )}
               
               {/* Expense Total */}
-              {expensesTotal > 0 && (
+              {expensesTotal > 0 && 'Total Expenses'.toLowerCase().includes(searchQuery.toLowerCase()) && (
                 <button
                   onClick={() => handleAmountSelect(expensesTotal)}
                   className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -306,80 +295,100 @@ export default function CalculatorModal({
               )}
               
               {/* Income Sources */}
-              {Object.keys(incomeBySource).length > 0 && (
-                <>
-                  <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
-                    Income Sources
-                  </div>
-                  {Object.entries(incomeBySource).map(([source, data]) => (
-                    <button
-                      key={source}
-                      onClick={() => handleAmountSelect(data.total)}
-                      className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
-                    >
-                      <span className='truncate'>{source}</span>
-                      <span className='text-green-600 dark:text-green-400 ml-2'>{formatCurrency(data.total, currency)}</span>
-                    </button>
-                  ))}
-                </>
-              )}
+              {(() => {
+                const filteredSources = Object.entries(incomeBySource).filter(([source]) => 
+                  source.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+                return filteredSources.length > 0 && (
+                  <>
+                    <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
+                      Income Sources
+                    </div>
+                    {filteredSources.map(([source, data]) => (
+                      <button
+                        key={source}
+                        onClick={() => handleAmountSelect(data.total)}
+                        className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
+                      >
+                        <span className='truncate'>{source}</span>
+                        <span className='text-green-600 dark:text-green-400 ml-2'>{formatCurrency(data.total, currency)}</span>
+                      </button>
+                    ))}
+                  </>
+                );
+              })()}
               
               {/* Expense Categories */}
-              {Object.keys(expenseByCategory).length > 0 && (
-                <>
-                  <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
-                    Expense Categories
-                  </div>
-                  {Object.entries(expenseByCategory).map(([category, data]) => (
-                    <button
-                      key={category}
-                      onClick={() => handleAmountSelect(data.total)}
-                      className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
-                    >
-                      <span className='truncate'>{category}</span>
-                      <span className='text-red-600 dark:text-red-400 ml-2'>{formatCurrency(data.total, currency)}</span>
-                    </button>
-                  ))}
-                </>
-              )}
+              {(() => {
+                const filteredCategories = Object.entries(expenseByCategory).filter(([category]) => 
+                  category.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+                return filteredCategories.length > 0 && (
+                  <>
+                    <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
+                      Expense Categories
+                    </div>
+                    {filteredCategories.map(([category, data]) => (
+                      <button
+                        key={category}
+                        onClick={() => handleAmountSelect(data.total)}
+                        className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
+                      >
+                        <span className='truncate'>{category}</span>
+                        <span className='text-red-600 dark:text-red-400 ml-2'>{formatCurrency(data.total, currency)}</span>
+                      </button>
+                    ))}
+                  </>
+                );
+              })()}
               
               {/* Individual Income Items */}
-              {incomes.length > 0 && (
-                <>
-                  <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
-                    Income Items
-                  </div>
-                  {incomes.slice(0, 10).map((income) => (
-                    <button
-                      key={income.id}
-                      onClick={() => handleAmountSelect(income.amount)}
-                      className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
-                    >
-                      <span className='truncate'>{income.label}</span>
-                      <span className='text-green-600 dark:text-green-400 ml-2'>{formatCurrency(income.amount, currency)}</span>
-                    </button>
-                  ))}
-                </>
-              )}
+              {(() => {
+                const filteredIncomes = incomes.filter((income) => 
+                  income.label.toLowerCase().includes(searchQuery.toLowerCase())
+                ).slice(0, 10);
+                return filteredIncomes.length > 0 && (
+                  <>
+                    <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
+                      Income Items
+                    </div>
+                    {filteredIncomes.map((income) => (
+                      <button
+                        key={income.id}
+                        onClick={() => handleAmountSelect(income.amount)}
+                        className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
+                      >
+                        <span className='truncate'>{income.label}</span>
+                        <span className='text-green-600 dark:text-green-400 ml-2'>{formatCurrency(income.amount, currency)}</span>
+                      </button>
+                    ))}
+                  </>
+                );
+              })()}
               
               {/* Individual Expense Items */}
-              {expenses.length > 0 && (
-                <>
-                  <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
-                    Expense Items
-                  </div>
-                  {expenses.slice(0, 10).map((expense) => (
-                    <button
-                      key={expense.id}
-                      onClick={() => handleAmountSelect(expense.amount)}
-                      className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
-                    >
-                      <span className='truncate'>{expense.label}</span>
-                      <span className='text-red-600 dark:text-red-400 ml-2'>{formatCurrency(expense.amount, currency)}</span>
-                    </button>
-                  ))}
-                </>
-              )}
+              {(() => {
+                const filteredExpenses = expenses.filter((expense) => 
+                  expense.label.toLowerCase().includes(searchQuery.toLowerCase())
+                ).slice(0, 10);
+                return filteredExpenses.length > 0 && (
+                  <>
+                    <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
+                      Expense Items
+                    </div>
+                    {filteredExpenses.map((expense) => (
+                      <button
+                        key={expense.id}
+                        onClick={() => handleAmountSelect(expense.amount)}
+                        className='w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
+                      >
+                        <span className='truncate'>{expense.label}</span>
+                        <span className='text-red-600 dark:text-red-400 ml-2'>{formatCurrency(expense.amount, currency)}</span>
+                      </button>
+                    ))}
+                  </>
+                );
+              })()}
             </div>
           )}
         </div>
@@ -460,16 +469,9 @@ export default function CalculatorModal({
 
         {/* Info Text */}
         <div className='flex flex-col gap-1'>
-          {onUseResult && (
-            <p className='text-center text-xs text-gray-500 dark:text-gray-400'>
-              💡 Tip: Use keyboard to type numbers and operators
-            </p>
-          )}
-          {!onUseResult && (
-            <p className='text-center text-xs text-gray-500 dark:text-gray-400'>
-              💡 Use keyboard or click buttons • Alt+Click nodes to add amounts
-            </p>
-          )}
+          <p className='text-center text-xs text-gray-500 dark:text-gray-400'>
+            💡 Tip: Use keyboard to type or select from budget amounts above
+          </p>
         </div>
       </div>
     </Modal>
