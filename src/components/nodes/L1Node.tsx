@@ -22,13 +22,14 @@ function L1Node({ data }: L1NodeProps) {
       state?.space?.sheets,
     ]),
   );
-  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems, isBulkEditMode } = useSpace(
+  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems, isBulkEditMode, setCalculatorAmount } = useSpace(
     useShallow((state) => ({
       updateIncome: state.updateIncome,
       updateExpense: state.updateExpense,
       toggleBudgetItemSelection: state.toggleBudgetItemSelection,
       selectedBudgetItems: state.selectedBudgetItems,
       isBulkEditMode: state.isBulkEditMode,
+      setCalculatorAmount: state.setCalculatorAmount,
     })),
   );
   const {
@@ -103,6 +104,14 @@ function L1Node({ data }: L1NodeProps) {
   }, [groupItems, selectedBudgetItems]);
 
   const handleNodeClick = (e: React.MouseEvent) => {
+    // Send amount to calculator if Alt key is pressed
+    if (e.altKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      setCalculatorAmount(amount);
+      return;
+    }
+    
     // Toggle selection if:
     // - Shift or Ctrl/Cmd is pressed (desktop multi-select), OR
     // - Bulk edit mode is active (mobile bulk selection)

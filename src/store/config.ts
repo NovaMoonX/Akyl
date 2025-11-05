@@ -27,6 +27,9 @@ interface SpaceStore {
   clearBudgetItemSelection: () => void;
   addSheetToSelectedItems: (sheetId: string) => void;
   removeSheetFromSelectedItems: (sheetId: string) => void;
+  // Calculator state
+  calculatorAmount: number | null;
+  setCalculatorAmount: (amount: number | null) => void;
 }
 
 const initialSpace = {} as Space;
@@ -37,6 +40,7 @@ const useSpaceStore = create<SpaceStore>()(
     space: initialSpace,
     selectedBudgetItems: [],
     isBulkEditMode: false,
+    calculatorAmount: null,
     setSpace: (space) => set({ space }),
     updateSpace: (partial) =>
       set((state) => ({
@@ -273,6 +277,10 @@ const useSpaceStore = create<SpaceStore>()(
           },
         };
       }),
+    setCalculatorAmount: (amount: number | null) =>
+      set(() => ({
+        calculatorAmount: amount,
+      })),
   })),
 );
 

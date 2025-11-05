@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { formatCurrency } from '../../lib';
 import { useSpace } from '../../store';
@@ -18,14 +18,56 @@ export default function CalculatorModal({
   onUseResult,
   initialValue = 0,
 }: CalculatorModalProps) {
-  const currency = useSpace(
-    useShallow((state) => state.space?.config?.currency || 'USD'),
+  const [currency, calculatorAmount, setCalculatorAmount] = useSpace(
+    useShallow((state) => [
+      state.space?.config?.currency || 'USD',
+      state.calculatorAmount,
+      state.setCalculatorAmount,
+    ]),
   );
 
   const [display, setDisplay] = useState(initialValue.toString());
   const [operation, setOperation] = useState<string | null>(null);
   const [previousValue, setPreviousValue] = useState<number | null>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
+
+  const calculate = useCallback((prevValue: number, currValue: number, op: string): number => {
+    switch (op) {
+      case '+':
+        return prevValue + currValue;
+      case '-':
+        return prevValue - currValue;
+      case '*':
+        return prevValue * currValue;
+      case '/':
+        return prevValue / currValue;
+      default:
+        return currValue;
+    }
+  }, []);
+
+  // Handle amounts received from node clicks
+  useEffect(() => {
+    if (calculatorAmount !== null && isOpen) {
+      if (waitingForOperand || display === '0') {
+        setDisplay(String(calculatorAmount));
+        setWaitingForOperand(false);
+      } else {
+        // If we have an operation pending, use it
+        if (operation && previousValue !== null) {
+          const newValue = calculate(previousValue, parseFloat(display), operation);
+          setPreviousValue(newValue);
+          setDisplay(String(calculatorAmount));
+          setWaitingForOperand(false);
+        } else {
+          // Otherwise, start a new calculation
+          setDisplay(String(calculatorAmount));
+        }
+      }
+      // Clear the calculator amount after using it
+      setCalculatorAmount(null);
+    }
+  }, [calculatorAmount, isOpen, waitingForOperand, display, operation, previousValue, setCalculatorAmount, calculate]);
 
   const handleNumber = useCallback((num: string) => {
     if (waitingForOperand) {
@@ -44,21 +86,6 @@ export default function CalculatorModal({
       setDisplay(display + '.');
     }
   }, [display, waitingForOperand]);
-
-  const calculate = useCallback((prevValue: number, currValue: number, op: string): number => {
-    switch (op) {
-      case '+':
-        return prevValue + currValue;
-      case '-':
-        return prevValue - currValue;
-      case '*':
-        return prevValue * currValue;
-      case '/':
-        return prevValue / currValue;
-      default:
-        return currValue;
-    }
-  }, []);
 
   const handleOperation = useCallback((nextOperation: string) => {
     const inputValue = parseFloat(display);

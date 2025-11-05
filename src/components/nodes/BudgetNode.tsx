@@ -27,13 +27,14 @@ function BudgetNode({ data }: BudgetNodeProps) {
       state?.space?.config?.activeSheet || 'all',
     ]),
   );
-  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems, isBulkEditMode } = useSpace(
+  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems, isBulkEditMode, setCalculatorAmount } = useSpace(
     useShallow((state) => ({
       updateIncome: state.updateIncome,
       updateExpense: state.updateExpense,
       toggleBudgetItemSelection: state.toggleBudgetItemSelection,
       selectedBudgetItems: state.selectedBudgetItems,
       isBulkEditMode: state.isBulkEditMode,
+      setCalculatorAmount: state.setCalculatorAmount,
     })),
   );
   const { getBudgetItem } = useBudget();
@@ -89,6 +90,14 @@ function BudgetNode({ data }: BudgetNodeProps) {
   };
 
   const handleNodeClick = (e: React.MouseEvent) => {
+    // Send amount to calculator if Alt key is pressed
+    if (e.altKey && budgetItem) {
+      e.preventDefault();
+      e.stopPropagation();
+      setCalculatorAmount(budgetItem.amount);
+      return;
+    }
+    
     // Toggle selection if:
     // - Shift or Ctrl/Cmd is pressed (desktop multi-select), OR
     // - Bulk edit mode is active (mobile bulk selection)
