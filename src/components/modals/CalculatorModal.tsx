@@ -46,6 +46,16 @@ export default function CalculatorModal({
     }
   }, []);
 
+  // Reset calculator when modal opens with new initial value
+  useEffect(() => {
+    if (isOpen) {
+      setDisplay(initialValue.toString());
+      setOperation(null);
+      setPreviousValue(null);
+      setWaitingForOperand(false);
+    }
+  }, [isOpen, initialValue]);
+
   // Handle amounts received from node clicks
   useEffect(() => {
     if (calculatorAmount !== null && isOpen) {
@@ -255,11 +265,18 @@ export default function CalculatorModal({
         </div>
 
         {/* Info Text */}
-        {onUseResult && (
-          <p className='text-center text-xs text-gray-500 dark:text-gray-400'>
-            Click "Use" to apply this amount to your budget item
-          </p>
-        )}
+        <div className='flex flex-col gap-1'>
+          {onUseResult && (
+            <p className='text-center text-xs text-gray-500 dark:text-gray-400'>
+              Click "Use" to apply this amount to your budget item
+            </p>
+          )}
+          {!onUseResult && (
+            <p className='text-center text-xs text-gray-500 dark:text-gray-400'>
+              💡 Alt+Click any node in the flowchart to add its amount
+            </p>
+          )}
+        </div>
       </div>
     </Modal>
   );
