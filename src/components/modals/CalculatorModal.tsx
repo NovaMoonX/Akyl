@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { ChevronDownIcon, SearchIcon } from 'lucide-react';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
-import { formatCurrency } from '../../lib';
+import { formatCurrency, getCurrencySymbol } from '../../lib';
 import { useSpace } from '../../store';
 import { join } from '../../utils';
 import Modal from '../ui/Modal';
@@ -239,7 +239,7 @@ export default function CalculatorModal({
     <Modal isOpen={isOpen} onClose={onClose} title='Calculator' centerTitle>
       <div className='flex flex-col gap-4'>
         {/* Display */}
-        <div className='bg-surface-hover-light dark:bg-surface-hover-dark rounded-lg p-4'>
+        <div className='bg-surface-hover-light dark:bg-surface-hover-dark rounded-lg p-4 focus-within:ring-2 focus-within:ring-emerald-500 transition-all'>
           <div className='mb-1 text-right text-sm text-gray-500 dark:text-gray-400'>
             {operation && previousValue !== null && (
               <>
@@ -247,20 +247,25 @@ export default function CalculatorModal({
               </>
             )}
           </div>
-          <input
-            type='text'
-            value={display}
-            onChange={(e) => {
-              const value = e.target.value;
-              // Allow only numbers, decimal point, and minus sign
-              if (value === '' || /^-?\d*\.?\d*$/.test(value)) {
-                setDisplay(value || '0');
-              }
-            }}
-            onFocus={(e) => e.target.select()}
-            className='w-full text-right text-2xl font-bold bg-transparent border-none outline-none focus:ring-2 focus:ring-emerald-500 rounded px-2'
-            placeholder='0'
-          />
+          <div className='flex items-center gap-2'>
+            <span className='text-2xl font-bold text-gray-500 dark:text-gray-400'>
+              {getCurrencySymbol(currency)}
+            </span>
+            <input
+              type='text'
+              value={display}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow only numbers, decimal point, and minus sign
+                if (value === '' || /^-?\d*\.?\d*$/.test(value)) {
+                  setDisplay(value || '0');
+                }
+              }}
+              onFocus={(e) => e.target.select()}
+              className='flex-1 text-right text-2xl font-bold bg-transparent border-none outline-none px-2'
+              placeholder='0'
+            />
+          </div>
         </div>
 
         {/* Amount Picker - Select from existing budget items */}
