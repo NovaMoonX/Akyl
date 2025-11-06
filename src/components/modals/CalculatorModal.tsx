@@ -20,8 +20,11 @@ export default function CalculatorModal({
   onUseResult,
   initialValue = 0,
 }: CalculatorModalProps) {
-  const currency = useSpace(
-    useShallow((state) => state.space?.config?.currency || 'USD'),
+  const [currency, timeWindow] = useSpace(
+    useShallow((state) => [
+      state.space?.config?.currency || 'USD',
+      state.space?.config?.timeWindow || { type: 'month' as const, interval: 1 },
+    ]),
   );
   const { incomes, expenses, incomesTotal, expensesTotal, incomeBySource, expenseByCategory } = useBudget();
 
@@ -59,19 +62,22 @@ export default function CalculatorModal({
   }, [isOpen, initialValue]);
 
   const handleAmountSelect = useCallback((amount: number) => {
+    // Round to 2 decimal places for cleaner display
+    const roundedAmount = Math.round(amount * 100) / 100;
+    
     if (waitingForOperand || display === '0') {
-      setDisplay(String(amount));
+      setDisplay(String(roundedAmount));
       setWaitingForOperand(false);
     } else {
       // If we have an operation pending, use it
       if (operation && previousValue !== null) {
         const newValue = calculate(previousValue, parseFloat(display), operation);
         setPreviousValue(newValue);
-        setDisplay(String(amount));
+        setDisplay(String(roundedAmount));
         setWaitingForOperand(false);
       } else {
         // Otherwise, start a new calculation
-        setDisplay(String(amount));
+        setDisplay(String(roundedAmount));
       }
     }
     setShowAmountPicker(false);
@@ -274,7 +280,7 @@ export default function CalculatorModal({
             onClick={() => setShowAmountPicker(!showAmountPicker)}
             className='w-full flex items-center justify-between gap-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 px-3 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors'
           >
-            <span>💰 Use amount from budget</span>
+            <span>💰 Use amount from budget ({timeWindow.type === 'year' ? 'annual' : timeWindow.type === 'month' ? 'monthly' : timeWindow.type === 'week' ? 'weekly' : 'daily'})</span>
             <ChevronDownIcon className={join('size-4 transition-transform', showAmountPicker && 'rotate-180')} />
           </button>
           
