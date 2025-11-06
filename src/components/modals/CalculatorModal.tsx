@@ -14,6 +14,25 @@ interface CalculatorModalProps {
   initialValue?: number;
 }
 
+// Constants
+const MAX_DISPLAYED_ITEMS = 10;
+
+// Helper function to get time window label
+const getTimeWindowLabel = (timeWindowType: string): string => {
+  switch (timeWindowType) {
+    case 'year':
+      return 'annual';
+    case 'month':
+      return 'monthly';
+    case 'week':
+      return 'weekly';
+    case 'day':
+      return 'daily';
+    default:
+      return 'monthly';
+  }
+};
+
 export default function CalculatorModal({
   isOpen,
   onClose,
@@ -280,7 +299,7 @@ export default function CalculatorModal({
             onClick={() => setShowAmountPicker(!showAmountPicker)}
             className='w-full flex items-center justify-between gap-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 px-3 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors'
           >
-            <span>💰 Use amount from budget ({timeWindow.type === 'year' ? 'annual' : timeWindow.type === 'month' ? 'monthly' : timeWindow.type === 'week' ? 'weekly' : 'daily'})</span>
+            <span>💰 Use amount from budget ({getTimeWindowLabel(timeWindow.type)})</span>
             <ChevronDownIcon className={join('size-4 transition-transform', showAmountPicker && 'rotate-180')} />
           </button>
           
@@ -374,7 +393,7 @@ export default function CalculatorModal({
               {(() => {
                 const filteredIncomes = incomes.filter((income) => 
                   income.label.toLowerCase().includes(searchQuery.toLowerCase())
-                ).slice(0, 10);
+                ).slice(0, MAX_DISPLAYED_ITEMS);
                 return filteredIncomes.length > 0 && (
                   <>
                     <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
@@ -398,7 +417,7 @@ export default function CalculatorModal({
               {(() => {
                 const filteredExpenses = expenses.filter((expense) => 
                   expense.label.toLowerCase().includes(searchQuery.toLowerCase())
-                ).slice(0, 10);
+                ).slice(0, MAX_DISPLAYED_ITEMS);
                 return filteredExpenses.length > 0 && (
                   <>
                     <div className='px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800'>
