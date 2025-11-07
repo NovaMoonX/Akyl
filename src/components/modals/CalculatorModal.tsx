@@ -6,6 +6,7 @@ import { formatCurrency, getCurrencySymbol } from '../../lib';
 import { useSpace } from '../../store';
 import { join } from '../../utils';
 import Modal from '../ui/Modal';
+import { getTimeWindowLabel } from '../../lib/space.utils';
 
 interface CalculatorModalProps {
   isOpen: boolean;
@@ -16,22 +17,6 @@ interface CalculatorModalProps {
 
 // Constants
 const MAX_DISPLAYED_ITEMS = 10;
-
-// Helper function to get time window label
-const getTimeWindowLabel = (timeWindowType: string): string => {
-  switch (timeWindowType) {
-    case 'year':
-      return 'annual';
-    case 'month':
-      return 'monthly';
-    case 'week':
-      return 'weekly';
-    case 'day':
-      return 'daily';
-    default:
-      return 'monthly';
-  }
-};
 
 export default function CalculatorModal({
   isOpen,
