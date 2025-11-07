@@ -32,35 +32,44 @@ export default function CalculatorModal({
   );
   const { incomes, expenses, incomesTotal, expensesTotal, incomeBySource, expenseByCategory } = useBudget();
 
-  const [display, setDisplay] = useState(initialValue.toString());
-  const [operation, setOperation] = useState<string | null>(null);
-  const [previousValue, setPreviousValue] = useState<number | null>(null);
-  const [waitingForOperand, setWaitingForOperand] = useState(false);
+  const [expression, setExpression] = useState(initialValue.toString());
+  const [result, setResult] = useState<string | null>(null);
   const [showAmountPicker, setShowAmountPicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const calculate = useCallback((prevValue: number, currValue: number, op: string): number => {
-    switch (op) {
-      case '+':
-        return prevValue + currValue;
-      case '-':
-        return prevValue - currValue;
-      case '*':
-        return prevValue * currValue;
-      case '/':
-        return prevValue / currValue;
-      default:
-        return currValue;
+  // Evaluate mathematical expression with parentheses support
+  const evaluateExpression = useCallback((expr: string): number => {
+    try {
+      // Replace × and ÷ with * and /
+      const sanitized = expr.replace(/×/g, '*').replace(/÷/g, '/');
+      
+      // Basic validation - check for balanced parentheses
+      let parenCount = 0;
+      for (const char of sanitized) {
+        if (char === '(') parenCount++;
+        if (char === ')') parenCount--;
+        if (parenCount < 0) throw new Error('Unbalanced parentheses');
+      }
+      if (parenCount !== 0) throw new Error('Unbalanced parentheses');
+      
+      // Evaluate using Function constructor (safer than eval)
+      const result = Function('"use strict"; return (' + sanitized + ')')();
+      
+      if (typeof result !== 'number' || !isFinite(result)) {
+        throw new Error('Invalid calculation');
+      }
+      
+      return result;
+    } catch {
+      throw new Error('Invalid expression');
     }
   }, []);
 
   // Reset calculator when modal opens with new initial value
   useEffect(() => {
     if (isOpen) {
-      setDisplay(initialValue.toString());
-      setOperation(null);
-      setPreviousValue(null);
-      setWaitingForOperand(false);
+      setExpression(initialValue.toString());
+      setResult(null);
       setSearchQuery('');
     }
   }, [isOpen, initialValue]);
@@ -69,104 +78,122 @@ export default function CalculatorModal({
     // Round to 2 decimal places for cleaner display
     const roundedAmount = Math.round(amount * 100) / 100;
     
-    if (waitingForOperand || display === '0') {
-      setDisplay(String(roundedAmount));
-      setWaitingForOperand(false);
-    } else {
-      // If we have an operation pending, use it
-      if (operation && previousValue !== null) {
-        const newValue = calculate(previousValue, parseFloat(display), operation);
-        setPreviousValue(newValue);
-        setDisplay(String(roundedAmount));
-        setWaitingForOperand(false);
-      } else {
-        // Otherwise, start a new calculation
-        setDisplay(String(roundedAmount));
+    // Add the amount to the current expression
+    setExpression(prev => {
+      // If expression is '0' or empty, replace it
+      if (prev === '0' || prev === '') {
+        return String(roundedAmount);
       }
-    }
+      // Otherwise append
+      return prev + String(roundedAmount);
+    });
+    setResult(null);
     setShowAmountPicker(false);
-  }, [waitingForOperand, display, operation, previousValue, calculate]);
+  }, []);
 
   const handleNumber = useCallback((num: string) => {
-    if (waitingForOperand) {
-      setDisplay(num);
-      setWaitingForOperand(false);
-    } else {
-      setDisplay(display === '0' ? num : display + num);
-    }
-  }, [display, waitingForOperand]);
+    setExpression(prev => {
+      if (result !== null) {
+        // If we just calculated a result, start fresh
+        setResult(null);
+        return num;
+      }
+      return prev === '0' ? num : prev + num;
+    });
+  }, [result]);
 
   const handleDecimal = useCallback(() => {
-    if (waitingForOperand) {
-      setDisplay('0.');
-      setWaitingForOperand(false);
-    } else if (display.indexOf('.') === -1) {
-      setDisplay(display + '.');
-    }
-  }, [display, waitingForOperand]);
+    setExpression(prev => {
+      if (result !== null) {
+        setResult(null);
+        return '0.';
+      }
+      // Check if current number already has a decimal
+      const parts = prev.split(/[+\-*/()]/);
+      const lastPart = parts[parts.length - 1];
+      if (lastPart.includes('.')) {
+        return prev;
+      }
+      return prev + '.';
+    });
+  }, [result]);
 
-  const handleOperation = useCallback((nextOperation: string) => {
-    const inputValue = parseFloat(display);
+  const handleOperation = useCallback((op: string) => {
+    setExpression(prev => {
+      if (result !== null) {
+        // Use the result and continue
+        setResult(null);
+        return result + op;
+      }
+      
+      // Prevent consecutive operators
+      const lastChar = prev[prev.length - 1];
+      if (['+', '-', '*', '/', '×', '÷'].includes(lastChar)) {
+        // Replace the last operator
+        return prev.slice(0, -1) + op;
+      }
+      
+      return prev + op;
+    });
+  }, [result]);
 
-    if (previousValue === null) {
-      setPreviousValue(inputValue);
-    } else if (operation) {
-      const newValue = calculate(previousValue, inputValue, operation);
-      // Round to reasonable precision for display
-      const roundedValue = Math.round(newValue * 1e10) / 1e10;
-      setDisplay(String(roundedValue));
-      setPreviousValue(roundedValue);
-    }
-
-    setWaitingForOperand(true);
-    setOperation(nextOperation);
-  }, [display, previousValue, operation, calculate]);
+  const handleParenthesis = useCallback((paren: string) => {
+    setExpression(prev => {
+      if (result !== null && paren === '(') {
+        setResult(null);
+        return paren;
+      }
+      return prev + paren;
+    });
+  }, [result]);
 
   const handleEquals = useCallback(() => {
-    const inputValue = parseFloat(display);
-
-    if (previousValue !== null && operation) {
-      const newValue = calculate(previousValue, inputValue, operation);
+    try {
+      const calculatedResult = evaluateExpression(expression);
       // Round to reasonable precision for display
-      const roundedValue = Math.round(newValue * 1e10) / 1e10;
-      setDisplay(String(roundedValue));
-      setPreviousValue(null);
-      setOperation(null);
-      setWaitingForOperand(true);
+      const roundedResult = Math.round(calculatedResult * 1e10) / 1e10;
+      setResult(String(roundedResult));
+    } catch {
+      setResult('Error');
     }
-  }, [display, previousValue, operation, calculate]);
+  }, [expression, evaluateExpression]);
 
   const handleClear = useCallback(() => {
-    setDisplay('0');
-    setOperation(null);
-    setPreviousValue(null);
-    setWaitingForOperand(false);
+    setExpression('0');
+    setResult(null);
   }, []);
 
   const handleBackspace = useCallback(() => {
-    if (!waitingForOperand) {
-      const newDisplay = display.slice(0, -1);
-      setDisplay(newDisplay || '0');
-    }
-  }, [display, waitingForOperand]);
+    setExpression(prev => {
+      if (result !== null) {
+        setResult(null);
+        return prev;
+      }
+      const newExpr = prev.slice(0, -1);
+      return newExpr || '0';
+    });
+  }, [result]);
 
   const handleUseResult = useCallback(() => {
-    const result = parseFloat(display);
-    if (!isNaN(result) && onUseResult) {
-      // Round to 2 decimal places
-      const roundedResult = Math.round(result * 100) / 100;
+    if (onUseResult) {
+      const valueToUse = result !== null ? parseFloat(result) : evaluateExpression(expression);
+      const roundedResult = Math.round(valueToUse * 100) / 100;
       onUseResult(roundedResult);
       onClose();
     }
-  }, [display, onUseResult, onClose]);
+  }, [result, expression, evaluateExpression, onUseResult, onClose]);
 
   // Keyboard support
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if typing in an input field
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      // Ignore if typing in the search input field
+      if (e.target instanceof HTMLInputElement && e.target.placeholder === 'Search budget items...') {
+        return;
+      }
+      // Ignore if typing in textarea
+      if (e.target instanceof HTMLTextAreaElement) {
         return;
       }
 
@@ -186,11 +213,20 @@ export default function CalculatorModal({
       }
       else if (e.key === '*' || e.key === 'x' || e.key === 'X') {
         e.preventDefault();
-        handleOperation('*');
+        handleOperation('×');
       }
       else if (e.key === '/') {
         e.preventDefault();
-        handleOperation('/');
+        handleOperation('÷');
+      }
+      // Parentheses
+      else if (e.key === '(' || e.key === '9' && e.shiftKey) {
+        e.preventDefault();
+        handleParenthesis('(');
+      }
+      else if (e.key === ')' || e.key === '0' && e.shiftKey) {
+        e.preventDefault();
+        handleParenthesis(')');
       }
       // Decimal point
       else if (e.key === '.' || e.key === ',') {
@@ -216,7 +252,7 @@ export default function CalculatorModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, handleNumber, handleOperation, handleDecimal, handleEquals, handleClear, handleBackspace]);
+  }, [isOpen, handleNumber, handleOperation, handleParenthesis, handleDecimal, handleEquals, handleClear, handleBackspace]);
 
   const ButtonRow = ({ children }: { children: React.ReactNode }) => (
     <div className='grid grid-cols-4 gap-2'>{children}</div>
@@ -250,31 +286,26 @@ export default function CalculatorModal({
       <div className='flex flex-col gap-4'>
         {/* Display */}
         <div className='bg-surface-hover-light dark:bg-surface-hover-dark rounded-lg p-4 focus-within:ring-2 focus-within:ring-emerald-500 transition-all'>
-          <div className='mb-1 text-right text-sm text-gray-500 dark:text-gray-400'>
-            {operation && previousValue !== null && (
-              <>
-                {formatCurrency(previousValue, currency)} {operation}
-              </>
+          <div className='mb-1 text-right text-sm text-gray-500 dark:text-gray-400 min-h-[20px] break-all'>
+            {result !== null && result !== 'Error' && (
+              <span className='text-xs'>{expression} =</span>
             )}
           </div>
-          <div className='flex items-center gap-2'>
-            <span className='text-2xl font-bold text-gray-500 dark:text-gray-400'>
+          <div className='flex items-center gap-2 overflow-hidden'>
+            <span className='text-2xl font-bold text-gray-500 dark:text-gray-400 flex-shrink-0'>
               {getCurrencySymbol(currency)}
             </span>
-            <input
-              type='text'
-              value={display}
-              onChange={(e) => {
-                const value = e.target.value;
-                // Allow only numbers, decimal point, and minus sign
-                if (value === '' || /^-?\d*\.?\d*$/.test(value)) {
-                  setDisplay(value || '0');
-                }
-              }}
-              onFocus={(e) => e.target.select()}
-              className='flex-1 text-right text-2xl font-bold bg-transparent border-none outline-none px-2'
-              placeholder='0'
-            />
+            <div className='flex-1 text-right text-2xl font-bold px-2 overflow-hidden break-all'>
+              {result !== null ? (
+                result === 'Error' ? (
+                  <span className='text-red-500'>{result}</span>
+                ) : (
+                  formatCurrency(parseFloat(result), currency).replace(getCurrencySymbol(currency), '').trim()
+                )
+              ) : (
+                expression
+              )}
+            </div>
           </div>
         </div>
 
@@ -428,13 +459,24 @@ export default function CalculatorModal({
         {/* Calculator Buttons */}
         <div className='flex flex-col gap-2'>
           <ButtonRow>
+            <CalcButton label='(' onClick={() => handleParenthesis('(')} />
+            <CalcButton label=')' onClick={() => handleParenthesis(')')} />
+            <CalcButton label='C' onClick={handleClear} className='bg-red-500 hover:bg-red-600 text-white dark:bg-red-600 dark:hover:bg-red-700' />
+            <CalcButton 
+              label='÷' 
+              onClick={() => handleOperation('÷')} 
+              className='bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700'
+            />
+          </ButtonRow>
+
+          <ButtonRow>
             <CalcButton label='7' onClick={() => handleNumber('7')} />
             <CalcButton label='8' onClick={() => handleNumber('8')} />
             <CalcButton label='9' onClick={() => handleNumber('9')} />
             <CalcButton 
-              label='÷' 
-              onClick={() => handleOperation('/')} 
-              className='bg-emerald-500 hover:bg-emerald-600 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700'
+              label='×' 
+              onClick={() => handleOperation('×')} 
+              className='bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700'
             />
           </ButtonRow>
 
@@ -443,9 +485,9 @@ export default function CalculatorModal({
             <CalcButton label='5' onClick={() => handleNumber('5')} />
             <CalcButton label='6' onClick={() => handleNumber('6')} />
             <CalcButton 
-              label='×' 
-              onClick={() => handleOperation('*')} 
-              className='bg-emerald-500 hover:bg-emerald-600 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700'
+              label='-' 
+              onClick={() => handleOperation('-')} 
+              className='bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700'
             />
           </ButtonRow>
 
@@ -454,24 +496,15 @@ export default function CalculatorModal({
             <CalcButton label='2' onClick={() => handleNumber('2')} />
             <CalcButton label='3' onClick={() => handleNumber('3')} />
             <CalcButton 
-              label='-' 
-              onClick={() => handleOperation('-')} 
-              className='bg-emerald-500 hover:bg-emerald-600 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700'
+              label='+' 
+              onClick={() => handleOperation('+')} 
+              className='bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700'
             />
           </ButtonRow>
 
           <ButtonRow>
             <CalcButton label='0' onClick={() => handleNumber('0')} />
             <CalcButton label='.' onClick={handleDecimal} />
-            <CalcButton label='C' onClick={handleClear} className='bg-red-500 hover:bg-red-600 text-white dark:bg-red-600 dark:hover:bg-red-700' />
-            <CalcButton 
-              label='+' 
-              onClick={() => handleOperation('+')} 
-              className='bg-emerald-500 hover:bg-emerald-600 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700'
-            />
-          </ButtonRow>
-
-          <ButtonRow>
             <CalcButton 
               label='⌫' 
               onClick={handleBackspace} 
@@ -480,9 +513,11 @@ export default function CalculatorModal({
             <CalcButton 
               label='=' 
               onClick={handleEquals} 
-              span={2}
               className='bg-emerald-600 hover:bg-emerald-700 text-white text-xl dark:bg-emerald-700 dark:hover:bg-emerald-800'
             />
+          </ButtonRow>
+
+          <ButtonRow>
             <button
               onClick={handleUseResult}
               disabled={!onUseResult}
