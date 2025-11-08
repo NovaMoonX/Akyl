@@ -311,12 +311,19 @@ export default function CalculatorModal({
               ) : expression}
               onChange={(e) => {
                 const value = e.target.value;
-                // Allow only valid expression characters
-                if (/^[0-9+\-*/().×÷\s]*$/.test(value)) {
+                // Allow only valid expression characters (no spaces)
+                if (/^[0-9+\-*/().×÷]*$/.test(value)) {
                   if (result !== null) {
                     setResult(null);
                   }
                   setExpression(value || '0');
+                }
+              }}
+              onKeyDown={(e) => {
+                // Handle Enter key to run calculation
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleEquals();
                 }
               }}
               onFocus={(e) => e.target.select()}
