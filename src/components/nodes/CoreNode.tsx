@@ -34,14 +34,18 @@ function CoreNode({ id }: CoreNodeProps) {
         {/* Dashed Divider */}
         <div className='border-node-border/70 absolute top-1/2 right-2 left-2 z-0 -translate-y-[1px] border-t-2 border-dashed' />
         {/* Inflow Label (top half) */}
-        <div className='absolute top-0 left-0 flex h-1/2 w-full translate-y-1 flex-col items-center justify-center'>
+        <div 
+          className='absolute top-0 left-0 flex h-1/2 w-full translate-y-1 flex-col items-center justify-center'
+        >
           <span className='text-xl font-bold'>{inflowLabel}</span>
           <span className='text-inflow font-semibold/80 text-xl'>
             {formatCurrency(incomesTotal, currency)}
           </span>
         </div>
         {/* Outflow Label (bottom half) */}
-        <div className='absolute bottom-0 left-0 flex h-1/2 w-full -translate-y-1.5 flex-col items-center justify-center'>
+        <div 
+          className='absolute bottom-0 left-0 flex h-1/2 w-full -translate-y-1.5 flex-col items-center justify-center'
+        >
           <span className='text-xl font-bold'>{outflowLabel}</span>
           <span className='text-outflow font-semibold/80 text-xl'>
             {formatCurrency(expensesTotal, currency)}
@@ -62,7 +66,9 @@ function CoreNode({ id }: CoreNodeProps) {
       </div>
 
       {/* right cap w/ amount diff */}
-      <div className='bg-surface-light dark:bg-surface-dark border-node-border absolute top-1/2 right-3 flex translate-x-full -translate-y-1/2 items-center justify-center rounded-r-full border p-4 shadow-md'>
+      <div 
+        className='bg-surface-light dark:bg-surface-dark border-node-border absolute top-1/2 right-3 flex translate-x-full -translate-y-1/2 items-center justify-center rounded-r-full border p-4 shadow-md'
+      >
         <span
           className={join(
             'text-sm font-semibold',
