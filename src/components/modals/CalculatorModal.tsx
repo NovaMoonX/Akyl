@@ -143,6 +143,10 @@ export default function CalculatorModal({
         setResult(null);
         return paren;
       }
+      // If expression is '0' and we're adding '(', replace it
+      if (prev === '0' && paren === '(') {
+        return paren;
+      }
       return prev + paren;
     });
   }, [result]);
@@ -190,6 +194,10 @@ export default function CalculatorModal({
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore if typing in the search input field
       if (e.target instanceof HTMLInputElement && e.target.placeholder === 'Search budget items...') {
+        return;
+      }
+      // Ignore if typing in the calculator display input field
+      if (e.target instanceof HTMLInputElement && e.target.type === 'text' && e.target.className.includes('text-2xl')) {
         return;
       }
       // Ignore if typing in textarea
@@ -295,17 +303,26 @@ export default function CalculatorModal({
             <span className='text-2xl font-bold text-gray-500 dark:text-gray-400 flex-shrink-0'>
               {getCurrencySymbol(currency)}
             </span>
-            <div className='flex-1 text-right text-2xl font-bold px-2 overflow-hidden break-all'>
-              {result !== null ? (
-                result === 'Error' ? (
-                  <span className='text-red-500'>{result}</span>
-                ) : (
-                  formatCurrency(parseFloat(result), currency).replace(getCurrencySymbol(currency), '').trim()
-                )
-              ) : (
-                expression
-              )}
-            </div>
+            <input
+              type='text'
+              value={result !== null ? (
+                result === 'Error' ? result : 
+                formatCurrency(parseFloat(result), currency).replace(getCurrencySymbol(currency), '').trim()
+              ) : expression}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow only valid expression characters
+                if (/^[0-9+\-*/().×÷\s]*$/.test(value)) {
+                  if (result !== null) {
+                    setResult(null);
+                  }
+                  setExpression(value || '0');
+                }
+              }}
+              onFocus={(e) => e.target.select()}
+              className='flex-1 text-right text-2xl font-bold px-2 bg-transparent border-none outline-none overflow-hidden break-all'
+              style={{ color: result === 'Error' ? '#ef4444' : 'inherit' }}
+            />
           </div>
         </div>
 
