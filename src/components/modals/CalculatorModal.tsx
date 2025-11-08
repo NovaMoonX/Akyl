@@ -327,7 +327,7 @@ export default function CalculatorModal({
                 }
               }}
               onFocus={(e) => e.target.select()}
-              className='flex-1 text-right text-2xl font-bold px-2 bg-transparent border-none outline-none overflow-hidden break-all'
+              className='flex-1 min-w-0 text-right text-2xl font-bold px-2 bg-transparent border-none outline-none'
               style={{ color: result === 'Error' ? '#ef4444' : 'inherit' }}
             />
           </div>
