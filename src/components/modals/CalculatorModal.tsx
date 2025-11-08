@@ -299,7 +299,7 @@ export default function CalculatorModal({
               <span className='text-xs'>{expression} =</span>
             )}
           </div>
-          <div className='flex items-center gap-2 overflow-hidden'>
+          <div className='flex items-center gap-2'>
             <span className='text-2xl font-bold text-gray-500 dark:text-gray-400 flex-shrink-0'>
               {getCurrencySymbol(currency)}
             </span>
@@ -327,7 +327,7 @@ export default function CalculatorModal({
                 }
               }}
               onFocus={(e) => e.target.select()}
-              className='flex-1 text-right text-2xl font-bold px-2 bg-transparent border-none outline-none overflow-hidden break-all'
+              className='flex-1 text-right text-2xl font-bold px-2 bg-transparent border-none outline-none'
               style={{ color: result === 'Error' ? '#ef4444' : 'inherit' }}
             />
           </div>
