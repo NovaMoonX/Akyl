@@ -169,14 +169,14 @@ export default function BottomBar() {
   return (
     <>
       <div className='bg-surface-light dark:bg-surface-dark fixed bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-full border border-gray-300 px-4 py-2 shadow-lg dark:border-gray-700'>
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center gap-2 sm:gap-3'>
           {/* Desktop: Button-based sheet selector */}
           <div className='hidden sm:block'>
             <HeaderBarSheets onConfirmSheetDeletion={setDeleteConfirmSheetId} />
           </div>
 
           {/* Mobile: Select-based sheet selector */}
-          <div className='flex items-center gap-2 sm:hidden'>
+          <div className='flex items-center gap-1.5 sm:hidden'>
             <select
               value={activeSheet}
               onChange={(e) => setActiveSheet(e.target.value)}

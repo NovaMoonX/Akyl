@@ -18,8 +18,8 @@ export default function TableView() {
   const netIncome = incomesTotal - expensesTotal;
 
   return (
-    <div className='absolute inset-0 z-20 h-full w-full overflow-auto bg-background-light p-4 dark:bg-background-dark sm:p-6'>
-      <div className='mx-auto max-w-4xl'>
+    <div className='absolute inset-x-0 top-16 bottom-20 z-20 overflow-auto bg-background-light p-4 dark:bg-background-dark sm:p-6'>
+      <div className='mx-auto max-w-4xl pb-4'>
         <div className='bg-surface-light dark:bg-surface-dark mb-6 overflow-hidden rounded-lg shadow-lg'>
           {/* Income Section */}
           <div className='border-b border-gray-200 dark:border-gray-700'>
