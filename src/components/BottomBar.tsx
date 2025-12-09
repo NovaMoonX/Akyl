@@ -5,6 +5,8 @@ import {
   XIcon,
   ArrowRightIcon,
   CalculatorIcon,
+  TableIcon,
+  WorkflowIcon,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
@@ -47,6 +49,9 @@ export default function BottomBar() {
       state.setIsBulkEditMode,
       state.clearBudgetItemSelection,
     ]),
+  );
+  const [viewMode, setViewMode] = useSpace(
+    useShallow((state) => [state.viewMode, state.setViewMode]),
   );
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAddSheetModalOpen, setIsAddSheetModalOpen] = useState(false);
@@ -200,6 +205,27 @@ export default function BottomBar() {
               <CheckSquareIcon className='size-4' />
             </button>
           </div>
+
+          <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
+
+          {/* View Toggle Button */}
+          <button
+            onClick={() =>
+              setViewMode(viewMode === 'flowchart' ? 'table' : 'flowchart')
+            }
+            className='rounded-full p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+            aria-label={
+              viewMode === 'flowchart'
+                ? 'Switch to Table View'
+                : 'Switch to Flowchart View'
+            }
+          >
+            {viewMode === 'flowchart' ? (
+              <TableIcon className='size-5' />
+            ) : (
+              <WorkflowIcon className='size-5' />
+            )}
+          </button>
 
           <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
 

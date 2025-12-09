@@ -6,7 +6,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useShallow } from 'zustand/shallow';
-import { Header } from '../components';
+import { Header, TableView } from '../components';
 import { useInitSpace, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
@@ -52,31 +52,46 @@ export default function Flow() {
   const backgroundPattern = useSpace(
     useShallow((state) => state?.space?.config?.backgroundPattern),
   );
+  const viewMode = useSpace(useShallow((state) => state.viewMode));
   const { nodes, edges, onNodesChange, onEdgesChange } = useSpaceFlow();
 
   return (
     <div id='app' className='relative h-dvh w-dvw'>
-      {/* all viewport props: https://reactflow.dev/api-reference/react-flow#viewport-props */}
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        fitView={true}
-        panOnScroll={true}
-        selectionOnDrag={true}
-        panOnScrollSpeed={1}
-        fitViewOptions={{
-          padding: 2,
-        }}
-        maxZoom={1.5} // default is 2
-        minZoom={0.15} // default is 0.5
-      >
-        {showLoadScreen && <LoadScreen />}
-        {!showLoadScreen && (
-          <>
+      {showLoadScreen && (
+        <div className='relative h-full w-full'>
+          <LoadScreen />
+        </div>
+      )}
+      {!showLoadScreen && viewMode === 'table' && (
+        <>
+          <Header />
+          <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 sm:p-3 text-xl sm:text-4xl font-black'>
+            Akyl
+          </h1>
+          <BottomBar />
+          <TableView />
+        </>
+      )}
+      {!showLoadScreen && viewMode === 'flowchart' && (
+        <>
+          {/* all viewport props: https://reactflow.dev/api-reference/react-flow#viewport-props */}
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            fitView={true}
+            panOnScroll={true}
+            selectionOnDrag={true}
+            panOnScrollSpeed={1}
+            fitViewOptions={{
+              padding: 2,
+            }}
+            maxZoom={1.5} // default is 2
+            minZoom={0.15} // default is 0.5
+          >
             <Header />
             <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 sm:p-3 text-xl sm:text-4xl font-black'>
               Akyl
@@ -84,22 +99,28 @@ export default function Flow() {
 
             <BottomBar />
             <Controls position='bottom-right' showInteractive={false} />
-          </>
-        )}
-        {backgroundPattern !== NO_BACKGROUND_VARIANT && (
-          <Background
-            color='#047857'
-            gap={BackgroundVariantGaps[backgroundPattern ?? DEFAULT_BACKGROUND]}
-            variant={backgroundPattern ?? DEFAULT_BACKGROUND}
-            size={
-              BackgroundVariantSizes[backgroundPattern ?? DEFAULT_BACKGROUND]
-            }
-            className={
-              BackgroundVariantClasses[backgroundPattern ?? DEFAULT_BACKGROUND]
-            }
-          />
-        )}
-      </ReactFlow>
+            {backgroundPattern !== NO_BACKGROUND_VARIANT && (
+              <Background
+                color='#047857'
+                gap={
+                  BackgroundVariantGaps[backgroundPattern ?? DEFAULT_BACKGROUND]
+                }
+                variant={backgroundPattern ?? DEFAULT_BACKGROUND}
+                size={
+                  BackgroundVariantSizes[
+                    backgroundPattern ?? DEFAULT_BACKGROUND
+                  ]
+                }
+                className={
+                  BackgroundVariantClasses[
+                    backgroundPattern ?? DEFAULT_BACKGROUND
+                  ]
+                }
+              />
+            )}
+          </ReactFlow>
+        </>
+      )}
     </div>
   );
 }
