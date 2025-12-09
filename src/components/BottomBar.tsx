@@ -269,12 +269,14 @@ export default function BottomBar() {
                     </span>
                     <HeaderBarTimeWindow />
                   </div>
-                  <div className='flex flex-col items-center'>
-                    <span className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200'>
-                      Display Options
-                    </span>
-                    <BottomActions className='' actionClassName='rounded-md' />
-                  </div>
+                  {viewMode === 'flowchart' && (
+                    <div className='flex flex-col items-center'>
+                      <span className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200'>
+                        Display Options
+                      </span>
+                      <BottomActions className='' actionClassName='rounded-md' />
+                    </div>
+                  )}
                   <div>
                     <span className='mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-200'>
                       Manage Sheets
@@ -402,12 +404,14 @@ export default function BottomBar() {
             <HeaderBarTimeWindow />
           </div>
 
-          <div>
-            <span className='mb-1 block text-center font-medium text-gray-700 dark:text-gray-200'>
-              Display Options
-            </span>
-            <BottomActions className='' actionClassName='rounded-md' />
-          </div>
+          {viewMode === 'flowchart' && (
+            <div>
+              <span className='mb-1 block text-center font-medium text-gray-700 dark:text-gray-200'>
+                Display Options
+              </span>
+              <BottomActions className='' actionClassName='rounded-md' />
+            </div>
+          )}
 
           <div className='w-full'>
             <div className='mb-2 flex items-center justify-between'>
