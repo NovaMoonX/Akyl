@@ -57,70 +57,63 @@ export default function Flow() {
 
   return (
     <div id='app' className='relative h-dvh w-dvw'>
-      {showLoadScreen && (
-        <div className='relative h-full w-full'>
-          <LoadScreen />
-        </div>
-      )}
-      {!showLoadScreen && viewMode === 'table' && (
-        <>
-          <Header />
-          <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 sm:p-3 text-xl sm:text-4xl font-black'>
-            Akyl
-          </h1>
-          <BottomBar />
-          <TableView />
-        </>
-      )}
-      {!showLoadScreen && viewMode === 'flowchart' && (
-        <>
-          {/* all viewport props: https://reactflow.dev/api-reference/react-flow#viewport-props */}
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            fitView={true}
-            panOnScroll={true}
-            selectionOnDrag={true}
-            panOnScrollSpeed={1}
-            fitViewOptions={{
-              padding: 2,
-            }}
-            maxZoom={1.5} // default is 2
-            minZoom={0.15} // default is 0.5
-          >
+      {/* all viewport props: https://reactflow.dev/api-reference/react-flow#viewport-props */}
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        fitView={true}
+        panOnScroll={true}
+        selectionOnDrag={true}
+        panOnScrollSpeed={1}
+        fitViewOptions={{
+          padding: 2,
+        }}
+        maxZoom={1.5} // default is 2
+        minZoom={0.15} // default is 0.5
+      >
+        {showLoadScreen && <LoadScreen />}
+        {!showLoadScreen && (
+          <>
             <Header />
             <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 sm:p-3 text-xl sm:text-4xl font-black'>
               Akyl
             </h1>
 
             <BottomBar />
-            <Controls position='bottom-right' showInteractive={false} />
-            {backgroundPattern !== NO_BACKGROUND_VARIANT && (
-              <Background
-                color='#047857'
-                gap={
-                  BackgroundVariantGaps[backgroundPattern ?? DEFAULT_BACKGROUND]
-                }
-                variant={backgroundPattern ?? DEFAULT_BACKGROUND}
-                size={
-                  BackgroundVariantSizes[
-                    backgroundPattern ?? DEFAULT_BACKGROUND
-                  ]
-                }
-                className={
-                  BackgroundVariantClasses[
-                    backgroundPattern ?? DEFAULT_BACKGROUND
-                  ]
-                }
-              />
+            {viewMode === 'table' && <TableView />}
+            {viewMode === 'flowchart' && (
+              <>
+                <Controls position='bottom-right' showInteractive={false} />
+                {backgroundPattern !== NO_BACKGROUND_VARIANT && (
+                  <Background
+                    color='#047857'
+                    gap={
+                      BackgroundVariantGaps[
+                        backgroundPattern ?? DEFAULT_BACKGROUND
+                      ]
+                    }
+                    variant={backgroundPattern ?? DEFAULT_BACKGROUND}
+                    size={
+                      BackgroundVariantSizes[
+                        backgroundPattern ?? DEFAULT_BACKGROUND
+                      ]
+                    }
+                    className={
+                      BackgroundVariantClasses[
+                        backgroundPattern ?? DEFAULT_BACKGROUND
+                      ]
+                    }
+                  />
+                )}
+              </>
             )}
-          </ReactFlow>
-        </>
-      )}
+          </>
+        )}
+      </ReactFlow>
     </div>
   );
 }
