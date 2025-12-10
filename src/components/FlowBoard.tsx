@@ -79,7 +79,7 @@ export default function Flow() {
         {!showLoadScreen && (
           <>
             <Header />
-            <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 sm:p-3 text-xl sm:text-4xl font-black'>
+            <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 text-xl font-black sm:p-3 sm:text-4xl'>
               Akyl
             </h1>
 
@@ -88,30 +88,22 @@ export default function Flow() {
             {viewMode === 'flowchart' && (
               <>
                 <Controls position='bottom-right' showInteractive={false} />
-                {backgroundPattern !== NO_BACKGROUND_VARIANT && (
-                  <Background
-                    color='#047857'
-                    gap={
-                      BackgroundVariantGaps[
-                        backgroundPattern ?? DEFAULT_BACKGROUND
-                      ]
-                    }
-                    variant={backgroundPattern ?? DEFAULT_BACKGROUND}
-                    size={
-                      BackgroundVariantSizes[
-                        backgroundPattern ?? DEFAULT_BACKGROUND
-                      ]
-                    }
-                    className={
-                      BackgroundVariantClasses[
-                        backgroundPattern ?? DEFAULT_BACKGROUND
-                      ]
-                    }
-                  />
-                )}
               </>
             )}
           </>
+        )}
+        {backgroundPattern !== NO_BACKGROUND_VARIANT && (
+          <Background
+            color='#047857'
+            gap={BackgroundVariantGaps[backgroundPattern ?? DEFAULT_BACKGROUND]}
+            variant={backgroundPattern ?? DEFAULT_BACKGROUND}
+            size={
+              BackgroundVariantSizes[backgroundPattern ?? DEFAULT_BACKGROUND]
+            }
+            className={
+              BackgroundVariantClasses[backgroundPattern ?? DEFAULT_BACKGROUND]
+            }
+          />
         )}
       </ReactFlow>
     </div>
