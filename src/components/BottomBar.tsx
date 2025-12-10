@@ -150,6 +150,7 @@ export default function BottomBar() {
                 closeQuickBar();
               }}
               className='inline-flex items-center gap-1 rounded bg-emerald-500 px-2 py-0.5 text-xs text-white hover:bg-emerald-600 sm:text-sm'
+              title='Go to sheet'
             >
               Go <ArrowRightIcon className='size-3.5' />
             </button>
@@ -157,6 +158,7 @@ export default function BottomBar() {
               onClick={closeQuickBar}
               className='rounded p-1 hover:bg-gray-200 dark:hover:bg-gray-700'
               aria-label='Dismiss notification'
+              title='Dismiss notification'
             >
               <XIcon className='size-3.5' />
             </button>
@@ -200,7 +202,14 @@ export default function BottomBar() {
                     : 'hover:bg-gray-100 dark:hover:bg-gray-700',
                 )}
                 aria-label={
-                  isBulkEditMode ? 'Exit bulk edit mode' : 'Enter bulk edit mode'
+                  isBulkEditMode
+                    ? 'Exit bulk edit mode'
+                    : 'Enter bulk edit mode'
+                }
+                title={
+                  isBulkEditMode
+                    ? 'Exit bulk edit mode'
+                    : 'Enter bulk edit mode'
                 }
               >
                 <CheckSquareIcon className='size-4' />
@@ -221,6 +230,11 @@ export default function BottomBar() {
                 ? 'Switch to Table View'
                 : 'Switch to Flowchart View'
             }
+            title={
+              viewMode === 'flowchart'
+                ? 'Switch to Table View'
+                : 'Switch to Flowchart View'
+            }
           >
             {viewMode === 'flowchart' ? (
               <TableIcon className='size-5' />
@@ -236,6 +250,7 @@ export default function BottomBar() {
             onClick={() => setIsCalculatorOpen(true)}
             className='rounded-full p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
             aria-label='Open Calculator'
+            title='Open Calculator'
           >
             <CalculatorIcon className='size-5' />
           </button>
@@ -248,6 +263,7 @@ export default function BottomBar() {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className='rounded-full p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
               aria-label='Settings'
+              title='Settings'
               id='settings-btn'
             >
               <Settings2Icon className='size-5' />
@@ -276,7 +292,10 @@ export default function BottomBar() {
                       <span className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200'>
                         Display Options
                       </span>
-                      <BottomActions className='' actionClassName='rounded-md' />
+                      <BottomActions
+                        className=''
+                        actionClassName='rounded-md'
+                      />
                     </div>
                   )}
                   <div>
@@ -347,10 +366,10 @@ export default function BottomBar() {
                 </div>
                 <button
                   onClick={() => setIsDropdownOpen(false)}
-                  className='absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  className='absolute top-2 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                   aria-label='Close popup'
                 >
-                  ×
+                  x
                 </button>
               </div>
             )}
@@ -361,6 +380,7 @@ export default function BottomBar() {
             onClick={() => setIsSettingsModalOpen(true)}
             className='rounded-full p-1.5 transition-colors hover:bg-gray-100 sm:hidden dark:hover:bg-gray-700'
             aria-label='Settings'
+            title='Settings'
           >
             <Settings2Icon className='size-5' />
           </button>
@@ -378,6 +398,7 @@ export default function BottomBar() {
               closeQuickBar();
             }}
             className='inline-flex items-center gap-1 rounded bg-emerald-500 px-2 py-0.5 text-xs text-white hover:bg-emerald-600 sm:text-sm'
+            title='Go to sheet'
           >
             Go <ArrowRightIcon className='size-3.5' />
           </button>
@@ -385,6 +406,7 @@ export default function BottomBar() {
             onClick={closeQuickBar}
             className='rounded p-1 hover:bg-gray-200 dark:hover:bg-gray-700'
             aria-label='Dismiss notification'
+            title='Dismiss notification'
           >
             <XIcon className='size-3.5' />
           </button>
@@ -424,6 +446,7 @@ export default function BottomBar() {
                 onClick={() => setIsAddSheetModalOpen(true)}
                 className='rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
                 aria-label='Add new sheet'
+                title='Add new sheet'
               >
                 <PlusIcon className='size-4' />
               </button>

@@ -136,6 +136,7 @@ export default function HeaderBarSheets({
           onClick={() => setShowAddSheet(true)}
           className='rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
           aria-label='Add new sheet'
+          title='Add new sheet'
         >
           <PlusIcon className='size-4' />
         </button>
