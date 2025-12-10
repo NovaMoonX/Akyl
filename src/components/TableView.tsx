@@ -1,4 +1,9 @@
-import { ChevronDownIcon, ChevronRightIcon, EyeIcon, EyeClosedIcon } from 'lucide-react';
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  EyeIcon,
+  EyeClosedIcon,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { CashFlowVerbiagePairs, formatCurrency } from '../lib';
@@ -68,7 +73,11 @@ export default function TableView() {
   };
 
   // Toggle hide/show for individual budget items
-  const toggleItemHide = (itemId: string, type: 'income' | 'expense', currentlyHidden: boolean) => {
+  const toggleItemHide = (
+    itemId: string,
+    type: 'income' | 'expense',
+    currentlyHidden: boolean,
+  ) => {
     if (activeSheet === 'all') {
       // Toggle global hidden state
       const nowHidden = !currentlyHidden;
@@ -79,17 +88,22 @@ export default function TableView() {
       }
     } else {
       // Toggle per-sheet hidden state
-      const item = type === 'income' 
-        ? Object.values(incomeBySource).flatMap(s => s.items).find(i => i.id === itemId)
-        : Object.values(expenseByCategory).flatMap(c => c.items).find(e => e.id === itemId);
-      
+      const item =
+        type === 'income'
+          ? Object.values(incomeBySource)
+              .flatMap((s) => s.items)
+              .find((i) => i.id === itemId)
+          : Object.values(expenseByCategory)
+              .flatMap((c) => c.items)
+              .find((e) => e.id === itemId);
+
       if (item) {
         const hiddenInSheets = item.hiddenInSheets ?? [];
         const nowHidden = hiddenInSheets.includes(activeSheet);
         const updatedHiddenInSheets = nowHidden
           ? hiddenInSheets.filter((id) => id !== activeSheet)
           : [...hiddenInSheets, activeSheet];
-        
+
         if (type === 'income') {
           updateIncome(itemId, { hiddenInSheets: updatedHiddenInSheets });
         } else {
@@ -103,7 +117,7 @@ export default function TableView() {
   const toggleSourceHide = (source: string, currentlyHidden: boolean) => {
     const sourceIncomes = incomeBySource[source]?.items ?? [];
     const nowHidden = !currentlyHidden;
-    
+
     sourceIncomes.forEach((income) => {
       if (activeSheet === 'all') {
         updateIncome(income.id, { hidden: nowHidden });
@@ -121,7 +135,7 @@ export default function TableView() {
   const toggleCategoryHide = (category: string, currentlyHidden: boolean) => {
     const categoryExpenses = expenseByCategory[category]?.items ?? [];
     const nowHidden = !currentlyHidden;
-    
+
     categoryExpenses.forEach((expense) => {
       if (activeSheet === 'all') {
         updateExpense(expense.id, { hidden: nowHidden });
@@ -136,7 +150,10 @@ export default function TableView() {
   };
 
   // Check if an item is hidden
-  const isItemHidden = (item: { hidden?: boolean; hiddenInSheets?: string[] }) => {
+  const isItemHidden = (item: {
+    hidden?: boolean;
+    hiddenInSheets?: string[];
+  }) => {
     if (activeSheet === 'all') {
       return item.hidden ?? false;
     }
@@ -152,11 +169,12 @@ export default function TableView() {
     verbiage.out.charAt(0).toUpperCase() + verbiage.out.slice(1);
 
   return (
-    <div className='absolute inset-x-0 top-16 bottom-20 z-20 overflow-auto bg-background-light p-4 dark:bg-background-dark sm:p-6'>
-      <div className='mx-auto max-w-4xl pb-4'>
-        <div className='bg-surface-light dark:bg-surface-dark mb-6 overflow-hidden rounded-lg shadow-lg'>
-          {/* Income Section */}
-          <div className='border-b border-gray-200 dark:border-gray-700'>
+    <div className='bg-background-light dark:bg-background-dark absolute inset-x-0 top-0 bottom-0 z-20 overflow-auto pt-20 pb-8'>
+      <div className='p-4 sm:p-6'>
+        <div className='mx-auto max-w-4xl pb-4'>
+          <div className='bg-surface-light dark:bg-surface-dark mb-6 overflow-hidden rounded-lg shadow-lg'>
+            {/* Income Section */}
+            <div className='border-b border-gray-200 dark:border-gray-700'>
               <div className='bg-emerald-600 px-4 py-3 sm:px-6'>
                 <h2 className='text-lg font-bold text-white sm:text-xl'>
                   {incomeLabel}
@@ -173,7 +191,9 @@ export default function TableView() {
                       }
                     >
                       {/* Source Header - Clickable */}
-                      <div className={`flex items-center gap-2 ${!isCollapsed ? 'mb-3' : ''}`}>
+                      <div
+                        className={`flex items-center gap-2 ${!isCollapsed ? 'mb-3' : ''}`}
+                      >
                         <button
                           onClick={() => toggleSource(source)}
                           className='flex flex-1 items-center justify-between text-left hover:opacity-80'
@@ -202,10 +222,17 @@ export default function TableView() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleSourceHide(source, incomesSourceHiddenMap[source]);
+                            toggleSourceHide(
+                              source,
+                              incomesSourceHiddenMap[source],
+                            );
                           }}
                           className='rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
-                          aria-label={incomesSourceHiddenMap[source] ? 'Show all income items' : 'Hide all income items'}
+                          aria-label={
+                            incomesSourceHiddenMap[source]
+                              ? 'Show all income items'
+                              : 'Hide all income items'
+                          }
                         >
                           {incomesSourceHiddenMap[source] ? (
                             <EyeClosedIcon className='size-4 text-gray-600 dark:text-gray-400' />
@@ -225,7 +252,9 @@ export default function TableView() {
                                 className={`flex items-center justify-between gap-2 pl-4 text-sm sm:text-base ${income.disabled ? 'opacity-50' : ''}`}
                               >
                                 <div className='flex-1'>
-                                  <span className={`text-gray-700 dark:text-gray-300 ${itemHidden ? 'line-through' : ''}`}>
+                                  <span
+                                    className={`text-gray-700 dark:text-gray-300 ${itemHidden ? 'line-through' : ''}`}
+                                  >
                                     {income.label}
                                   </span>
                                   {income.description && (
@@ -234,16 +263,26 @@ export default function TableView() {
                                     </span>
                                   )}
                                 </div>
-                                <span className={`ml-4 text-gray-600 dark:text-gray-400 ${itemHidden ? 'line-through' : ''}`}>
+                                <span
+                                  className={`ml-4 text-gray-600 dark:text-gray-400 ${itemHidden ? 'line-through' : ''}`}
+                                >
                                   {formatCurrency(income.amount, currency)}
                                 </span>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    toggleItemHide(income.id, 'income', itemHidden);
+                                    toggleItemHide(
+                                      income.id,
+                                      'income',
+                                      itemHidden,
+                                    );
                                   }}
                                   className='rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                  aria-label={itemHidden ? 'Show income item' : 'Hide income item'}
+                                  aria-label={
+                                    itemHidden
+                                      ? 'Show income item'
+                                      : 'Hide income item'
+                                  }
                                 >
                                   {itemHidden ? (
                                     <EyeClosedIcon className='size-3.5 text-gray-500 dark:text-gray-400' />
@@ -298,7 +337,9 @@ export default function TableView() {
                       }
                     >
                       {/* Category Header - Clickable */}
-                      <div className={`flex items-center gap-2 ${!isCollapsed ? 'mb-3' : ''}`}>
+                      <div
+                        className={`flex items-center gap-2 ${!isCollapsed ? 'mb-3' : ''}`}
+                      >
                         <button
                           onClick={() => toggleCategory(category)}
                           className='flex flex-1 items-center justify-between text-left hover:opacity-80'
@@ -327,10 +368,17 @@ export default function TableView() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleCategoryHide(category, expensesCategoryHiddenMap[category]);
+                            toggleCategoryHide(
+                              category,
+                              expensesCategoryHiddenMap[category],
+                            );
                           }}
                           className='rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
-                          aria-label={expensesCategoryHiddenMap[category] ? 'Show all expense items' : 'Hide all expense items'}
+                          aria-label={
+                            expensesCategoryHiddenMap[category]
+                              ? 'Show all expense items'
+                              : 'Hide all expense items'
+                          }
                         >
                           {expensesCategoryHiddenMap[category] ? (
                             <EyeClosedIcon className='size-4 text-gray-600 dark:text-gray-400' />
@@ -350,7 +398,9 @@ export default function TableView() {
                                 className={`flex items-center justify-between gap-2 pl-4 text-sm sm:text-base ${expense.disabled ? 'opacity-50' : ''}`}
                               >
                                 <div className='flex-1'>
-                                  <span className={`text-gray-700 dark:text-gray-300 ${itemHidden ? 'line-through' : ''}`}>
+                                  <span
+                                    className={`text-gray-700 dark:text-gray-300 ${itemHidden ? 'line-through' : ''}`}
+                                  >
                                     {expense.label}
                                   </span>
                                   {expense.description && (
@@ -359,16 +409,26 @@ export default function TableView() {
                                     </span>
                                   )}
                                 </div>
-                                <span className={`ml-4 text-gray-600 dark:text-gray-400 ${itemHidden ? 'line-through' : ''}`}>
+                                <span
+                                  className={`ml-4 text-gray-600 dark:text-gray-400 ${itemHidden ? 'line-through' : ''}`}
+                                >
                                   {formatCurrency(expense.amount, currency)}
                                 </span>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    toggleItemHide(expense.id, 'expense', itemHidden);
+                                    toggleItemHide(
+                                      expense.id,
+                                      'expense',
+                                      itemHidden,
+                                    );
                                   }}
                                   className='rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                  aria-label={itemHidden ? 'Show expense item' : 'Hide expense item'}
+                                  aria-label={
+                                    itemHidden
+                                      ? 'Show expense item'
+                                      : 'Hide expense item'
+                                  }
                                 >
                                   {itemHidden ? (
                                     <EyeClosedIcon className='size-3.5 text-gray-500 dark:text-gray-400' />
@@ -438,5 +498,6 @@ export default function TableView() {
           </div>
         </div>
       </div>
+    </div>
   );
 }
