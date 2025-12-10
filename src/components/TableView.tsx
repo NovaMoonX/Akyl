@@ -18,9 +18,12 @@ export default function TableView() {
     expenseByCategory,
     incomesTotal,
     expensesTotal,
+    incomesEnabledTotal,
+    expensesEnabledTotal,
   } = useBudget();
 
   const netIncome = incomesTotal - expensesTotal;
+  const netEnabledIncome = incomesEnabledTotal - expensesEnabledTotal;
 
   // State for collapsible sections
   const [collapsedSources, setCollapsedSources] = useState<Set<string>>(
@@ -74,11 +77,11 @@ export default function TableView() {
               {Object.entries(incomeBySource).map(([source, data]) => {
                 const isCollapsed = collapsedSources.has(source);
                 return (
-                  <div key={source} className='p-4 sm:p-6'>
+                  <div key={source} className={isCollapsed ? 'p-4 sm:p-6 pb-2 sm:pb-3' : 'p-4 sm:p-6'}>
                     {/* Source Header - Clickable */}
                     <button
                       onClick={() => toggleSource(source)}
-                      className='mb-3 flex w-full items-center justify-between text-left hover:opacity-80'
+                      className={`flex w-full items-center justify-between text-left hover:opacity-80 ${!isCollapsed ? 'mb-3' : ''}`}
                     >
                       <div className='flex items-center gap-2'>
                         {isCollapsed ? (
@@ -90,9 +93,16 @@ export default function TableView() {
                           {source}
                         </h3>
                       </div>
-                      <span className='text-base font-semibold text-emerald-600 dark:text-emerald-400 sm:text-lg'>
-                        {formatCurrency(data.total, currency)}
-                      </span>
+                      <div className='flex flex-col items-end'>
+                        {data.enabledTotal !== data.total && (
+                          <span className='text-xs text-gray-500 dark:text-gray-400 line-through sm:text-sm'>
+                            {formatCurrency(data.total, currency)}
+                          </span>
+                        )}
+                        <span className='text-base font-semibold text-emerald-600 dark:text-emerald-400 sm:text-lg'>
+                          {formatCurrency(data.enabledTotal, currency)}
+                        </span>
+                      </div>
                     </button>
                     {/* Income Items - Collapsible */}
                     {!isCollapsed && (
@@ -100,7 +110,7 @@ export default function TableView() {
                         {data.items.map((income) => (
                           <div
                             key={income.id}
-                            className='flex items-center justify-between pl-4 text-sm sm:text-base'
+                            className={`flex items-center justify-between pl-4 text-sm sm:text-base ${income.disabled ? 'opacity-50' : ''}`}
                           >
                             <div className='flex-1'>
                               <span className='text-gray-700 dark:text-gray-300'>
@@ -129,9 +139,16 @@ export default function TableView() {
                 <span className='text-base font-bold text-gray-800 dark:text-gray-100 sm:text-lg'>
                   Total {incomeLabel}
                 </span>
-                <span className='text-base font-bold text-emerald-600 dark:text-emerald-400 sm:text-lg'>
-                  {formatCurrency(incomesTotal, currency)}
-                </span>
+                <div className='flex flex-col items-end'>
+                  {incomesEnabledTotal !== incomesTotal && (
+                    <span className='text-xs text-gray-500 dark:text-gray-400 line-through sm:text-sm'>
+                      {formatCurrency(incomesTotal, currency)}
+                    </span>
+                  )}
+                  <span className='text-base font-bold text-emerald-600 dark:text-emerald-400 sm:text-lg'>
+                    {formatCurrency(incomesEnabledTotal, currency)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -147,11 +164,11 @@ export default function TableView() {
               {Object.entries(expenseByCategory).map(([category, data]) => {
                 const isCollapsed = collapsedCategories.has(category);
                 return (
-                  <div key={category} className='p-4 sm:p-6'>
+                  <div key={category} className={isCollapsed ? 'p-4 sm:p-6 pb-2 sm:pb-3' : 'p-4 sm:p-6'}>
                     {/* Category Header - Clickable */}
                     <button
                       onClick={() => toggleCategory(category)}
-                      className='mb-3 flex w-full items-center justify-between text-left hover:opacity-80'
+                      className={`flex w-full items-center justify-between text-left hover:opacity-80 ${!isCollapsed ? 'mb-3' : ''}`}
                     >
                       <div className='flex items-center gap-2'>
                         {isCollapsed ? (
@@ -163,9 +180,16 @@ export default function TableView() {
                           {category}
                         </h3>
                       </div>
-                      <span className='text-base font-semibold text-red-600 dark:text-red-400 sm:text-lg'>
-                        {formatCurrency(data.total, currency)}
-                      </span>
+                      <div className='flex flex-col items-end'>
+                        {data.enabledTotal !== data.total && (
+                          <span className='text-xs text-gray-500 dark:text-gray-400 line-through sm:text-sm'>
+                            {formatCurrency(data.total, currency)}
+                          </span>
+                        )}
+                        <span className='text-base font-semibold text-red-600 dark:text-red-400 sm:text-lg'>
+                          {formatCurrency(data.enabledTotal, currency)}
+                        </span>
+                      </div>
                     </button>
                     {/* Expense Items - Collapsible */}
                     {!isCollapsed && (
@@ -173,7 +197,7 @@ export default function TableView() {
                         {data.items.map((expense) => (
                           <div
                             key={expense.id}
-                            className='flex items-center justify-between pl-4 text-sm sm:text-base'
+                            className={`flex items-center justify-between pl-4 text-sm sm:text-base ${expense.disabled ? 'opacity-50' : ''}`}
                           >
                             <div className='flex-1'>
                               <span className='text-gray-700 dark:text-gray-300'>
@@ -202,9 +226,16 @@ export default function TableView() {
                 <span className='text-base font-bold text-gray-800 dark:text-gray-100 sm:text-lg'>
                   Total {expenseLabel}s
                 </span>
-                <span className='text-base font-bold text-red-600 dark:text-red-400 sm:text-lg'>
-                  {formatCurrency(expensesTotal, currency)}
-                </span>
+                <div className='flex flex-col items-end'>
+                  {expensesEnabledTotal !== expensesTotal && (
+                    <span className='text-xs text-gray-500 dark:text-gray-400 line-through sm:text-sm'>
+                      {formatCurrency(expensesTotal, currency)}
+                    </span>
+                  )}
+                  <span className='text-base font-bold text-red-600 dark:text-red-400 sm:text-lg'>
+                    {formatCurrency(expensesEnabledTotal, currency)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -212,7 +243,7 @@ export default function TableView() {
           {/* Net Income / Grand Total */}
           <div
             className={`px-4 py-4 sm:px-6 sm:py-5 ${
-              netIncome >= 0
+              netEnabledIncome >= 0
                 ? 'bg-emerald-100 dark:bg-emerald-950/50'
                 : 'bg-red-100 dark:bg-red-950/50'
             }`}
@@ -221,15 +252,22 @@ export default function TableView() {
               <span className='text-lg font-bold text-gray-900 dark:text-gray-50 sm:text-xl'>
                 Net {incomeLabel}
               </span>
-              <span
-                className={`text-lg font-bold sm:text-xl ${
-                  netIncome >= 0
-                    ? 'text-emerald-700 dark:text-emerald-300'
-                    : 'text-red-700 dark:text-red-300'
-                }`}
-              >
-                {formatCurrency(netIncome, currency)}
-              </span>
+              <div className='flex flex-col items-end'>
+                {netEnabledIncome !== netIncome && (
+                  <span className='text-sm text-gray-500 dark:text-gray-400 line-through sm:text-base'>
+                    {formatCurrency(netIncome, currency)}
+                  </span>
+                )}
+                <span
+                  className={`text-lg font-bold sm:text-xl ${
+                    netEnabledIncome >= 0
+                      ? 'text-emerald-700 dark:text-emerald-300'
+                      : 'text-red-700 dark:text-red-300'
+                  }`}
+                >
+                  {formatCurrency(netEnabledIncome, currency)}
+                </span>
+              </div>
             </div>
           </div>
         </div>

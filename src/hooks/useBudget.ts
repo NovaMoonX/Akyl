@@ -160,7 +160,7 @@ export default function useBudget() {
       (acc, income) => {
         if (income.source) {
           if (!acc[income.source]) {
-            acc[income.source] = { total: 0, items: [], completeTotal: 0 };
+            acc[income.source] = { total: 0, items: [], completeTotal: 0, enabledTotal: 0 };
           }
           acc[income.source].items.push(income);
           acc[income.source].completeTotal += income.amount;
@@ -173,13 +173,18 @@ export default function useBudget() {
           if (!isHidden) {
             // only include non-hidden incomes
             acc[income.source].total += income.amount;
+            
+            // Track enabled-only total (non-hidden and non-disabled)
+            if (!income.disabled) {
+              acc[income.source].enabledTotal += income.amount;
+            }
           }
         }
         return acc;
       },
       {} as Record<
         string,
-        { total: number; items: Income[]; completeTotal: number }
+        { total: number; items: Income[]; completeTotal: number; enabledTotal: number }
       >,
     );
 
@@ -187,10 +192,10 @@ export default function useBudget() {
       .sort((a, b) => b[1].completeTotal - a[1].completeTotal)
       .reduce(
         (acc, [source, data]) => {
-          acc[source] = { total: data.total, items: data.items };
+          acc[source] = { total: data.total, items: data.items, enabledTotal: data.enabledTotal };
           return acc;
         },
-        {} as Record<string, { total: number; items: Income[] }>,
+        {} as Record<string, { total: number; items: Income[]; enabledTotal: number }>,
       );
   }, [incomes, activeSheet]);
 
@@ -201,7 +206,7 @@ export default function useBudget() {
       (acc, expense) => {
         if (expense.category) {
           if (!acc[expense.category]) {
-            acc[expense.category] = { total: 0, items: [], completeTotal: 0 };
+            acc[expense.category] = { total: 0, items: [], completeTotal: 0, enabledTotal: 0 };
           }
           acc[expense.category].items.push(expense);
           acc[expense.category].completeTotal += expense.amount;
@@ -214,13 +219,18 @@ export default function useBudget() {
           if (!isHidden) {
             // only include non-hidden expenses
             acc[expense.category].total += expense.amount;
+            
+            // Track enabled-only total (non-hidden and non-disabled)
+            if (!expense.disabled) {
+              acc[expense.category].enabledTotal += expense.amount;
+            }
           }
         }
         return acc;
       },
       {} as Record<
         string,
-        { total: number; items: Expense[]; completeTotal: number }
+        { total: number; items: Expense[]; completeTotal: number; enabledTotal: number }
       >,
     );
 
@@ -231,10 +241,11 @@ export default function useBudget() {
           acc[category] = {
             total: data.total,
             items: data.items,
+            enabledTotal: data.enabledTotal,
           };
           return acc;
         },
-        {} as Record<string, { total: number; items: Expense[] }>,
+        {} as Record<string, { total: number; items: Expense[]; enabledTotal: number }>,
       );
   }, [expenses, activeSheet]);
 
@@ -252,6 +263,20 @@ export default function useBudget() {
     }, 0);
   }, [incomes, activeSheet]);
 
+  const incomesEnabledTotal = useMemo(() => {
+    return incomes.reduce((total, income) => {
+      // Check per-sheet hidden state
+      const isHidden = activeSheet && activeSheet !== 'all'
+        ? income.hiddenInSheets?.includes(activeSheet) ?? false
+        : income.hidden ?? false;
+      
+      if (isHidden || income.disabled) {
+        return total; // only include non-hidden and non-disabled incomes
+      }
+      return total + income.amount;
+    }, 0);
+  }, [incomes, activeSheet]);
+
   const expensesTotal = useMemo(() => {
     return expenses.reduce((total, expense) => {
       // Check per-sheet hidden state
@@ -261,6 +286,20 @@ export default function useBudget() {
       
       if (isHidden) {
         return total; // only include non-hidden expenses
+      }
+      return total + expense.amount;
+    }, 0);
+  }, [expenses, activeSheet]);
+
+  const expensesEnabledTotal = useMemo(() => {
+    return expenses.reduce((total, expense) => {
+      // Check per-sheet hidden state
+      const isHidden = activeSheet && activeSheet !== 'all'
+        ? expense.hiddenInSheets?.includes(activeSheet) ?? false
+        : expense.hidden ?? false;
+      
+      if (isHidden || expense.disabled) {
+        return total; // only include non-hidden and non-disabled expenses
       }
       return total + expense.amount;
     }, 0);
@@ -333,6 +372,8 @@ export default function useBudget() {
     expensesMap,
     incomesTotal,
     expensesTotal,
+    incomesEnabledTotal,
+    expensesEnabledTotal,
     getBudgetItem,
     incomeSources,
     expenseSubCategoriesMap,

@@ -190,20 +190,22 @@ export default function BottomBar() {
                   </option>
                 ))}
             </select>
-            <button
-              onClick={handleToggleBulkEdit}
-              className={join(
-                'rounded p-1 transition-colors',
-                isBulkEditMode || isBulkSelecting
-                  ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700',
-              )}
-              aria-label={
-                isBulkEditMode ? 'Exit bulk edit mode' : 'Enter bulk edit mode'
-              }
-            >
-              <CheckSquareIcon className='size-4' />
-            </button>
+            {viewMode === 'flowchart' && (
+              <button
+                onClick={handleToggleBulkEdit}
+                className={join(
+                  'rounded p-1 transition-colors',
+                  isBulkEditMode || isBulkSelecting
+                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700',
+                )}
+                aria-label={
+                  isBulkEditMode ? 'Exit bulk edit mode' : 'Enter bulk edit mode'
+                }
+              >
+                <CheckSquareIcon className='size-4' />
+              </button>
+            )}
           </div>
 
           <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
