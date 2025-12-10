@@ -48,6 +48,71 @@ export default function TableView() {
     new Set(),
   );
 
+  // State for inline editing
+  const [editingItem, setEditingItem] = useState<{
+    id: string;
+    type: 'income' | 'expense';
+    field: 'label' | 'amount';
+  } | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
+
+  // Handle double click to start editing
+  const handleDoubleClick = (
+    id: string,
+    type: 'income' | 'expense',
+    field: 'label' | 'amount',
+    currentValue: string | number,
+    isDisabled: boolean,
+  ) => {
+    // Don't allow editing disabled items
+    if (isDisabled) return;
+    
+    setEditingItem({ id, type, field });
+    setEditValue(String(currentValue));
+  };
+
+  // Handle save edit
+  const handleSaveEdit = () => {
+    if (!editingItem) return;
+
+    const { id, type, field } = editingItem;
+
+    if (field === 'label') {
+      if (type === 'income') {
+        updateIncome(id, { label: editValue });
+      } else {
+        updateExpense(id, { label: editValue });
+      }
+    } else if (field === 'amount') {
+      const numValue = parseFloat(editValue);
+      if (!isNaN(numValue)) {
+        if (type === 'income') {
+          updateIncome(id, { amount: numValue });
+        } else {
+          updateExpense(id, { amount: numValue });
+        }
+      }
+    }
+
+    setEditingItem(null);
+    setEditValue('');
+  };
+
+  // Handle cancel edit
+  const handleCancelEdit = () => {
+    setEditingItem(null);
+    setEditValue('');
+  };
+
+  // Handle key press in edit mode
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveEdit();
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
+  };
+
   const toggleSource = (source: string) => {
     setCollapsedSources((prev) => {
       const newSet = new Set(prev);
@@ -172,6 +237,11 @@ export default function TableView() {
     <div className='bg-background-light dark:bg-background-dark absolute inset-x-0 top-0 bottom-0 z-20 overflow-auto pt-20 pb-8'>
       <div className='p-4 sm:p-6'>
         <div className='mx-auto max-w-4xl pb-4'>
+          {/* Info note about editing */}
+          <div className='mb-4 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'>
+            💡 <strong>Tip:</strong> Double-tap any budget item's name or value to edit it (disabled items cannot be edited).
+          </div>
+          
           <div className='bg-surface-light dark:bg-surface-dark mb-6 overflow-hidden rounded-lg shadow-lg'>
             {/* Income Section */}
             <div className='border-b border-gray-200 dark:border-gray-700'>
@@ -252,22 +322,69 @@ export default function TableView() {
                                 className={`flex items-center justify-between gap-2 pl-4 text-sm sm:text-base ${income.disabled ? 'opacity-50' : ''}`}
                               >
                                 <div className='flex-1'>
-                                  <span
-                                    className={`text-gray-700 dark:text-gray-300 ${itemHidden ? 'line-through' : ''}`}
-                                  >
-                                    {income.label}
-                                  </span>
+                                  {editingItem?.id === income.id &&
+                                  editingItem?.field === 'label' ? (
+                                    <input
+                                      type='text'
+                                      value={editValue}
+                                      onChange={(e) =>
+                                        setEditValue(e.target.value)
+                                      }
+                                      onBlur={handleSaveEdit}
+                                      onKeyDown={handleKeyPress}
+                                      autoFocus
+                                      className='w-full rounded border border-emerald-500 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-800 dark:text-gray-100'
+                                    />
+                                  ) : (
+                                    <span
+                                      onDoubleClick={() =>
+                                        handleDoubleClick(
+                                          income.id,
+                                          'income',
+                                          'label',
+                                          income.label,
+                                          income.disabled ?? false,
+                                        )
+                                      }
+                                      className={`cursor-pointer text-gray-700 dark:text-gray-300 ${itemHidden ? 'line-through' : ''} ${!income.disabled ? 'hover:underline' : ''}`}
+                                    >
+                                      {income.label}
+                                    </span>
+                                  )}
                                   {income.description && (
                                     <span className='ml-2 text-xs text-gray-500 sm:text-sm dark:text-gray-400'>
                                       ({income.description})
                                     </span>
                                   )}
                                 </div>
-                                <span
-                                  className={`ml-4 text-gray-600 dark:text-gray-400 ${itemHidden ? 'line-through' : ''}`}
-                                >
-                                  {formatCurrency(income.amount, currency)}
-                                </span>
+                                {editingItem?.id === income.id &&
+                                editingItem?.field === 'amount' ? (
+                                  <input
+                                    type='number'
+                                    step='0.01'
+                                    value={editValue}
+                                    onChange={(e) => setEditValue(e.target.value)}
+                                    onBlur={handleSaveEdit}
+                                    onKeyDown={handleKeyPress}
+                                    autoFocus
+                                    className='w-24 rounded border border-emerald-500 bg-white px-2 py-1 text-right text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-800 dark:text-gray-100'
+                                  />
+                                ) : (
+                                  <span
+                                    onDoubleClick={() =>
+                                      handleDoubleClick(
+                                        income.id,
+                                        'income',
+                                        'amount',
+                                        income.amount,
+                                        income.disabled ?? false,
+                                      )
+                                    }
+                                    className={`ml-4 cursor-pointer text-gray-600 dark:text-gray-400 ${itemHidden ? 'line-through' : ''} ${!income.disabled ? 'hover:underline' : ''}`}
+                                  >
+                                    {formatCurrency(income.amount, currency)}
+                                  </span>
+                                )}
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -398,22 +515,69 @@ export default function TableView() {
                                 className={`flex items-center justify-between gap-2 pl-4 text-sm sm:text-base ${expense.disabled ? 'opacity-50' : ''}`}
                               >
                                 <div className='flex-1'>
-                                  <span
-                                    className={`text-gray-700 dark:text-gray-300 ${itemHidden ? 'line-through' : ''}`}
-                                  >
-                                    {expense.label}
-                                  </span>
+                                  {editingItem?.id === expense.id &&
+                                  editingItem?.field === 'label' ? (
+                                    <input
+                                      type='text'
+                                      value={editValue}
+                                      onChange={(e) =>
+                                        setEditValue(e.target.value)
+                                      }
+                                      onBlur={handleSaveEdit}
+                                      onKeyDown={handleKeyPress}
+                                      autoFocus
+                                      className='w-full rounded border border-red-500 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100'
+                                    />
+                                  ) : (
+                                    <span
+                                      onDoubleClick={() =>
+                                        handleDoubleClick(
+                                          expense.id,
+                                          'expense',
+                                          'label',
+                                          expense.label,
+                                          expense.disabled ?? false,
+                                        )
+                                      }
+                                      className={`cursor-pointer text-gray-700 dark:text-gray-300 ${itemHidden ? 'line-through' : ''} ${!expense.disabled ? 'hover:underline' : ''}`}
+                                    >
+                                      {expense.label}
+                                    </span>
+                                  )}
                                   {expense.description && (
                                     <span className='ml-2 text-xs text-gray-500 sm:text-sm dark:text-gray-400'>
                                       ({expense.description})
                                     </span>
                                   )}
                                 </div>
-                                <span
-                                  className={`ml-4 text-gray-600 dark:text-gray-400 ${itemHidden ? 'line-through' : ''}`}
-                                >
-                                  {formatCurrency(expense.amount, currency)}
-                                </span>
+                                {editingItem?.id === expense.id &&
+                                editingItem?.field === 'amount' ? (
+                                  <input
+                                    type='number'
+                                    step='0.01'
+                                    value={editValue}
+                                    onChange={(e) => setEditValue(e.target.value)}
+                                    onBlur={handleSaveEdit}
+                                    onKeyDown={handleKeyPress}
+                                    autoFocus
+                                    className='w-24 rounded border border-red-500 bg-white px-2 py-1 text-right text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100'
+                                  />
+                                ) : (
+                                  <span
+                                    onDoubleClick={() =>
+                                      handleDoubleClick(
+                                        expense.id,
+                                        'expense',
+                                        'amount',
+                                        expense.amount,
+                                        expense.disabled ?? false,
+                                      )
+                                    }
+                                    className={`ml-4 cursor-pointer text-gray-600 dark:text-gray-400 ${itemHidden ? 'line-through' : ''} ${!expense.disabled ? 'hover:underline' : ''}`}
+                                  >
+                                    {formatCurrency(expense.amount, currency)}
+                                  </span>
+                                )}
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
