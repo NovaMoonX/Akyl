@@ -66,7 +66,7 @@ export default function TableView() {
   ) => {
     // Don't allow editing disabled items
     if (isDisabled) return;
-    
+
     setEditingItem({ id, type, field });
     setEditValue(String(currentValue));
   };
@@ -238,10 +238,11 @@ export default function TableView() {
       <div className='p-4 sm:p-6'>
         <div className='mx-auto max-w-4xl pb-4'>
           {/* Info note about editing */}
-          <div className='mb-4 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'>
-            💡 <strong>Tip:</strong> Double-tap any budget item's name or value to edit it (disabled items cannot be edited).
+          <div className='mb-2 sm:mb-3 rounded-lg bg-blue-50 px-4 pt-3.5 pb-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 text-center'>
+            💡 <strong>Tip:</strong> Double-tap any budget item's name or value
+            to edit it
           </div>
-          
+
           <div className='bg-surface-light dark:bg-surface-dark mb-6 overflow-hidden rounded-lg shadow-lg'>
             {/* Income Section */}
             <div className='border-b border-gray-200 dark:border-gray-700'>
@@ -333,7 +334,7 @@ export default function TableView() {
                                       onBlur={handleSaveEdit}
                                       onKeyDown={handleKeyPress}
                                       autoFocus
-                                      className='w-full rounded border border-emerald-500 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-800 dark:text-gray-100'
+                                      className='w-full rounded border border-emerald-500 bg-white px-2 py-1 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:bg-gray-800 dark:text-gray-100'
                                     />
                                   ) : (
                                     <span
@@ -363,11 +364,13 @@ export default function TableView() {
                                     type='number'
                                     step='0.01'
                                     value={editValue}
-                                    onChange={(e) => setEditValue(e.target.value)}
+                                    onChange={(e) =>
+                                      setEditValue(e.target.value)
+                                    }
                                     onBlur={handleSaveEdit}
                                     onKeyDown={handleKeyPress}
                                     autoFocus
-                                    className='w-24 rounded border border-emerald-500 bg-white px-2 py-1 text-right text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-800 dark:text-gray-100'
+                                    className='w-24 rounded border border-emerald-500 bg-white px-2 py-1 text-right text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:bg-gray-800 dark:text-gray-100'
                                   />
                                 ) : (
                                   <span
@@ -526,7 +529,7 @@ export default function TableView() {
                                       onBlur={handleSaveEdit}
                                       onKeyDown={handleKeyPress}
                                       autoFocus
-                                      className='w-full rounded border border-red-500 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100'
+                                      className='w-full rounded border border-red-500 bg-white px-2 py-1 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none dark:bg-gray-800 dark:text-gray-100'
                                     />
                                   ) : (
                                     <span
@@ -556,11 +559,13 @@ export default function TableView() {
                                     type='number'
                                     step='0.01'
                                     value={editValue}
-                                    onChange={(e) => setEditValue(e.target.value)}
+                                    onChange={(e) =>
+                                      setEditValue(e.target.value)
+                                    }
                                     onBlur={handleSaveEdit}
                                     onKeyDown={handleKeyPress}
                                     autoFocus
-                                    className='w-24 rounded border border-red-500 bg-white px-2 py-1 text-right text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-800 dark:text-gray-100'
+                                    className='w-24 rounded border border-red-500 bg-white px-2 py-1 text-right text-sm focus:ring-2 focus:ring-red-500 focus:outline-none dark:bg-gray-800 dark:text-gray-100'
                                   />
                                 ) : (
                                   <span
