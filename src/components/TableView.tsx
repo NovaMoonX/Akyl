@@ -441,7 +441,7 @@ export default function TableView() {
             <div className='border-b border-gray-200 dark:border-gray-700'>
               <div className='bg-red-600 px-4 py-3 sm:px-6'>
                 <h2 className='text-lg font-bold text-white sm:text-xl'>
-                  {expenseLabel}s
+                  {expenseLabel}
                 </h2>
               </div>
               <div className='divide-y divide-gray-200 dark:divide-gray-700'>
@@ -616,7 +616,7 @@ export default function TableView() {
               <div className='bg-red-50 px-4 py-3 sm:px-6 dark:bg-red-950/40'>
                 <div className='flex items-center justify-between'>
                   <span className='text-base font-bold text-gray-800 sm:text-lg dark:text-gray-100'>
-                    Total {expenseLabel}s
+                    Total {expenseLabel}
                   </span>
                   <div className='flex flex-col items-end'>
                     {expensesEnabledTotal !== expensesTotal && (
