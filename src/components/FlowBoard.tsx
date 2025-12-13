@@ -86,9 +86,7 @@ export default function Flow() {
             <BottomBar />
             {viewMode === 'table' && <TableView />}
             {viewMode === 'flowchart' && (
-              <>
-                <Controls position='bottom-right' showInteractive={false} />
-              </>
+              <Controls position='bottom-right' showInteractive={false} />
             )}
           </>
         )}
