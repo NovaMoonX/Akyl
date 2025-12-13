@@ -268,6 +268,9 @@ export default function TableView() {
                         <button
                           onClick={() => toggleSource(source)}
                           className='flex flex-1 items-center justify-between text-left hover:opacity-80'
+                          title={isCollapsed ? 'Expand source items' : 'Collapse source items'}
+                          aria-label={isCollapsed ? 'Expand source items' : 'Collapse source items'}
+                          aria-expanded={!isCollapsed}
                         >
                           <div className='flex items-center gap-2'>
                             {isCollapsed ? (
