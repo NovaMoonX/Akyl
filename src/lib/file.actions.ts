@@ -103,7 +103,7 @@ export function pickFile(acceptedFileTypes?: string): Promise<File> {
 export function exportCSV(fileName: string, space: Space) {
   // Create CSV content for incomes
   const incomesCSV = [
-    'Type,Label,Description,Amount,Source,Cadence Type,Cadence Interval,Notes,Disabled',
+    'Type,Label,Description,Amount,Source,Notes',
     ...space.incomes.map((income: Income) =>
       [
         'Income',
@@ -111,17 +111,14 @@ export function exportCSV(fileName: string, space: Space) {
         escapeCSV(income.description),
         income.amount,
         escapeCSV(income.source),
-        income.cadence.type,
-        income.cadence.interval,
         escapeCSV(income.notes),
-        income.disabled ? 'true' : 'false',
       ].join(',')
     ),
   ];
 
   // Create CSV content for expenses
   const expensesCSV = [
-    'Type,Label,Description,Amount,Category,Sub-Category,Cadence Type,Cadence Interval,Notes,Disabled',
+    'Type,Label,Description,Amount,Category,Notes',
     ...space.expenses.map((expense: Expense) =>
       [
         'Expense',
@@ -129,11 +126,7 @@ export function exportCSV(fileName: string, space: Space) {
         escapeCSV(expense.description),
         expense.amount,
         escapeCSV(expense.category),
-        escapeCSV(expense.subCategory),
-        expense.cadence.type,
-        expense.cadence.interval,
         escapeCSV(expense.notes),
-        expense.disabled ? 'true' : 'false',
       ].join(',')
     ),
   ];
@@ -197,7 +190,7 @@ export async function importCSV(space: Space): Promise<Space> {
           }
 
           // Parse data rows
-          if (currentSection === 'income' && cells.length >= 9) {
+          if (currentSection === 'income' && cells.length >= 6) {
             newIncomes.push({
               id: crypto.randomUUID(),
               label: cells[1],
@@ -206,26 +199,24 @@ export async function importCSV(space: Space): Promise<Space> {
               source: cells[4],
               type: cells[4], // Using source as type
               cadence: {
-                type: cells[5] as 'month' | 'week' | 'day' | 'year',
-                interval: parseInt(cells[6]) || 1,
+                type: 'month',
+                interval: 1,
               },
-              notes: cells[7] || '',
-              disabled: cells[8]?.toLowerCase() === 'true',
+              notes: cells[5] || '',
             });
-          } else if (currentSection === 'expense' && cells.length >= 10) {
+          } else if (currentSection === 'expense' && cells.length >= 6) {
             newExpenses.push({
               id: crypto.randomUUID(),
               label: cells[1],
               description: cells[2],
               amount: parseFloat(cells[3]) || 0,
               category: cells[4],
-              subCategory: cells[5],
+              subCategory: '', // Default to empty since not included in CSV
               cadence: {
-                type: cells[6] as 'month' | 'week' | 'day' | 'year',
-                interval: parseInt(cells[7]) || 1,
+                type: 'month',
+                interval: 1,
               },
-              notes: cells[8] || '',
-              disabled: cells[9]?.toLowerCase() === 'true',
+              notes: cells[5] || '',
             });
           }
         }
