@@ -35,6 +35,7 @@ export default function TableView() {
     expensesEnabledTotal,
     incomesSourceHiddenMap,
     expensesCategoryHiddenMap,
+    getBudgetItem,
   } = useBudget();
 
   const netIncome = incomesTotal - expensesTotal;
@@ -152,15 +153,8 @@ export default function TableView() {
         updateExpense(itemId, { hidden: nowHidden });
       }
     } else {
-      // Toggle per-sheet hidden state
-      const item =
-        type === 'income'
-          ? Object.values(incomeBySource)
-              .flatMap((s) => s.items)
-              .find((i) => i.id === itemId)
-          : Object.values(expenseByCategory)
-              .flatMap((c) => c.items)
-              .find((e) => e.id === itemId);
+      // Toggle per-sheet hidden state - use getBudgetItem for better performance
+      const { item } = getBudgetItem(itemId);
 
       if (item) {
         const hiddenInSheets = item.hiddenInSheets ?? [];
