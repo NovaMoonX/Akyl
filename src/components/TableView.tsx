@@ -338,6 +338,7 @@ export default function TableView() {
                                       onKeyDown={handleKeyPress}
                                       autoFocus
                                       className='w-full rounded border border-emerald-500 bg-white px-2 py-1 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:bg-gray-800 dark:text-gray-100'
+                                      aria-label="Edit income label"
                                     />
                                   ) : (
                                     <span
