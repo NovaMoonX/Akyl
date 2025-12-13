@@ -1,12 +1,12 @@
 import {
   CopyPlusIcon,
+  DownloadIcon,
   FileImageIcon,
   FolderIcon,
   HomeIcon,
   LogInIcon,
   LogOutIcon,
   MenuIcon,
-  SaveIcon,
   SettingsIcon,
   ShieldQuestionIcon,
   SquarePlusIcon,
@@ -18,7 +18,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { signOutUser } from '../../firebase';
 import useBrowserSpaces from '../../hooks/useBrowserSpaces';
 import useDownloadPng from '../../hooks/useDownloadPng';
-import { APP_SPACE_LIMIT_REACHED, createNewSpace, importFile } from '../../lib';
+import { APP_SPACE_LIMIT_REACHED, createNewSpace } from '../../lib';
 import { useSpaceStore } from '../../store/config';
 import DreamTrigger from '../DreamTrigger';
 import AuthModal from '../modals/AuthModal';
@@ -26,8 +26,9 @@ import ConfigModal from '../modals/ConfigModal';
 import ConfirmationModal from '../modals/ConfirmationModal';
 import DeleteSpaceModal from '../modals/DeleteSpaceModal';
 import DuplicateSpaceModal from '../modals/DuplicateSpaceModal';
+import ExportModal from '../modals/ExportModal';
 import HelpModal from '../modals/HelpModal';
-import SaveModal from '../modals/SaveModal';
+import ImportModal from '../modals/ImportModal';
 import Dropdown from '../ui/Dropdown';
 import ThemeToggle from '../ui/ThemeToggle';
 import Tooltip from '../ui/Tooltip';
@@ -48,11 +49,11 @@ const DEFAULT_ITEMS: MenuItem[] = [
   },
   {
     icon: <FolderIcon />,
-    label: 'Open',
+    label: 'Import',
   },
   {
-    icon: <SaveIcon />,
-    label: 'Save',
+    icon: <DownloadIcon />,
+    label: 'Export',
   },
   {
     icon: <FileImageIcon />,
@@ -88,7 +89,8 @@ export default function HeaderMenu() {
     message: string;
     onConfirm: () => void;
   }>();
-  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
@@ -135,11 +137,11 @@ export default function HeaderMenu() {
           onConfirm: () => createNewSpace(currentUser?.uid),
         });
         break;
-      case 'Open':
-        importFile();
+      case 'Import':
+        setIsImportModalOpen(true);
         break;
-      case 'Save':
-        setIsSaveModalOpen(true);
+      case 'Export':
+        setIsExportModalOpen(true);
         break;
       case 'Download Image':
         download();
@@ -229,9 +231,14 @@ export default function HeaderMenu() {
         />
       )}
 
-      <SaveModal
-        isOpen={isSaveModalOpen}
-        onClose={() => setIsSaveModalOpen(false)}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+      />
+
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
 
       <DuplicateSpaceModal
