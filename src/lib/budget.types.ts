@@ -17,6 +17,7 @@ export interface Income {
   hidden?: boolean; // For UI purposes, to hide/show income items (global, deprecated in favor of hiddenInSheets)
   hiddenInSheets?: string[]; // Array of sheet IDs where this item is hidden
   sheets?: string[]; // Optional array of sheet ids
+  disabled?: boolean; // Whether the item is disabled (excluded from active totals but shown in complete totals)
 }
 
 export interface Expense {
@@ -31,4 +32,5 @@ export interface Expense {
   hidden?: boolean; // For UI purposes, to hide/show expense items (global, deprecated in favor of hiddenInSheets)
   hiddenInSheets?: string[]; // Array of sheet IDs where this item is hidden
   sheets?: string[]; // Optional array of sheet ids
+  disabled?: boolean; // Whether the item is disabled (excluded from active totals but shown in complete totals)
 }

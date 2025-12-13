@@ -27,6 +27,9 @@ interface SpaceStore {
   clearBudgetItemSelection: () => void;
   addSheetToSelectedItems: (sheetId: string) => void;
   removeSheetFromSelectedItems: (sheetId: string) => void;
+  // View mode state
+  viewMode: 'flowchart' | 'table';
+  setViewMode: (mode: 'flowchart' | 'table') => void;
 }
 
 const initialSpace = {} as Space;
@@ -37,6 +40,7 @@ const useSpaceStore = create<SpaceStore>()(
     space: initialSpace,
     selectedBudgetItems: [],
     isBulkEditMode: false,
+    viewMode: 'flowchart',
     setSpace: (space) => set({ space }),
     updateSpace: (partial) =>
       set((state) => ({
@@ -273,6 +277,10 @@ const useSpaceStore = create<SpaceStore>()(
           },
         };
       }),
+    setViewMode: (mode: 'flowchart' | 'table') =>
+      set(() => ({
+        viewMode: mode,
+      })),
   })),
 );
 

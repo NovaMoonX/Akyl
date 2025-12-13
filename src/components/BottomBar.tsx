@@ -5,6 +5,8 @@ import {
   XIcon,
   ArrowRightIcon,
   CalculatorIcon,
+  TableIcon,
+  WorkflowIcon,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
@@ -47,6 +49,9 @@ export default function BottomBar() {
       state.setIsBulkEditMode,
       state.clearBudgetItemSelection,
     ]),
+  );
+  const [viewMode, setViewMode] = useSpace(
+    useShallow((state) => [state.viewMode, state.setViewMode]),
   );
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAddSheetModalOpen, setIsAddSheetModalOpen] = useState(false);
@@ -145,6 +150,7 @@ export default function BottomBar() {
                 closeQuickBar();
               }}
               className='inline-flex items-center gap-1 rounded bg-emerald-500 px-2 py-0.5 text-xs text-white hover:bg-emerald-600 sm:text-sm'
+              title='Go to sheet'
             >
               Go <ArrowRightIcon className='size-3.5' />
             </button>
@@ -152,6 +158,7 @@ export default function BottomBar() {
               onClick={closeQuickBar}
               className='rounded p-1 hover:bg-gray-200 dark:hover:bg-gray-700'
               aria-label='Dismiss notification'
+              title='Dismiss notification'
             >
               <XIcon className='size-3.5' />
             </button>
@@ -164,14 +171,14 @@ export default function BottomBar() {
   return (
     <>
       <div className='bg-surface-light dark:bg-surface-dark fixed bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-full border border-gray-300 px-4 py-2 shadow-lg dark:border-gray-700'>
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center gap-2 sm:gap-3'>
           {/* Desktop: Button-based sheet selector */}
           <div className='hidden sm:block'>
             <HeaderBarSheets onConfirmSheetDeletion={setDeleteConfirmSheetId} />
           </div>
 
           {/* Mobile: Select-based sheet selector */}
-          <div className='flex items-center gap-2 sm:hidden'>
+          <div className='flex items-center gap-1.5 sm:hidden'>
             <select
               value={activeSheet}
               onChange={(e) => setActiveSheet(e.target.value)}
@@ -185,21 +192,56 @@ export default function BottomBar() {
                   </option>
                 ))}
             </select>
-            <button
-              onClick={handleToggleBulkEdit}
-              className={join(
-                'rounded p-1 transition-colors',
-                isBulkEditMode || isBulkSelecting
-                  ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700',
-              )}
-              aria-label={
-                isBulkEditMode ? 'Exit bulk edit mode' : 'Enter bulk edit mode'
-              }
-            >
-              <CheckSquareIcon className='size-4' />
-            </button>
+            {viewMode === 'flowchart' && (
+              <button
+                onClick={handleToggleBulkEdit}
+                className={join(
+                  'rounded p-1 transition-colors',
+                  isBulkEditMode || isBulkSelecting
+                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700',
+                )}
+                aria-label={
+                  isBulkEditMode
+                    ? 'Exit bulk edit mode'
+                    : 'Enter bulk edit mode'
+                }
+                title={
+                  isBulkEditMode
+                    ? 'Exit bulk edit mode'
+                    : 'Enter bulk edit mode'
+                }
+              >
+                <CheckSquareIcon className='size-4' />
+              </button>
+            )}
           </div>
+
+          <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
+
+          {/* View Toggle Button */}
+          <button
+            onClick={() =>
+              setViewMode(viewMode === 'flowchart' ? 'table' : 'flowchart')
+            }
+            className='rounded-full p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+            aria-label={
+              viewMode === 'flowchart'
+                ? 'Switch to Table View'
+                : 'Switch to Flowchart View'
+            }
+            title={
+              viewMode === 'flowchart'
+                ? 'Switch to Table View'
+                : 'Switch to Flowchart View'
+            }
+          >
+            {viewMode === 'flowchart' ? (
+              <TableIcon className='size-5' />
+            ) : (
+              <WorkflowIcon className='size-5' />
+            )}
+          </button>
 
           <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
 
@@ -208,6 +250,7 @@ export default function BottomBar() {
             onClick={() => setIsCalculatorOpen(true)}
             className='rounded-full p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
             aria-label='Open Calculator'
+            title='Open Calculator'
           >
             <CalculatorIcon className='size-5' />
           </button>
@@ -220,6 +263,7 @@ export default function BottomBar() {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className='rounded-full p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
               aria-label='Settings'
+              title='Settings'
               id='settings-btn'
             >
               <Settings2Icon className='size-5' />
@@ -243,12 +287,17 @@ export default function BottomBar() {
                     </span>
                     <HeaderBarTimeWindow />
                   </div>
-                  <div className='flex flex-col items-center'>
-                    <span className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200'>
-                      Display Options
-                    </span>
-                    <BottomActions className='' actionClassName='rounded-md' />
-                  </div>
+                  {viewMode === 'flowchart' && (
+                    <div className='flex flex-col items-center'>
+                      <span className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200'>
+                        Display Options
+                      </span>
+                      <BottomActions
+                        className=''
+                        actionClassName='rounded-md'
+                      />
+                    </div>
+                  )}
                   <div>
                     <span className='mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-200'>
                       Manage Sheets
@@ -317,10 +366,10 @@ export default function BottomBar() {
                 </div>
                 <button
                   onClick={() => setIsDropdownOpen(false)}
-                  className='absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  className='absolute top-2 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                   aria-label='Close popup'
                 >
-                  ×
+                  x
                 </button>
               </div>
             )}
@@ -331,6 +380,7 @@ export default function BottomBar() {
             onClick={() => setIsSettingsModalOpen(true)}
             className='rounded-full p-1.5 transition-colors hover:bg-gray-100 sm:hidden dark:hover:bg-gray-700'
             aria-label='Settings'
+            title='Settings'
           >
             <Settings2Icon className='size-5' />
           </button>
@@ -348,6 +398,7 @@ export default function BottomBar() {
               closeQuickBar();
             }}
             className='inline-flex items-center gap-1 rounded bg-emerald-500 px-2 py-0.5 text-xs text-white hover:bg-emerald-600 sm:text-sm'
+            title='Go to sheet'
           >
             Go <ArrowRightIcon className='size-3.5' />
           </button>
@@ -355,6 +406,7 @@ export default function BottomBar() {
             onClick={closeQuickBar}
             className='rounded p-1 hover:bg-gray-200 dark:hover:bg-gray-700'
             aria-label='Dismiss notification'
+            title='Dismiss notification'
           >
             <XIcon className='size-3.5' />
           </button>
@@ -376,12 +428,14 @@ export default function BottomBar() {
             <HeaderBarTimeWindow />
           </div>
 
-          <div>
-            <span className='mb-1 block text-center font-medium text-gray-700 dark:text-gray-200'>
-              Display Options
-            </span>
-            <BottomActions className='' actionClassName='rounded-md' />
-          </div>
+          {viewMode === 'flowchart' && (
+            <div>
+              <span className='mb-1 block text-center font-medium text-gray-700 dark:text-gray-200'>
+                Display Options
+              </span>
+              <BottomActions className='' actionClassName='rounded-md' />
+            </div>
+          )}
 
           <div className='w-full'>
             <div className='mb-2 flex items-center justify-between'>
@@ -392,6 +446,7 @@ export default function BottomBar() {
                 onClick={() => setIsAddSheetModalOpen(true)}
                 className='rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
                 aria-label='Add new sheet'
+                title='Add new sheet'
               >
                 <PlusIcon className='size-4' />
               </button>

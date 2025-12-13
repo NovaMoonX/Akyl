@@ -6,7 +6,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useShallow } from 'zustand/shallow';
-import { Header } from '../components';
+import { Header, TableView } from '../components';
 import { useInitSpace, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT } from '../lib';
 import { useSpace } from '../store';
@@ -52,6 +52,7 @@ export default function Flow() {
   const backgroundPattern = useSpace(
     useShallow((state) => state?.space?.config?.backgroundPattern),
   );
+  const viewMode = useSpace(useShallow((state) => state.viewMode));
   const { nodes, edges, onNodesChange, onEdgesChange } = useSpaceFlow();
 
   return (
@@ -78,12 +79,15 @@ export default function Flow() {
         {!showLoadScreen && (
           <>
             <Header />
-            <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 sm:p-3 text-xl sm:text-4xl font-black'>
+            <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 text-xl font-black sm:p-3 sm:text-4xl'>
               Akyl
             </h1>
 
             <BottomBar />
-            <Controls position='bottom-right' showInteractive={false} />
+            {viewMode === 'table' && <TableView />}
+            {viewMode === 'flowchart' && (
+              <Controls position='bottom-right' showInteractive={false} />
+            )}
           </>
         )}
         {backgroundPattern !== NO_BACKGROUND_VARIANT && (
