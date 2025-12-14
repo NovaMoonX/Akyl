@@ -271,7 +271,7 @@ export function createDemoSpace(userId?: string): Space {
       id: generateId('budget'),
       label: 'Investment Account',
       description: 'Index funds and ETFs',
-      amount: 1354.83,
+      amount: 1354.16,
       category: 'Savings',
       subCategory: 'Investments',
       cadence: { type: 'month', interval: 1 },
@@ -280,17 +280,35 @@ export function createDemoSpace(userId?: string): Space {
     },
   ];
 
-  // Budget breakdown (monthly):
-  // Income: 7,500 + 2,000 + 500 + (15,000/12) = 11,250
-  // Expenses:
-  // - Housing: 2,500 + 350 + (350/12) = 2,879.17
-  // - Transportation: 450 + 300 + (1,800/12) = 900
-  // - Groceries: 200 * 4.33 (avg weeks/month) = 866
-  // - Entertainment: 45 + 455 = 500
-  // - Healthcare: 200 + 150 = 350
-  // - Personal: 250 + 150 = 400
-  // - Savings: 2,000 + 2,000 + 1,354.83 = 5,354.83
-  // Total: 11,250 (net-zero)
+  // Budget breakdown (monthly basis for net-zero balance):
+  // 
+  // INCOME:
+  // - Salary: $7,500
+  // - Freelance: $2,000
+  // - Dividends: $500
+  // - Bonus (amortized): $15,000 / 12 = $1,250
+  // Total Income: $11,250
+  // 
+  // EXPENSES:
+  // - Rent: $2,500
+  // - Utilities: $350
+  // - Renters Insurance: $350 / 12 = $29.17
+  // - Car Payment: $450
+  // - Gas & Maintenance: $300
+  // - Auto Insurance: $1,800 / 12 = $150
+  // - Weekly Groceries: $200 * 52 / 12 = $866.67
+  // - Streaming: $45
+  // - Dining Out: $455
+  // - Health Insurance: $200
+  // - Medical Expenses: $150
+  // - Clothing: $250
+  // - Gym: $150
+  // - Emergency Fund: $2,000
+  // - Retirement: $2,000
+  // - Investment: $1,354.16 (calculated to balance budget)
+  // Total Expenses: $11,250
+  //
+  // Net: $11,250 - $11,250 = $0 (balanced budget)
 
   const space: Space = {
     id,
