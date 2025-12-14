@@ -14,6 +14,7 @@ export default function isValidSpace(parsed: unknown): parsed is Space {
   return (
     typeof obj.id === 'string' &&
     typeof obj.title === 'string' &&
+    typeof obj.description === 'string' &&
     obj.metadata !== null &&
     typeof obj.metadata === 'object' &&
     obj.config !== null &&
