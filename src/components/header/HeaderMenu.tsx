@@ -2,7 +2,7 @@ import {
   CopyPlusIcon,
   DownloadIcon,
   FileImageIcon,
-  FolderIcon,
+  FolderOpenIcon,
   HomeIcon,
   LogInIcon,
   LogOutIcon,
@@ -11,6 +11,7 @@ import {
   ShieldQuestionIcon,
   SquarePlusIcon,
   TrashIcon,
+  UploadIcon,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
@@ -18,7 +19,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { signOutUser } from '../../firebase';
 import useBrowserSpaces from '../../hooks/useBrowserSpaces';
 import useDownloadPng from '../../hooks/useDownloadPng';
-import { APP_SPACE_LIMIT_REACHED, createNewSpace } from '../../lib';
+import { APP_SPACE_LIMIT_REACHED, createNewSpace, importFile } from '../../lib';
 import { useSpaceStore } from '../../store/config';
 import DreamTrigger from '../DreamTrigger';
 import AuthModal from '../modals/AuthModal';
@@ -48,8 +49,12 @@ const DEFAULT_ITEMS: MenuItem[] = [
     label: 'New Space',
   },
   {
-    icon: <FolderIcon />,
-    label: 'Import',
+    icon: <FolderOpenIcon />,
+    label: 'Open',
+  },
+  {
+    icon: <UploadIcon />,
+    label: 'Import CSV',
   },
   {
     icon: <DownloadIcon />,
@@ -137,7 +142,10 @@ export default function HeaderMenu() {
           onConfirm: () => createNewSpace(currentUser?.uid),
         });
         break;
-      case 'Import':
+      case 'Open':
+        importFile();
+        break;
+      case 'Import CSV':
         setIsImportModalOpen(true);
         break;
       case 'Export':

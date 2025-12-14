@@ -27,7 +27,13 @@ export type {
 export { decryptData, encryptData, getUserCryptoKey } from './crypt.actions';
 
 // File
-export { exportFile, importFile, exportCSV, importCSV } from './file.actions';
+export {
+  exportFile,
+  importFile,
+  exportCSV,
+  exportCSVTemplate,
+  importCSV,
+} from './file.actions';
 
 export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 

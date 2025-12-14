@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 import { exportCSV, exportFile, FILE_EXTENSION } from '../../lib';
 import { useSpace } from '../../store';
 import { toKebabCase } from '../../utils';
@@ -13,8 +14,10 @@ export type ExportFormat = 'akyl' | 'csv';
 
 export default function ExportModal({ isOpen, onClose }: ExportModalProps) {
   const { space } = useSpace();
+  const sheets = useSpace(useShallow((state) => state?.space?.sheets));
   const [fileName, setFileName] = useState('');
   const [format, setFormat] = useState<ExportFormat>('akyl');
+  const [selectedSheets, setSelectedSheets] = useState<string[]>(['all']);
 
   useEffect(() => {
     const kebabCaseTitle = toKebabCase(space.title || '');
@@ -23,11 +26,32 @@ export default function ExportModal({ isOpen, onClose }: ExportModalProps) {
 
   const handleExport = () => {
     if (format === 'csv') {
-      exportCSV(fileName, space);
+      // Export each selected sheet as a separate file
+      selectedSheets.forEach((sheetId) => {
+        let sheetFileName = fileName;
+        if (sheetId === 'all') {
+          sheetFileName = `${fileName} - All`;
+        } else {
+          const sheet = sheets?.find((s) => s.id === sheetId);
+          if (sheet) {
+            sheetFileName = `${fileName} - ${sheet.name}`;
+          }
+        }
+        exportCSV(sheetFileName, space, sheetId);
+      });
     } else {
       exportFile(fileName, space);
     }
     onClose();
+  };
+
+  const toggleSheet = (sheetId: string) => {
+    setSelectedSheets((prev) => {
+      if (prev.includes(sheetId)) {
+        return prev.filter((id) => id !== sheetId);
+      }
+      return [...prev, sheetId];
+    });
   };
 
   return (
@@ -80,6 +104,41 @@ export default function ExportModal({ isOpen, onClose }: ExportModalProps) {
           </p>
         </div>
 
+        {format === 'csv' && (
+          <div className='flex grow flex-col gap-1'>
+            <label className='font-medium'>Sheets to Export</label>
+            <p className='text-sm text-gray-500 dark:text-gray-400 mb-2'>
+              Each sheet will be exported as a separate CSV file.
+            </p>
+            <div className='flex flex-col gap-2'>
+              <label className='flex items-center gap-2 cursor-pointer'>
+                <input
+                  type='checkbox'
+                  checked={selectedSheets.includes('all')}
+                  onChange={() => toggleSheet('all')}
+                  className='size-4 cursor-pointer accent-emerald-500 rounded'
+                />
+                <span>All Items</span>
+              </label>
+              {sheets &&
+                sheets.map((sheet) => (
+                  <label
+                    key={sheet.id}
+                    className='flex items-center gap-2 cursor-pointer'
+                  >
+                    <input
+                      type='checkbox'
+                      checked={selectedSheets.includes(sheet.id)}
+                      onChange={() => toggleSheet(sheet.id)}
+                      className='size-4 cursor-pointer accent-emerald-500 rounded'
+                    />
+                    <span>{sheet.name}</span>
+                  </label>
+                ))}
+            </div>
+          </div>
+        )}
+
         <div className='flex justify-end gap-2'>
           <button onClick={onClose} className='btn btn-secondary'>
             Cancel
@@ -87,7 +146,10 @@ export default function ExportModal({ isOpen, onClose }: ExportModalProps) {
           <button
             onClick={handleExport}
             className='btn btn-primary'
-            disabled={!fileName.trim()}
+            disabled={
+              !fileName.trim() ||
+              (format === 'csv' && selectedSheets.length === 0)
+            }
           >
             Export
           </button>

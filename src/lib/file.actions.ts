@@ -100,11 +100,26 @@ export function pickFile(acceptedFileTypes?: string): Promise<File> {
   });
 }
 
-export function exportCSV(fileName: string, space: Space) {
+export function exportCSV(fileName: string, space: Space, sheetId?: string) {
+  // Filter items by sheet if specified
+  let incomes = space.incomes;
+  let expenses = space.expenses;
+
+  if (sheetId && sheetId !== 'all') {
+    incomes = space.incomes.filter(
+      (income: Income) =>
+        !income.sheets || income.sheets.length === 0 || income.sheets.includes(sheetId)
+    );
+    expenses = space.expenses.filter(
+      (expense: Expense) =>
+        !expense.sheets || expense.sheets.length === 0 || expense.sheets.includes(sheetId)
+    );
+  }
+
   // Create CSV content for incomes
   const incomesCSV = [
     'Type,Label,Description,Amount,Source,Notes',
-    ...space.incomes.map((income: Income) =>
+    ...incomes.map((income: Income) =>
       [
         'Income',
         escapeCSV(income.label),
@@ -119,7 +134,7 @@ export function exportCSV(fileName: string, space: Space) {
   // Create CSV content for expenses
   const expensesCSV = [
     'Type,Label,Description,Amount,Category,Notes',
-    ...space.expenses.map((expense: Expense) =>
+    ...expenses.map((expense: Expense) =>
       [
         'Expense',
         escapeCSV(expense.label),
@@ -143,6 +158,30 @@ export function exportCSV(fileName: string, space: Space) {
   URL.revokeObjectURL(url);
 }
 
+export function exportCSVTemplate() {
+  const incomesCSV = [
+    'Type,Label,Description,Amount,Source,Notes',
+    'Income,Salary,Monthly salary,5000,Tech Company,Regular income',
+    'Income,Freelance,Side projects,1000,Freelance Work,Variable income',
+  ];
+
+  const expensesCSV = [
+    'Type,Label,Description,Amount,Category,Notes',
+    'Expense,Rent,Monthly rent payment,1500,Housing,Fixed cost',
+    'Expense,Groceries,Food and supplies,500,Food,Weekly shopping',
+  ];
+
+  const csvContent = [...incomesCSV, '', ...expensesCSV].join('\n');
+
+  const file = new Blob([csvContent], { type: 'text/csv' });
+  const url = URL.createObjectURL(file);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'budget-template.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function escapeCSV(value: string): string {
   if (!value) return '';
   const stringValue = String(value);
@@ -152,7 +191,10 @@ function escapeCSV(value: string): string {
   return stringValue;
 }
 
-export async function importCSV(space: Space): Promise<Space> {
+export async function importCSV(
+  space: Space,
+  sheetId?: string
+): Promise<{ incomes: Income[]; expenses: Expense[] }> {
   const file = await pickFile('.csv');
   if (!file) {
     throw new Error('No file selected');
@@ -191,7 +233,7 @@ export async function importCSV(space: Space): Promise<Space> {
 
           // Parse data rows
           if (currentSection === 'income' && cells.length >= 6) {
-            newIncomes.push({
+            const income: Income = {
               id: crypto.randomUUID(),
               label: cells[1],
               description: cells[2],
@@ -203,9 +245,14 @@ export async function importCSV(space: Space): Promise<Space> {
                 interval: 1,
               },
               notes: cells[5] || '',
-            });
+            };
+            // Assign to sheet if specified
+            if (sheetId && sheetId !== 'all') {
+              income.sheets = [sheetId];
+            }
+            newIncomes.push(income);
           } else if (currentSection === 'expense' && cells.length >= 6) {
-            newExpenses.push({
+            const expense: Expense = {
               id: crypto.randomUUID(),
               label: cells[1],
               description: cells[2],
@@ -217,17 +264,16 @@ export async function importCSV(space: Space): Promise<Space> {
                 interval: 1,
               },
               notes: cells[5] || '',
-            });
+            };
+            // Assign to sheet if specified
+            if (sheetId && sheetId !== 'all') {
+              expense.sheets = [sheetId];
+            }
+            newExpenses.push(expense);
           }
         }
 
-        const updatedSpace: Space = {
-          ...space,
-          incomes: newIncomes,
-          expenses: newExpenses,
-        };
-
-        resolve(updatedSpace);
+        resolve({ incomes: newIncomes, expenses: newExpenses });
       } catch (error) {
         reject(error);
       }

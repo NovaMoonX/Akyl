@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { importCSV, importFile } from '../../lib';
+import { useShallow } from 'zustand/shallow';
+import { exportCSVTemplate, importCSV } from '../../lib';
 import { useSpace } from '../../store';
 import Modal from '../ui/Modal';
 
@@ -8,26 +9,94 @@ interface ImportModalProps {
   onClose: () => void;
 }
 
-export type ImportFormat = 'akyl' | 'csv';
+export type ImportMode = 'overwrite' | 'new-sheet' | 'new-space';
 
 export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
-  const { space, setSpace } = useSpace();
-  const [format, setFormat] = useState<ImportFormat>('akyl');
+  const { space, setSpace, addSheet } = useSpace();
+  const sheets = useSpace(useShallow((state) => state?.space?.sheets));
+  const [importMode, setImportMode] = useState<ImportMode>('new-sheet');
+  const [selectedSheet, setSelectedSheet] = useState<string>('');
+  const [newSheetName, setNewSheetName] = useState('');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleDownloadTemplate = () => {
+    exportCSVTemplate();
+  };
 
   const handleImport = async () => {
     setError('');
     setIsLoading(true);
 
     try {
-      if (format === 'csv') {
-        const updatedSpace = await importCSV(space);
-        setSpace(updatedSpace);
+      if (importMode === 'new-space') {
+        // For new space, import CSV and create a new space
+        const { incomes, expenses } = await importCSV(space);
+        
+        // Create a new space with imported data
+        const newSpaceId = crypto.randomUUID();
+        const newSpace = {
+          ...space,
+          id: newSpaceId,
+          title: 'Imported Budget',
+          incomes,
+          expenses,
+        };
+        
+        localStorage.setItem(newSpaceId, JSON.stringify(newSpace));
+        window.open(`/${newSpaceId}`, '_blank');
+        onClose();
+      } else if (importMode === 'overwrite') {
+        if (!selectedSheet) {
+          setError('Please select a sheet to overwrite');
+          return;
+        }
+        
+        // Import and assign to selected sheet
+        const { incomes, expenses } = await importCSV(space, selectedSheet);
+        
+        // Remove existing items from the selected sheet
+        const filteredIncomes = space.incomes.filter(
+          (income) =>
+            !income.sheets ||
+            income.sheets.length === 0 ||
+            !income.sheets.includes(selectedSheet)
+        );
+        const filteredExpenses = space.expenses.filter(
+          (expense) =>
+            !expense.sheets ||
+            expense.sheets.length === 0 ||
+            !expense.sheets.includes(selectedSheet)
+        );
+        
+        setSpace({
+          ...space,
+          incomes: [...filteredIncomes, ...incomes],
+          expenses: [...filteredExpenses, ...expenses],
+        });
         onClose();
       } else {
-        await importFile();
-        // importFile handles the redirect internally
+        // Create new sheet
+        if (!newSheetName.trim()) {
+          setError('Please enter a sheet name');
+          return;
+        }
+        
+        const newSheetId = crypto.randomUUID();
+        addSheet({
+          id: newSheetId,
+          name: newSheetName,
+        });
+        
+        // Import and assign to new sheet
+        const { incomes, expenses } = await importCSV(space, newSheetId);
+        
+        setSpace({
+          ...space,
+          incomes: [...space.incomes, ...incomes],
+          expenses: [...space.expenses, ...expenses],
+        });
+        onClose();
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -47,44 +116,103 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
 
   const handleClose = () => {
     setError('');
+    setNewSheetName('');
+    setSelectedSheet('');
     onClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title='Import Data'>
+    <Modal isOpen={isOpen} onClose={handleClose} title='Import CSV'>
       <div className='flex flex-col gap-4'>
+        <div className='rounded-md bg-blue-50 dark:bg-blue-900/20 p-3 text-sm text-blue-800 dark:text-blue-300'>
+          <p className='font-medium mb-1'>CSV Format Required:</p>
+          <p className='mb-2'>
+            Two sections with headers: one for incomes, one for expenses.
+          </p>
+          <button
+            onClick={handleDownloadTemplate}
+            className='text-blue-600 dark:text-blue-400 hover:underline font-medium'
+          >
+            Download Template CSV
+          </button>
+        </div>
+
         <div className='flex grow flex-col gap-1'>
-          <label className='font-medium'>Format</label>
-          <div className='flex gap-4'>
+          <label className='font-medium'>Import Destination</label>
+          <div className='flex flex-col gap-2'>
             <label className='flex items-center gap-2 cursor-pointer'>
               <input
                 type='radio'
-                name='format'
-                value='akyl'
-                checked={format === 'akyl'}
-                onChange={(e) => setFormat(e.target.value as ImportFormat)}
+                name='importMode'
+                value='new-space'
+                checked={importMode === 'new-space'}
+                onChange={(e) =>
+                  setImportMode(e.target.value as ImportMode)
+                }
                 className='size-4 cursor-pointer accent-emerald-500'
               />
-              <span>Akyl (Complete Data)</span>
+              <span>Create New Space</span>
             </label>
             <label className='flex items-center gap-2 cursor-pointer'>
               <input
                 type='radio'
-                name='format'
-                value='csv'
-                checked={format === 'csv'}
-                onChange={(e) => setFormat(e.target.value as ImportFormat)}
+                name='importMode'
+                value='new-sheet'
+                checked={importMode === 'new-sheet'}
+                onChange={(e) =>
+                  setImportMode(e.target.value as ImportMode)
+                }
                 className='size-4 cursor-pointer accent-emerald-500'
               />
-              <span>CSV (Income & Expenses)</span>
+              <span>Create New Sheet</span>
+            </label>
+            <label className='flex items-center gap-2 cursor-pointer'>
+              <input
+                type='radio'
+                name='importMode'
+                value='overwrite'
+                checked={importMode === 'overwrite'}
+                onChange={(e) =>
+                  setImportMode(e.target.value as ImportMode)
+                }
+                className='size-4 cursor-pointer accent-emerald-500'
+              />
+              <span>Overwrite Existing Sheet</span>
             </label>
           </div>
-          <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
-            {format === 'akyl'
-              ? 'Imports a complete Akyl space file including all configurations.'
-              : 'Imports income and expense data from a CSV file, replacing current data.'}
-          </p>
         </div>
+
+        {importMode === 'new-sheet' && (
+          <div className='flex grow flex-col gap-1'>
+            <label className='font-medium'>New Sheet Name</label>
+            <input
+              type='text'
+              value={newSheetName}
+              onChange={(e) => setNewSheetName(e.target.value)}
+              placeholder='Enter sheet name'
+              className='dark:bg-surface-dark dark:text-surface-light grow rounded border border-gray-300 px-3 py-2 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+            />
+          </div>
+        )}
+
+        {importMode === 'overwrite' && (
+          <div className='flex grow flex-col gap-1'>
+            <label className='font-medium'>Select Sheet to Overwrite</label>
+            <select
+              value={selectedSheet}
+              onChange={(e) => setSelectedSheet(e.target.value)}
+              className='dark:bg-surface-dark dark:text-surface-light grow rounded border border-gray-300 px-3 py-2 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+            >
+              <option value=''>Select a sheet...</option>
+              {sheets &&
+                sheets.map((sheet) => (
+                  <option key={sheet.id} value={sheet.id}>
+                    {sheet.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+        )}
 
         {error && (
           <div className='rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-800 dark:text-red-300'>
@@ -101,7 +229,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
             className='btn btn-primary'
             disabled={isLoading}
           >
-            {isLoading ? 'Importing...' : 'Import'}
+            {isLoading ? 'Importing...' : 'Import CSV'}
           </button>
         </div>
       </div>
