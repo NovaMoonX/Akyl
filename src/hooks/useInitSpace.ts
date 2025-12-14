@@ -13,10 +13,33 @@ export default function useInitSpace() {
     if (!urlSpaceId) {
       // Check if we're on a Firebase channel and should create a demo space
       if (isFirebaseChannel()) {
-        // Check if any spaces exist in localStorage
-        const hasExistingSpaces = Object.keys(localStorage).some(key => 
-          key.startsWith('space_')
-        );
+        // Check if any spaces exist in localStorage by trying to parse each item
+        let hasExistingSpaces = false;
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (!key) continue;
+          try {
+            const value = localStorage.getItem(key);
+            if (!value) continue;
+            const parsed = JSON.parse(value);
+            // Check if it's a valid Space object
+            if (
+              typeof parsed === 'object' &&
+              parsed !== null &&
+              typeof parsed.id === 'string' &&
+              typeof parsed.title === 'string' &&
+              parsed.metadata &&
+              parsed.config &&
+              Array.isArray(parsed.incomes) &&
+              Array.isArray(parsed.expenses)
+            ) {
+              hasExistingSpaces = true;
+              break;
+            }
+          } catch {
+            // Ignore non-JSON or non-Space entries
+          }
+        }
         
         if (!hasExistingSpaces) {
           // Create demo space and redirect to it
