@@ -6,6 +6,7 @@ import {
   ShieldQuestionIcon,
   SquarePlusIcon,
   TrashIcon,
+  UploadIcon,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,6 +25,7 @@ import DreamTrigger from './DreamTrigger';
 import AuthModal from './modals/AuthModal';
 import DeleteSpaceModal from './modals/DeleteSpaceModal';
 import HelpModal from './modals/HelpModal';
+import ImportModal from './modals/ImportModal';
 import ThemeToggle2 from './ui/ThemeToggle2';
 import Tooltip from './ui/Tooltip';
 
@@ -42,6 +44,10 @@ const DEFAULT_ITEMS: MenuItem[] = [
     label: 'Open',
   },
   {
+    icon: <UploadIcon />,
+    label: 'Import CSV',
+  },
+  {
     icon: <ShieldQuestionIcon />,
     label: 'Help',
   },
@@ -49,6 +55,7 @@ const DEFAULT_ITEMS: MenuItem[] = [
 export default function LoadScreen() {
   const { currentUser } = useAuth();
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
   const [deletedSpaceIds, setDeletedSpaceIds] = useState<Set<string>>(
@@ -127,6 +134,9 @@ export default function LoadScreen() {
         break;
       case 'Open':
         importFile();
+        break;
+      case 'Import CSV':
+        setIsImportModalOpen(true);
         break;
       case 'Help':
         setIsHelpModalOpen(true);
@@ -247,6 +257,11 @@ export default function LoadScreen() {
       <HelpModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
+      />
+
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
 
       <DeleteSpaceModal

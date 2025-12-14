@@ -14,33 +14,95 @@ export type ImportMode = 'overwrite' | 'new-sheet' | 'new-space';
 export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
   const { space, setSpace, addSheet } = useSpace();
   const sheets = useSpace(useShallow((state) => state?.space?.sheets));
-  const [importMode, setImportMode] = useState<ImportMode>('new-sheet');
+  const [importMode, setImportMode] = useState<ImportMode>('new-space');
   const [selectedSheet, setSelectedSheet] = useState<string>('');
   const [newSheetName, setNewSheetName] = useState('');
+  const [newSpaceName, setNewSpaceName] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const hasSheets = sheets && sheets.length > 0;
+  const hasSpace = space && space.id;
 
   const handleDownloadTemplate = () => {
     exportCSVTemplate();
   };
 
+  const handleFileSelect = () => {
+    try {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.csv';
+      input.onchange = (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+          setSelectedFile(file);
+          setError('');
+        }
+      };
+      input.click();
+    } catch {
+      setError('Failed to select file');
+    }
+  };
+
   const handleImport = async () => {
+    if (!selectedFile) {
+      setError('Please select a CSV file first');
+      return;
+    }
+
     setError('');
     setIsLoading(true);
 
     try {
       if (importMode === 'new-space') {
-        // For new space, import CSV and create a new space
-        const { incomes, expenses } = await importCSV(space);
+        if (!newSpaceName.trim()) {
+          setError('Please enter a space name');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Import CSV from selected file
+        const { incomes, expenses } = await importCSV(selectedFile);
         
         // Create a new space with imported data
         const newSpaceId = crypto.randomUUID();
+        
+        // Use existing space as template or create minimal space structure
+        const baseSpace = space && space.id ? space : {
+          config: {
+            theme: 'light' as const,
+            backgroundPattern: 'dots' as const,
+            accentColor: '#10b981',
+            currency: 'USD' as const,
+            cashFlowVerbiage: 'Income/Expense' as const,
+            timeWindow: { type: 'month' as const, interval: 1 },
+          },
+          metadata: {
+            createdBy: '',
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            fileName: '',
+            fileVersion: '1.0',
+            appVersion: '1.0',
+            language: 'en-US',
+          },
+        };
+        
         const newSpace = {
-          ...space,
+          ...baseSpace,
           id: newSpaceId,
-          title: 'Imported Budget',
+          title: newSpaceName,
+          description: '',
           incomes,
           expenses,
+          metadata: {
+            ...baseSpace.metadata,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          },
         };
         
         localStorage.setItem(newSpaceId, JSON.stringify(newSpace));
@@ -49,11 +111,12 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
       } else if (importMode === 'overwrite') {
         if (!selectedSheet) {
           setError('Please select a sheet to overwrite');
+          setIsLoading(false);
           return;
         }
         
         // Import and assign to selected sheet
-        const { incomes, expenses } = await importCSV(space, selectedSheet);
+        const { incomes, expenses } = await importCSV(selectedFile, selectedSheet);
         
         // Remove existing items from the selected sheet
         const filteredIncomes = space.incomes.filter(
@@ -79,6 +142,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
         // Create new sheet
         if (!newSheetName.trim()) {
           setError('Please enter a sheet name');
+          setIsLoading(false);
           return;
         }
         
@@ -89,7 +153,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
         });
         
         // Import and assign to new sheet
-        const { incomes, expenses } = await importCSV(space, newSheetId);
+        const { incomes, expenses } = await importCSV(selectedFile, newSheetId);
         
         setSpace({
           ...space,
@@ -100,12 +164,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
       }
     } catch (err) {
       if (err instanceof Error) {
-        if (err.message === 'No file selected') {
-          // User cancelled, just close
-          onClose();
-        } else {
-          setError(err.message);
-        }
+        setError(err.message);
       } else {
         setError('An error occurred while importing the file.');
       }
@@ -117,7 +176,9 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
   const handleClose = () => {
     setError('');
     setNewSheetName('');
+    setNewSpaceName('');
     setSelectedSheet('');
+    setSelectedFile(null);
     onClose();
   };
 
@@ -138,6 +199,23 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
         </div>
 
         <div className='flex grow flex-col gap-1'>
+          <label className='font-medium'>Select CSV File</label>
+          <div className='flex items-center gap-2'>
+            <button
+              onClick={handleFileSelect}
+              className='btn btn-secondary flex-1'
+            >
+              {selectedFile ? selectedFile.name : 'Choose File'}
+            </button>
+            {selectedFile && (
+              <span className='text-sm text-green-600 dark:text-green-400'>
+                ✓
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className='flex grow flex-col gap-1'>
           <label className='font-medium'>Import Destination</label>
           <div className='flex flex-col gap-2'>
             <label className='flex items-center gap-2 cursor-pointer'>
@@ -153,34 +231,63 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
               />
               <span>Create New Space</span>
             </label>
-            <label className='flex items-center gap-2 cursor-pointer'>
-              <input
-                type='radio'
-                name='importMode'
-                value='new-sheet'
-                checked={importMode === 'new-sheet'}
-                onChange={(e) =>
-                  setImportMode(e.target.value as ImportMode)
-                }
-                className='size-4 cursor-pointer accent-emerald-500'
-              />
-              <span>Create New Sheet</span>
-            </label>
-            <label className='flex items-center gap-2 cursor-pointer'>
-              <input
-                type='radio'
-                name='importMode'
-                value='overwrite'
-                checked={importMode === 'overwrite'}
-                onChange={(e) =>
-                  setImportMode(e.target.value as ImportMode)
-                }
-                className='size-4 cursor-pointer accent-emerald-500'
-              />
-              <span>Overwrite Existing Sheet</span>
-            </label>
+            {hasSpace && (
+              <>
+                <label className='flex items-center gap-2 cursor-pointer'>
+                  <input
+                    type='radio'
+                    name='importMode'
+                    value='new-sheet'
+                    checked={importMode === 'new-sheet'}
+                    onChange={(e) =>
+                      setImportMode(e.target.value as ImportMode)
+                    }
+                    className='size-4 cursor-pointer accent-emerald-500'
+                  />
+                  <span>Create New Sheet</span>
+                </label>
+                <label
+                  className={`flex items-center gap-2 ${
+                    !hasSheets
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'cursor-pointer'
+                  }`}
+                >
+                  <input
+                    type='radio'
+                    name='importMode'
+                    value='overwrite'
+                    checked={importMode === 'overwrite'}
+                    onChange={(e) =>
+                      setImportMode(e.target.value as ImportMode)
+                    }
+                    disabled={!hasSheets}
+                    className='size-4 cursor-pointer accent-emerald-500 disabled:cursor-not-allowed'
+                  />
+                  <span>Overwrite Existing Sheet</span>
+                  {!hasSheets && (
+                    <span className='text-xs text-gray-500'>
+                      (No sheets available)
+                    </span>
+                  )}
+                </label>
+              </>
+            )}
           </div>
         </div>
+
+        {importMode === 'new-space' && (
+          <div className='flex grow flex-col gap-1'>
+            <label className='font-medium'>Space Name</label>
+            <input
+              type='text'
+              value={newSpaceName}
+              onChange={(e) => setNewSpaceName(e.target.value)}
+              placeholder='Enter space name'
+              className='dark:bg-surface-dark dark:text-surface-light grow rounded border border-gray-300 px-3 py-2 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+            />
+          </div>
+        )}
 
         {importMode === 'new-sheet' && (
           <div className='flex grow flex-col gap-1'>
@@ -227,7 +334,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           <button
             onClick={handleImport}
             className='btn btn-primary'
-            disabled={isLoading}
+            disabled={isLoading || !selectedFile}
           >
             {isLoading ? 'Importing...' : 'Import CSV'}
           </button>

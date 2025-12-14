@@ -192,10 +192,9 @@ function escapeCSV(value: string): string {
 }
 
 export async function importCSV(
-  space: Space,
+  file: File,
   sheetId?: string
 ): Promise<{ incomes: Income[]; expenses: Expense[] }> {
-  const file = await pickFile('.csv');
   if (!file) {
     throw new Error('No file selected');
   }
