@@ -87,16 +87,15 @@ export function createDemoSpace(userId?: string): Space {
   // Annual bonus amortized: 15000 / 12 = 1,250
   // Total monthly: 11,250
 
-  // Create expenses with 3+ categories (10+ total expenses) that sum to 11,250
+  // Create expenses with 3+ categories (10+ total expenses)
   const expenses: Expense[] = [
-    // Housing: 3,200
     {
       id: generateId('budget'),
       label: 'Rent',
       description: '2BR apartment downtown',
       amount: 2500,
       category: 'Housing',
-      subCategory: 'Rent',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Includes parking spot',
       sheets: [sheets[0].id],
@@ -107,7 +106,7 @@ export function createDemoSpace(userId?: string): Space {
       description: 'Electric, water, gas, internet',
       amount: 350,
       category: 'Housing',
-      subCategory: 'Utilities',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Internet is $80/month',
       sheets: [sheets[0].id],
@@ -118,20 +117,19 @@ export function createDemoSpace(userId?: string): Space {
       description: 'Annual policy',
       amount: 350,
       category: 'Housing',
-      subCategory: 'Insurance',
+      subCategory: '',
       cadence: { type: 'year', interval: 1 },
       notes: 'Covers $50k personal property',
       sheets: [sheets[1].id],
     },
 
-    // Transportation: 900
     {
       id: generateId('budget'),
       label: 'Car Payment',
       description: '2022 sedan',
       amount: 450,
       category: 'Transportation',
-      subCategory: 'Auto Loan',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: '24 months remaining',
       sheets: [sheets[0].id],
@@ -142,7 +140,7 @@ export function createDemoSpace(userId?: string): Space {
       description: 'Fuel and regular maintenance',
       amount: 300,
       category: 'Transportation',
-      subCategory: 'Auto Expenses',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: '',
       sheets: [sheets[0].id],
@@ -153,33 +151,31 @@ export function createDemoSpace(userId?: string): Space {
       description: 'Full coverage',
       amount: 1800,
       category: 'Transportation',
-      subCategory: 'Insurance',
+      subCategory: '',
       cadence: { type: 'year', interval: 1 },
       notes: 'Paid semi-annually',
       sheets: [sheets[1].id],
     },
 
-    // Groceries: 800
     {
       id: generateId('budget'),
       label: 'Weekly Groceries',
       description: 'Food shopping',
       amount: 200,
       category: 'Groceries',
-      subCategory: 'Food',
+      subCategory: '',
       cadence: { type: 'week', interval: 1 },
       notes: 'Trader Joes and farmers market',
       sheets: [sheets[0].id],
     },
 
-    // Entertainment: 500
     {
       id: generateId('budget'),
       label: 'Streaming Services',
       description: 'Netflix, Spotify, etc',
       amount: 45,
       category: 'Entertainment',
-      subCategory: 'Subscriptions',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Family plan shared with roommate',
       sheets: [sheets[0].id],
@@ -190,20 +186,19 @@ export function createDemoSpace(userId?: string): Space {
       description: 'Restaurants, movies, events',
       amount: 455,
       category: 'Entertainment',
-      subCategory: 'Recreation',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Budget for social activities',
       sheets: [sheets[0].id],
     },
 
-    // Healthcare: 350
     {
       id: generateId('budget'),
       label: 'Health Insurance Premium',
       description: 'Employer-sponsored plan',
       amount: 200,
       category: 'Healthcare',
-      subCategory: 'Insurance',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Deducted from paycheck',
       sheets: [sheets[0].id],
@@ -214,20 +209,19 @@ export function createDemoSpace(userId?: string): Space {
       description: 'Co-pays, prescriptions, etc',
       amount: 150,
       category: 'Healthcare',
-      subCategory: 'Medical',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Average monthly healthcare costs',
       sheets: [sheets[0].id],
     },
 
-    // Personal Spending: 400
     {
       id: generateId('budget'),
       label: 'Clothing & Personal Care',
       description: 'Clothes, haircuts, toiletries',
       amount: 250,
       category: 'Personal Spending',
-      subCategory: 'Personal',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: '',
       sheets: [sheets[0].id],
@@ -238,20 +232,19 @@ export function createDemoSpace(userId?: string): Space {
       description: 'Local fitness center',
       amount: 150,
       category: 'Personal Spending',
-      subCategory: 'Fitness',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: '24/7 access',
       sheets: [sheets[0].id],
     },
 
-    // Savings: 5,100
     {
       id: generateId('budget'),
       label: 'Emergency Fund',
       description: 'Building 6-month cushion',
       amount: 2000,
       category: 'Savings',
-      subCategory: 'Emergency',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Goal: $30,000',
       sheets: [sheets[0].id],
@@ -262,7 +255,7 @@ export function createDemoSpace(userId?: string): Space {
       description: 'Employer match up to 6%',
       amount: 2000,
       category: 'Savings',
-      subCategory: 'Retirement',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Contributing 10% of salary',
       sheets: [sheets[0].id],
@@ -271,44 +264,46 @@ export function createDemoSpace(userId?: string): Space {
       id: generateId('budget'),
       label: 'Investment Account',
       description: 'Index funds and ETFs',
-      amount: 1354.16,
+      amount: 1349.02,
       category: 'Savings',
-      subCategory: 'Investments',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Long-term growth strategy',
       sheets: [sheets[0].id],
     },
   ];
 
-  // Budget breakdown (monthly basis for net-zero balance):
+  // Budget breakdown using app's calculation method (monthly view):
+  // The app converts all amounts to daily first, then to monthly for display
+  // Daily = amount / cadence_days, Monthly = daily * 30
   // 
-  // INCOME:
-  // - Salary: $7,500
-  // - Freelance: $2,000
-  // - Dividends: $500
-  // - Bonus (amortized): $15,000 / 12 = $1,250
-  // Total Income: $11,250
+  // INCOME (monthly view):
+  // - Salary: $7,500 (month) = 7500
+  // - Bonus: $15,000 (year) = 15000 / 365 * 30 = 1232.88
+  // - Freelance: $2,000 (month) = 2000
+  // - Dividends: $500 (month) = 500
+  // Total Income: $11,232.88
   // 
-  // EXPENSES:
-  // - Rent: $2,500
-  // - Utilities: $350
-  // - Renters Insurance: $350 / 12 = $29.17
-  // - Car Payment: $450
-  // - Gas & Maintenance: $300
-  // - Auto Insurance: $1,800 / 12 = $150
-  // - Weekly Groceries: $200 * 52 / 12 = $866.67
-  // - Streaming: $45
-  // - Dining Out: $455
-  // - Health Insurance: $200
-  // - Medical Expenses: $150
-  // - Clothing: $250
-  // - Gym: $150
-  // - Emergency Fund: $2,000
-  // - Retirement: $2,000
-  // - Investment: $1,354.16 (calculated to balance budget)
-  // Total Expenses: $11,250
+  // EXPENSES (monthly view):
+  // - Rent: $2,500 (month) = 2500
+  // - Utilities: $350 (month) = 350
+  // - Renters Insurance: $350 (year) = 350 / 365 * 30 = 28.77
+  // - Car Payment: $450 (month) = 450
+  // - Gas & Maintenance: $300 (month) = 300
+  // - Auto Insurance: $1,800 (year) = 1800 / 365 * 30 = 147.95
+  // - Weekly Groceries: $200 (week) = 200 / 7 * 30 = 857.14
+  // - Streaming: $45 (month) = 45
+  // - Dining Out: $455 (month) = 455
+  // - Health Insurance: $200 (month) = 200
+  // - Medical Expenses: $150 (month) = 150
+  // - Clothing: $250 (month) = 250
+  // - Gym: $150 (month) = 150
+  // - Emergency Fund: $2,000 (month) = 2000
+  // - Retirement: $2,000 (month) = 2000
+  // - Investment: $1,349.02 (month) = 1349.02 (calculated to balance budget)
+  // Total Expenses: $11,232.88
   //
-  // Net: $11,250 - $11,250 = $0 (balanced budget)
+  // Net: $11,232.88 - $11,232.88 = $0.00 (balanced budget)
 
   const space: Space = {
     id,

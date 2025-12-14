@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createDemoSpace, type Space } from '../lib';
 import { useSpace } from '../store';
 import useURL from './useURL';
-import { isFirebaseChannel, setTabTitle } from '../utils';
+import { isFirebaseChannel, isValidSpace, setTabTitle } from '../utils';
 
 export default function useInitSpace() {
   const { setSpace } = useSpace();
@@ -23,16 +23,7 @@ export default function useInitSpace() {
             if (!value) continue;
             const parsed = JSON.parse(value);
             // Check if it's a valid Space object
-            if (
-              typeof parsed === 'object' &&
-              parsed !== null &&
-              typeof parsed.id === 'string' &&
-              typeof parsed.title === 'string' &&
-              parsed.metadata &&
-              parsed.config &&
-              Array.isArray(parsed.incomes) &&
-              Array.isArray(parsed.expenses)
-            ) {
+            if (isValidSpace(parsed)) {
               hasExistingSpaces = true;
               break;
             }
