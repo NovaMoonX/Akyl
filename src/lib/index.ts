@@ -52,6 +52,9 @@ export type {
   NodeType,
 } from './node.types';
 
+// Demo
+export { createDemoSpace } from './demo.actions';
+
 // Space
 export {
   createNewSpace,

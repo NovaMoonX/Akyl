@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { type Space } from '../lib';
+import { isValidSpace } from '../utils';
 
 /**
  * Custom hook to fetch and manage browser-stored spaces from localStorage.
@@ -21,19 +22,10 @@ export default function useBrowserSpaces() {
         try {
           const value = localStorage.getItem(key);
           if (!value) continue;
-          const parsed = JSON.parse(value) as Space;
+          const parsed = JSON.parse(value);
           // Check for required Space properties
-          if (
-            typeof parsed === 'object' &&
-            parsed !== null &&
-            typeof parsed.id === 'string' &&
-            typeof parsed.title === 'string' &&
-            parsed.metadata &&
-            parsed.config &&
-            Array.isArray(parsed.incomes) &&
-            Array.isArray(parsed.expenses)
-          ) {
-            foundSpaces.push(parsed as Space);
+          if (isValidSpace(parsed)) {
+            foundSpaces.push(parsed);
           }
         } catch {
           // Ignore non-JSON or non-Space entries
