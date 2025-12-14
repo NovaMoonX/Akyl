@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import type { Space } from '../lib';
+import { createDemoSpace, type Space } from '../lib';
 import { useSpace } from '../store';
 import useURL from './useURL';
-import { setTabTitle } from '../utils';
+import { isFirebaseChannel, setTabTitle } from '../utils';
 
 export default function useInitSpace() {
   const { setSpace } = useSpace();
@@ -11,6 +11,22 @@ export default function useInitSpace() {
 
   useEffect(() => {
     if (!urlSpaceId) {
+      // Check if we're on a Firebase channel and should create a demo space
+      if (isFirebaseChannel()) {
+        // Check if any spaces exist in localStorage
+        const hasExistingSpaces = Object.keys(localStorage).some(key => 
+          key.startsWith('space_')
+        );
+        
+        if (!hasExistingSpaces) {
+          // Create demo space and redirect to it
+          const demoSpace = createDemoSpace();
+          localStorage.setItem(demoSpace.id, JSON.stringify(demoSpace));
+          window.location.href = `/${demoSpace.id}`;
+          return;
+        }
+      }
+      
       setSpace({} as Space);
       document.title = 'Akyl';
       return;
