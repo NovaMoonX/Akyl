@@ -18,14 +18,19 @@ import {
 } from './space.constants';
 import type { Space } from './space.types';
 
-export function createNewSpace(userId?: string) {
+export function createNewSpace({
+  userId,
+  title,
+  incomes,
+  expenses,
+}: { userId?: string; title?: string; incomes?: Income[]; expenses?: Expense[] } = {}) {
   const id = generateId('space');
   const timestamp = Date.now();
   const theme = getTheme();
 
   const space: Space = {
     id,
-    title: '',
+    title: title || '',
     description: '',
     metadata: {
       createdBy: userId ?? '',
@@ -36,8 +41,8 @@ export function createNewSpace(userId?: string) {
       appVersion: CURRENT_APP_VERSION,
       language: getUserLocale(),
     },
-    incomes: [],
-    expenses: [],
+    incomes: incomes || [],
+    expenses: expenses || [],
     sheets: [],
     config: {
       theme,

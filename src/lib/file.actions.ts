@@ -7,6 +7,7 @@ import {
 } from './file.constants';
 import type { Expense, Income } from './budget.types';
 import type { Space } from './space.types';
+import { generateId } from '../utils';
 
 export function exportFile(fileName: string, space: Space) {
   const jsonData = JSON.stringify(space, null, 2);
@@ -235,7 +236,7 @@ export async function importCSV(
           // Parse data rows
           if (currentSection === 'income' && cells.length >= 6) {
             const income: Income = {
-              id: crypto.randomUUID(),
+              id: generateId('budget'),
               label: cells[1],
               description: cells[2],
               amount: parseFloat(cells[3]) || 0,
@@ -254,7 +255,7 @@ export async function importCSV(
             newIncomes.push(income);
           } else if (currentSection === 'expense' && cells.length >= 6) {
             const expense: Expense = {
-              id: crypto.randomUUID(),
+              id: generateId('budget'),
               label: cells[1],
               description: cells[2],
               amount: parseFloat(cells[3]) || 0,

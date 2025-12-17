@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { exportCSVTemplate, importCSV } from '../../lib';
+import { useAuth } from '../../contexts/AuthContext';
+import { createNewSpace, exportCSVTemplate, importCSV } from '../../lib';
 import { useSpace } from '../../store';
 import Modal from '../ui/Modal';
+import { generateId } from '../../utils';
 
 interface ImportModalProps {
   isOpen: boolean;
@@ -12,6 +14,7 @@ interface ImportModalProps {
 export type ImportMode = 'overwrite' | 'new-sheet' | 'new-space';
 
 export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
+  const { currentUser } = useAuth();
   const { space, setSpace } = useSpace();
   const sheets = useSpace(useShallow((state) => state?.space?.sheets));
   const [importMode, setImportMode] = useState<ImportMode>('new-space');
@@ -63,52 +66,16 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           setIsLoading(false);
           return;
         }
-        
+
         // Import CSV from selected file
         const { incomes, expenses } = await importCSV(selectedFile);
-        
-        // Create a new space with imported data
-        const newSpaceId = crypto.randomUUID();
-        
-        // Use existing space as template or create minimal space structure
-        const baseSpace = space && space.id ? space : {
-          config: {
-            theme: 'light' as const,
-            backgroundPattern: '' as const, // NO_BACKGROUND_VARIANT
-            accentColor: '#10b981',
-            currency: 'USD' as const,
-            cashFlowVerbiage: 'default' as const,
-            timeWindow: { type: 'month' as const, interval: 1 },
-          },
-          metadata: {
-            createdBy: '',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            fileName: '',
-            fileVersion: '1.0',
-            appVersion: '1.0',
-            language: 'en-US',
-          },
-          sheets: [],
-        };
-        
-        const newSpace = {
-          ...baseSpace,
-          id: newSpaceId,
+
+        createNewSpace({
+          userId: currentUser?.uid,
           title: newSpaceName,
-          description: '',
           incomes,
           expenses,
-          sheets: [],
-          metadata: {
-            ...baseSpace.metadata,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          },
-        };
-        
-        localStorage.setItem(newSpaceId, JSON.stringify(newSpace));
-        window.open(`/${newSpaceId}`, '_blank');
+        });
         handleClose();
       } else if (importMode === 'overwrite') {
         if (!selectedSheet) {
@@ -116,24 +83,27 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           setIsLoading(false);
           return;
         }
-        
+
         // Import and assign to selected sheet
-        const { incomes, expenses } = await importCSV(selectedFile, selectedSheet);
-        
+        const { incomes, expenses } = await importCSV(
+          selectedFile,
+          selectedSheet,
+        );
+
         // Remove existing items from the selected sheet
         const filteredIncomes = space.incomes.filter(
           (income) =>
             !income.sheets ||
             income.sheets.length === 0 ||
-            !income.sheets.includes(selectedSheet)
+            !income.sheets.includes(selectedSheet),
         );
         const filteredExpenses = space.expenses.filter(
           (expense) =>
             !expense.sheets ||
             expense.sheets.length === 0 ||
-            !expense.sheets.includes(selectedSheet)
+            !expense.sheets.includes(selectedSheet),
         );
-        
+
         setSpace({
           ...space,
           incomes: [...filteredIncomes, ...incomes],
@@ -147,18 +117,18 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           setIsLoading(false);
           return;
         }
-        
-        const newSheetId = crypto.randomUUID();
-        
+
+        const newSheetId = generateId('sheet')
+
         // Import and assign to new sheet
         const { incomes, expenses } = await importCSV(selectedFile, newSheetId);
-        
+
         // Create the new sheet and update space with new items
         const newSheet = {
           id: newSheetId,
           name: newSheetName,
         };
-        
+
         setSpace({
           ...space,
           sheets: [...(space.sheets || []), newSheet],
@@ -190,14 +160,14 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title='Import CSV'>
       <div className='flex flex-col gap-4'>
-        <div className='rounded-md bg-blue-50 dark:bg-blue-900/20 p-3 text-sm text-blue-800 dark:text-blue-300'>
-          <p className='font-medium mb-1'>CSV Format Required:</p>
+        <div className='rounded-md bg-blue-50 p-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'>
+          <p className='mb-1 font-medium'>CSV Format Required:</p>
           <p className='mb-2'>
             Two sections with headers: one for incomes, one for expenses.
           </p>
           <button
             onClick={handleDownloadTemplate}
-            className='text-blue-600 dark:text-blue-400 hover:underline font-medium'
+            className='font-medium text-blue-600 hover:underline dark:text-blue-400'
           >
             Download Template CSV
           </button>
@@ -224,28 +194,24 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           <div className='flex grow flex-col gap-1'>
             <label className='font-medium'>Import Destination</label>
             <div className='flex flex-col gap-2'>
-              <label className='flex items-center gap-2 cursor-pointer'>
+              <label className='flex cursor-pointer items-center gap-2'>
                 <input
                   type='radio'
                   name='importMode'
                   value='new-space'
                   checked={importMode === 'new-space'}
-                  onChange={(e) =>
-                    setImportMode(e.target.value as ImportMode)
-                  }
+                  onChange={(e) => setImportMode(e.target.value as ImportMode)}
                   className='size-4 cursor-pointer accent-emerald-500'
                 />
                 <span>Create New Space</span>
               </label>
-              <label className='flex items-center gap-2 cursor-pointer'>
+              <label className='flex cursor-pointer items-center gap-2'>
                 <input
                   type='radio'
                   name='importMode'
                   value='new-sheet'
                   checked={importMode === 'new-sheet'}
-                  onChange={(e) =>
-                    setImportMode(e.target.value as ImportMode)
-                  }
+                  onChange={(e) => setImportMode(e.target.value as ImportMode)}
                   className='size-4 cursor-pointer accent-emerald-500'
                 />
                 <span>Create New Sheet</span>
@@ -253,7 +219,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
               <label
                 className={`flex items-center gap-2 ${
                   !hasSheets
-                    ? 'opacity-50 cursor-not-allowed'
+                    ? 'cursor-not-allowed opacity-50'
                     : 'cursor-pointer'
                 }`}
               >
@@ -262,9 +228,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
                   name='importMode'
                   value='overwrite'
                   checked={importMode === 'overwrite'}
-                  onChange={(e) =>
-                    setImportMode(e.target.value as ImportMode)
-                  }
+                  onChange={(e) => setImportMode(e.target.value as ImportMode)}
                   disabled={!hasSheets}
                   className='size-4 cursor-pointer accent-emerald-500 disabled:cursor-not-allowed'
                 />
@@ -325,7 +289,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
         )}
 
         {error && (
-          <div className='rounded-md bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-800 dark:text-red-300'>
+          <div className='rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-300'>
             {error}
           </div>
         )}
