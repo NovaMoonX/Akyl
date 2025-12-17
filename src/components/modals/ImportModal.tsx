@@ -12,7 +12,7 @@ interface ImportModalProps {
 export type ImportMode = 'overwrite' | 'new-sheet' | 'new-space';
 
 export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
-  const { space, setSpace, addSheet } = useSpace();
+  const { space, setSpace } = useSpace();
   const sheets = useSpace(useShallow((state) => state?.space?.sheets));
   const [importMode, setImportMode] = useState<ImportMode>('new-space');
   const [selectedSheet, setSelectedSheet] = useState<string>('');
@@ -89,6 +89,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
             appVersion: '1.0',
             language: 'en-US',
           },
+          sheets: [],
         };
         
         const newSpace = {
@@ -98,6 +99,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           description: '',
           incomes,
           expenses,
+          sheets: [],
           metadata: {
             ...baseSpace.metadata,
             createdAt: Date.now(),
@@ -107,7 +109,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
         
         localStorage.setItem(newSpaceId, JSON.stringify(newSpace));
         window.open(`/${newSpaceId}`, '_blank');
-        onClose();
+        handleClose();
       } else if (importMode === 'overwrite') {
         if (!selectedSheet) {
           setError('Please select a sheet to overwrite');
@@ -137,7 +139,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           incomes: [...filteredIncomes, ...incomes],
           expenses: [...filteredExpenses, ...expenses],
         });
-        onClose();
+        handleClose();
       } else {
         // Create new sheet
         if (!newSheetName.trim()) {
@@ -147,20 +149,23 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
         }
         
         const newSheetId = crypto.randomUUID();
-        addSheet({
-          id: newSheetId,
-          name: newSheetName,
-        });
         
         // Import and assign to new sheet
         const { incomes, expenses } = await importCSV(selectedFile, newSheetId);
         
+        // Create the new sheet and update space with new items
+        const newSheet = {
+          id: newSheetId,
+          name: newSheetName,
+        };
+        
         setSpace({
           ...space,
+          sheets: [...(space.sheets || []), newSheet],
           incomes: [...space.incomes, ...incomes],
           expenses: [...space.expenses, ...expenses],
         });
-        onClose();
+        handleClose();
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -215,68 +220,66 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           </div>
         </div>
 
-        <div className='flex grow flex-col gap-1'>
-          <label className='font-medium'>Import Destination</label>
-          <div className='flex flex-col gap-2'>
-            <label className='flex items-center gap-2 cursor-pointer'>
-              <input
-                type='radio'
-                name='importMode'
-                value='new-space'
-                checked={importMode === 'new-space'}
-                onChange={(e) =>
-                  setImportMode(e.target.value as ImportMode)
-                }
-                className='size-4 cursor-pointer accent-emerald-500'
-              />
-              <span>Create New Space</span>
-            </label>
-            {hasSpace && (
-              <>
-                <label className='flex items-center gap-2 cursor-pointer'>
-                  <input
-                    type='radio'
-                    name='importMode'
-                    value='new-sheet'
-                    checked={importMode === 'new-sheet'}
-                    onChange={(e) =>
-                      setImportMode(e.target.value as ImportMode)
-                    }
-                    className='size-4 cursor-pointer accent-emerald-500'
-                  />
-                  <span>Create New Sheet</span>
-                </label>
-                <label
-                  className={`flex items-center gap-2 ${
-                    !hasSheets
-                      ? 'opacity-50 cursor-not-allowed'
-                      : 'cursor-pointer'
-                  }`}
-                >
-                  <input
-                    type='radio'
-                    name='importMode'
-                    value='overwrite'
-                    checked={importMode === 'overwrite'}
-                    onChange={(e) =>
-                      setImportMode(e.target.value as ImportMode)
-                    }
-                    disabled={!hasSheets}
-                    className='size-4 cursor-pointer accent-emerald-500 disabled:cursor-not-allowed'
-                  />
-                  <span>Overwrite Existing Sheet</span>
-                  {!hasSheets && (
-                    <span className='text-xs text-gray-500'>
-                      (No sheets available)
-                    </span>
-                  )}
-                </label>
-              </>
-            )}
+        {hasSpace && (
+          <div className='flex grow flex-col gap-1'>
+            <label className='font-medium'>Import Destination</label>
+            <div className='flex flex-col gap-2'>
+              <label className='flex items-center gap-2 cursor-pointer'>
+                <input
+                  type='radio'
+                  name='importMode'
+                  value='new-space'
+                  checked={importMode === 'new-space'}
+                  onChange={(e) =>
+                    setImportMode(e.target.value as ImportMode)
+                  }
+                  className='size-4 cursor-pointer accent-emerald-500'
+                />
+                <span>Create New Space</span>
+              </label>
+              <label className='flex items-center gap-2 cursor-pointer'>
+                <input
+                  type='radio'
+                  name='importMode'
+                  value='new-sheet'
+                  checked={importMode === 'new-sheet'}
+                  onChange={(e) =>
+                    setImportMode(e.target.value as ImportMode)
+                  }
+                  className='size-4 cursor-pointer accent-emerald-500'
+                />
+                <span>Create New Sheet</span>
+              </label>
+              <label
+                className={`flex items-center gap-2 ${
+                  !hasSheets
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'cursor-pointer'
+                }`}
+              >
+                <input
+                  type='radio'
+                  name='importMode'
+                  value='overwrite'
+                  checked={importMode === 'overwrite'}
+                  onChange={(e) =>
+                    setImportMode(e.target.value as ImportMode)
+                  }
+                  disabled={!hasSheets}
+                  className='size-4 cursor-pointer accent-emerald-500 disabled:cursor-not-allowed'
+                />
+                <span>Overwrite Existing Sheet</span>
+                {!hasSheets && (
+                  <span className='text-xs text-gray-500'>
+                    (No sheets available)
+                  </span>
+                )}
+              </label>
+            </div>
           </div>
-        </div>
+        )}
 
-        {importMode === 'new-space' && (
+        {(importMode === 'new-space' || !hasSpace) && (
           <div className='flex grow flex-col gap-1'>
             <label className='font-medium'>Space Name</label>
             <input
@@ -289,7 +292,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           </div>
         )}
 
-        {importMode === 'new-sheet' && (
+        {hasSpace && importMode === 'new-sheet' && (
           <div className='flex grow flex-col gap-1'>
             <label className='font-medium'>New Sheet Name</label>
             <input
@@ -302,7 +305,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           </div>
         )}
 
-        {importMode === 'overwrite' && (
+        {hasSpace && importMode === 'overwrite' && (
           <div className='flex grow flex-col gap-1'>
             <label className='font-medium'>Select Sheet to Overwrite</label>
             <select

@@ -108,11 +108,15 @@ export function exportCSV(fileName: string, space: Space, sheetId?: string) {
   if (sheetId && sheetId !== 'all') {
     incomes = space.incomes.filter(
       (income: Income) =>
-        !income.sheets || income.sheets.length === 0 || income.sheets.includes(sheetId)
+        // Include if: no sheets defined (global) OR sheets array includes this sheetId
+        (!income.sheets || income.sheets.length === 0) || 
+        (income.sheets && income.sheets.includes(sheetId))
     );
     expenses = space.expenses.filter(
       (expense: Expense) =>
-        !expense.sheets || expense.sheets.length === 0 || expense.sheets.includes(sheetId)
+        // Include if: no sheets defined (global) OR sheets array includes this sheetId
+        (!expense.sheets || expense.sheets.length === 0) || 
+        (expense.sheets && expense.sheets.includes(sheetId))
     );
   }
 
