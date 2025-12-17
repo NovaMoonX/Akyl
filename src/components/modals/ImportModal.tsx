@@ -11,7 +11,7 @@ interface ImportModalProps {
   onClose: () => void;
 }
 
-export type ImportMode = 'overwrite' | 'new-sheet' | 'new-space';
+export type ImportMode = 'overwrite' | 'new-sheet' | 'new-space' | 'overwrite-space' | 'add-to-sheet';
 
 export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
   const { currentUser } = useAuth();
@@ -24,6 +24,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const hasSheets = sheets && sheets.length > 0;
   const hasSpace = space && space.id;
@@ -56,6 +57,12 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
       return;
     }
 
+    // If overwrite-space mode, show confirmation dialog first
+    if (importMode === 'overwrite-space' && !showConfirmDialog) {
+      setShowConfirmDialog(true);
+      return;
+    }
+
     setError('');
     setIsLoading(true);
 
@@ -76,6 +83,18 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           incomes,
           expenses,
         });
+        handleClose();
+      } else if (importMode === 'overwrite-space') {
+        // Import CSV and replace all budget items, delete all sheets
+        const { incomes, expenses } = await importCSV(selectedFile);
+
+        setSpace({
+          ...space,
+          incomes,
+          expenses,
+          sheets: [], // Delete all sheets
+        });
+        setShowConfirmDialog(false);
         handleClose();
       } else if (importMode === 'overwrite') {
         if (!selectedSheet) {
@@ -108,6 +127,25 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           ...space,
           incomes: [...filteredIncomes, ...incomes],
           expenses: [...filteredExpenses, ...expenses],
+        });
+        handleClose();
+      } else if (importMode === 'add-to-sheet') {
+        if (!selectedSheet) {
+          setError('Please select a sheet to add items to');
+          setIsLoading(false);
+          return;
+        }
+
+        // Import and assign to selected sheet (add to existing items)
+        const { incomes, expenses } = await importCSV(
+          selectedFile,
+          selectedSheet,
+        );
+
+        setSpace({
+          ...space,
+          incomes: [...space.incomes, ...incomes],
+          expenses: [...space.expenses, ...expenses],
         });
         handleClose();
       } else {
@@ -154,7 +192,12 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
     setNewSpaceName('');
     setSelectedSheet('');
     setSelectedFile(null);
+    setShowConfirmDialog(false);
     onClose();
+  };
+
+  const handleCancelConfirm = () => {
+    setShowConfirmDialog(false);
   };
 
   return (
@@ -239,6 +282,42 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
                   </span>
                 )}
               </label>
+              <label
+                className={`flex items-center gap-2 ${
+                  !hasSheets
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'cursor-pointer'
+                }`}
+              >
+                <input
+                  type='radio'
+                  name='importMode'
+                  value='add-to-sheet'
+                  checked={importMode === 'add-to-sheet'}
+                  onChange={(e) => setImportMode(e.target.value as ImportMode)}
+                  disabled={!hasSheets}
+                  className='size-4 cursor-pointer accent-emerald-500 disabled:cursor-not-allowed'
+                />
+                <span>Add to Existing Sheet</span>
+                {!hasSheets && (
+                  <span className='text-xs text-gray-500'>
+                    (No sheets available)
+                  </span>
+                )}
+              </label>
+              <label className='flex cursor-pointer items-center gap-2'>
+                <input
+                  type='radio'
+                  name='importMode'
+                  value='overwrite-space'
+                  checked={importMode === 'overwrite-space'}
+                  onChange={(e) => setImportMode(e.target.value as ImportMode)}
+                  className='size-4 cursor-pointer accent-emerald-500'
+                />
+                <span className='text-red-600 dark:text-red-400'>
+                  Overwrite Current Space
+                </span>
+              </label>
             </div>
           </div>
         )}
@@ -288,24 +367,77 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           </div>
         )}
 
+        {hasSpace && importMode === 'add-to-sheet' && (
+          <div className='flex grow flex-col gap-1'>
+            <label className='font-medium'>Select Sheet to Add Items To</label>
+            <select
+              value={selectedSheet}
+              onChange={(e) => setSelectedSheet(e.target.value)}
+              className='dark:bg-surface-dark dark:text-surface-light grow rounded border border-gray-300 px-3 py-2 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+            >
+              <option value=''>Select a sheet...</option>
+              {sheets &&
+                sheets.map((sheet) => (
+                  <option key={sheet.id} value={sheet.id}>
+                    {sheet.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+        )}
+
+        {hasSpace && importMode === 'overwrite-space' && (
+          <div className='rounded-md bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'>
+            <p className='font-medium mb-1'>⚠️ Warning</p>
+            <p>
+              This will delete all existing budget items and sheets in the current space. This action cannot be undone.
+            </p>
+          </div>
+        )}
+
         {error && (
           <div className='rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-300'>
             {error}
           </div>
         )}
 
-        <div className='flex justify-end gap-2'>
-          <button onClick={handleClose} className='btn btn-secondary'>
-            Cancel
-          </button>
-          <button
-            onClick={handleImport}
-            className='btn btn-primary'
-            disabled={isLoading || !selectedFile}
-          >
-            {isLoading ? 'Importing...' : 'Import CSV'}
-          </button>
-        </div>
+        {showConfirmDialog && importMode === 'overwrite-space' ? (
+          <div className='flex flex-col gap-4 rounded-md border-2 border-red-300 bg-red-50 p-4 dark:border-red-700 dark:bg-red-900/20'>
+            <div className='text-center'>
+              <p className='mb-2 text-lg font-semibold text-red-800 dark:text-red-300'>
+                Confirm Overwrite
+              </p>
+              <p className='text-sm text-red-700 dark:text-red-400'>
+                Are you sure you want to overwrite the current space? All budget items and sheets will be permanently deleted. This action cannot be undone.
+              </p>
+            </div>
+            <div className='flex justify-center gap-2'>
+              <button onClick={handleCancelConfirm} className='btn btn-secondary'>
+                Cancel
+              </button>
+              <button
+                onClick={handleImport}
+                className='btn bg-red-600 text-white hover:bg-red-700'
+                disabled={isLoading}
+              >
+                {isLoading ? 'Overwriting...' : 'Yes, Overwrite Space'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className='flex justify-end gap-2'>
+            <button onClick={handleClose} className='btn btn-secondary'>
+              Cancel
+            </button>
+            <button
+              onClick={handleImport}
+              className='btn btn-primary'
+              disabled={isLoading || !selectedFile}
+            >
+              {isLoading ? 'Importing...' : 'Import CSV'}
+            </button>
+          </div>
+        )}
       </div>
     </Modal>
   );
