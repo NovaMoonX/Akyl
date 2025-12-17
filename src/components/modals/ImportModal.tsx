@@ -74,10 +74,10 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
         const baseSpace = space && space.id ? space : {
           config: {
             theme: 'light' as const,
-            backgroundPattern: 'dots' as const,
+            backgroundPattern: '' as const, // NO_BACKGROUND_VARIANT
             accentColor: '#10b981',
             currency: 'USD' as const,
-            cashFlowVerbiage: 'Income/Expense' as const,
+            cashFlowVerbiage: 'default' as const,
             timeWindow: { type: 'month' as const, interval: 1 },
           },
           metadata: {
