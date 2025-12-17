@@ -156,7 +156,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           return;
         }
 
-        const newSheetId = generateId('sheet')
+        const newSheetId = generateId('sheet');
 
         // Import and assign to new sheet
         const { incomes, expenses } = await importCSV(selectedFile, newSheetId);
