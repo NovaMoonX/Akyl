@@ -69,18 +69,34 @@ export default function IncomeForm() {
 
   const handleSave = () => {
     if (!formData) return;
-    // Save logic here, e.g., update the budget store or make an API call
-    if (incomeItemId) {
-      updateIncome(incomeItemId, formData);
+    
+    // If sub-items exist, calculate the total from them
+    if (formData.subItems && formData.subItems.length > 0) {
+      const calculatedTotal = formData.subItems.reduce((sum, item) => sum + (item.value || 0), 0);
+      const updatedFormData = { ...formData, amount: calculatedTotal };
+      if (incomeItemId) {
+        updateIncome(incomeItemId, updatedFormData);
+      } else {
+        addIncome(updatedFormData);
+      }
     } else {
-      addIncome(formData);
+      // Save logic here, e.g., update the budget store or make an API call
+      if (incomeItemId) {
+        updateIncome(incomeItemId, formData);
+      } else {
+        addIncome(formData);
+      }
     }
   };
 
+  const hasSubItems = formData?.subItems && formData.subItems.length > 0;
+  const calculatedAmount = hasSubItems && formData.subItems
+    ? formData.subItems.reduce((sum, item) => sum + (item.value || 0), 0)
+    : formData?.amount || 0;
+
   const isSaveDisabled =
     !formData?.label ||
-    !formData?.amount ||
-    formData?.amount <= 0 ||
+    calculatedAmount <= 0 ||
     !formData?.source ||
     !formData?.type ||
     !formData?.cadence?.interval;
@@ -94,6 +110,7 @@ export default function IncomeForm() {
       cadence={formData?.cadence}
       notes={formData?.notes}
       sheets={formData?.sheets}
+      subItems={formData?.subItems}
       onFieldChange={(field, val) =>
         handleFieldChange(field as keyof Income, val)
       }

@@ -72,17 +72,33 @@ export default function ExpenseForm() {
 
   const handleSave = () => {
     if (!formData) return;
-    if (expenseItemId) {
-      updateExpense(expenseItemId, formData);
+    
+    // If sub-items exist, calculate the total from them
+    if (formData.subItems && formData.subItems.length > 0) {
+      const calculatedTotal = formData.subItems.reduce((sum, item) => sum + (item.value || 0), 0);
+      const updatedFormData = { ...formData, amount: calculatedTotal };
+      if (expenseItemId) {
+        updateExpense(expenseItemId, updatedFormData);
+      } else {
+        addExpense(updatedFormData);
+      }
     } else {
-      addExpense(formData);
+      if (expenseItemId) {
+        updateExpense(expenseItemId, formData);
+      } else {
+        addExpense(formData);
+      }
     }
   };
 
+  const hasSubItems = formData?.subItems && formData.subItems.length > 0;
+  const calculatedAmount = hasSubItems && formData.subItems
+    ? formData.subItems.reduce((sum, item) => sum + (item.value || 0), 0)
+    : formData?.amount || 0;
+
   const isSaveDisabled =
     !formData?.label ||
-    !formData?.amount ||
-    formData?.amount <= 0 ||
+    calculatedAmount <= 0 ||
     !formData?.category ||
     !formData?.cadence?.interval;
 
@@ -95,6 +111,7 @@ export default function ExpenseForm() {
       cadence={formData?.cadence}
       notes={formData?.notes}
       sheets={formData?.sheets}
+      subItems={formData?.subItems}
       onFieldChange={(field, val) =>
         handleFieldChange(field as keyof Expense, val)
       }

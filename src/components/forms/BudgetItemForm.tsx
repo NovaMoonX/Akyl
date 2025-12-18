@@ -1,4 +1,4 @@
-import { CalculatorIcon } from 'lucide-react';
+import { CalculatorIcon, PlusIcon, XIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
@@ -8,8 +8,9 @@ import {
   URL_PARAM_ID,
   type BudgetType,
 } from '../../lib';
-import type { BudgetItemCadence } from '../../lib/budget.types';
+import type { BudgetItemCadence, SubItem } from '../../lib/budget.types';
 import { useSpace } from '../../store';
+import { generateId } from '../../utils';
 import ConfirmationModal from '../modals/ConfirmationModal';
 import CalculatorModal from '../modals/CalculatorModal';
 
@@ -21,8 +22,9 @@ export interface BudgetItemFormProps {
   cadence?: BudgetItemCadence;
   notes?: string;
   sheets?: string[];
+  subItems?: SubItem[];
   onFieldChange: (
-    field: 'label' | 'description' | 'amount' | 'cadence' | 'notes' | 'sheets',
+    field: 'label' | 'description' | 'amount' | 'cadence' | 'notes' | 'sheets' | 'subItems',
     value: unknown,
   ) => void;
   children?: React.ReactNode;
@@ -39,6 +41,7 @@ export default function BudgetItemForm({
   cadence = { type: 'month', interval: 1 },
   notes = '',
   sheets = [],
+  subItems = [],
   onFieldChange,
   children,
   saveButtonDisabled = false,
@@ -61,6 +64,11 @@ export default function BudgetItemForm({
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
   const itemId = searchParams.get(URL_PARAM_ID);
+  
+  const hasSubItems = subItems && subItems.length > 0;
+  const calculatedTotal = hasSubItems 
+    ? subItems.reduce((sum, item) => sum + (item.value || 0), 0) 
+    : amount;
 
   useEffect(() => {
     if (description.length > 0) {
@@ -88,9 +96,35 @@ export default function BudgetItemForm({
 
   const handleSave = () => {
     if (onSave && !saveButtonDisabled) {
+      // Update amount with calculated total from sub-items before saving
+      if (hasSubItems) {
+        onFieldChange('amount', calculatedTotal);
+      }
       onSave();
       handleClose();
     }
+  };
+  
+  const handleAddSubItem = () => {
+    const newSubItem: SubItem = {
+      id: generateId('subitem'),
+      title: '',
+      value: 0,
+    };
+    const updatedSubItems = [...(subItems || []), newSubItem];
+    onFieldChange('subItems', updatedSubItems);
+  };
+  
+  const handleRemoveSubItem = (id: string) => {
+    const updatedSubItems = (subItems || []).filter(item => item.id !== id);
+    onFieldChange('subItems', updatedSubItems);
+  };
+  
+  const handleUpdateSubItem = (id: string, field: 'title' | 'value', value: string | number) => {
+    const updatedSubItems = (subItems || []).map(item =>
+      item.id === id ? { ...item, [field]: value } : item
+    );
+    onFieldChange('subItems', updatedSubItems);
   };
 
   // use form to save on enter key
@@ -148,76 +182,140 @@ export default function BudgetItemForm({
 
         <div>
           <label className='font-medium'>Amount</label>
-          <div className='mt-1 flex flex-wrap items-center gap-2'>
-            <div className='flex items-center gap-1'>
-              <input
-                type='number'
-                min={0}
-                step='0.01'
-                className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-                value={amount === 0 ? '' : amount}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === '') {
-                    onFieldChange('amount', 0);
-                  } else {
-                    onFieldChange('amount', Number(val));
-                  }
-                }}
-                placeholder='0.00'
-              />
-              <button
-                type='button'
-                onClick={() => setShowCalculator(true)}
-                className='rounded p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
-                aria-label='Open calculator'
-                title='Open calculator'
-              >
-                <CalculatorIcon className='size-4' />
-              </button>
+          
+          {/* Sub-items list */}
+          {hasSubItems && (
+            <div className='mt-2 space-y-2 rounded border border-gray-300 p-3 dark:border-gray-700'>
+              {subItems.map((subItem) => (
+                <div key={subItem.id} className='flex flex-col gap-2 sm:flex-row sm:items-center'>
+                  <input
+                    type='text'
+                    className='flex-1 rounded border border-gray-300 px-2 py-1 text-sm focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                    value={subItem.title}
+                    onChange={(e) => handleUpdateSubItem(subItem.id, 'title', e.target.value)}
+                    placeholder='Sub-item name'
+                  />
+                  <div className='flex items-center gap-1'>
+                    <input
+                      type='number'
+                      min={0}
+                      step='0.01'
+                      className='w-24 rounded border border-gray-300 px-2 py-1 text-sm focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                      value={subItem.value === 0 ? '' : subItem.value}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        handleUpdateSubItem(subItem.id, 'value', val === '' ? 0 : Number(val));
+                      }}
+                      placeholder='0.00'
+                    />
+                    <span className='text-sm text-gray-700 dark:text-gray-200'>
+                      {getCurrencySymbol(currency)}
+                    </span>
+                    <button
+                      type='button'
+                      onClick={() => handleRemoveSubItem(subItem.id)}
+                      className='rounded p-1 text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20'
+                      aria-label='Remove sub-item'
+                    >
+                      <XIcon className='size-4' />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <div className='flex items-center justify-between border-t border-gray-200 pt-2 dark:border-gray-600'>
+                <span className='text-sm font-medium'>Total:</span>
+                <span className='text-lg font-semibold'>
+                  {calculatedTotal.toFixed(2)} {getCurrencySymbol(currency)}
+                </span>
+              </div>
             </div>
-            <span className='text-gray-700 dark:text-gray-200'>
-              {getCurrencySymbol(currency)}
-            </span>
-            <span className='mx-1 text-gray-500'>every</span>
+          )}
+          
+          {/* Regular amount input - only shown when no sub-items */}
+          {!hasSubItems && (
+            <div className='mt-1 flex flex-wrap items-center gap-2'>
+              <div className='flex items-center gap-1'>
+                <input
+                  type='number'
+                  min={0}
+                  step='0.01'
+                  className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                  value={amount === 0 ? '' : amount}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      onFieldChange('amount', 0);
+                    } else {
+                      onFieldChange('amount', Number(val));
+                    }
+                  }}
+                  placeholder='0.00'
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowCalculator(true)}
+                  className='rounded p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+                  aria-label='Open calculator'
+                  title='Open calculator'
+                >
+                  <CalculatorIcon className='size-4' />
+                </button>
+              </div>
+              <span className='text-gray-700 dark:text-gray-200'>
+                {getCurrencySymbol(currency)}
+              </span>
+              <span className='mx-1 text-gray-500'>every</span>
 
-            <div className='relative'>
-              <label className='absolute top-0 -translate-y-full pb-0.5 font-medium'>
-                Frequency
-              </label>
-              <input
-                type='number'
-                min={1}
-                className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-                aria-description='Enter the frequency interval for this budget item'
-                value={cadence?.interval === 0 ? '' : cadence?.interval}
-                placeholder='1'
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === '') {
-                    onFieldChange('cadence', { ...cadence, interval: 0 });
-                  } else {
-                    onFieldChange('cadence', {
-                      ...cadence,
-                      interval: Math.max(1, Number(e.target.value)),
-                    });
-                  }
-                }}
-              />
+              <div className='relative'>
+                <label className='absolute top-0 -translate-y-full pb-0.5 font-medium'>
+                  Frequency
+                </label>
+                <input
+                  type='number'
+                  min={1}
+                  className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                  aria-description='Enter the frequency interval for this budget item'
+                  value={cadence?.interval === 0 ? '' : cadence?.interval}
+                  placeholder='1'
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      onFieldChange('cadence', { ...cadence, interval: 0 });
+                    } else {
+                      onFieldChange('cadence', {
+                        ...cadence,
+                        interval: Math.max(1, Number(e.target.value)),
+                      });
+                    }
+                  }}
+                />
+              </div>
+              <select
+                className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                value={cadence?.type}
+                onChange={(e) =>
+                  onFieldChange('cadence', { ...cadence, type: e.target.value })
+                }
+                aria-description='Select the frequency of this budget item'
+              >
+                <option value='day'>day(s)</option>
+                <option value='week'>week(s)</option>
+                <option value='month'>month(s)</option>
+                <option value='year'>year(s)</option>
+              </select>
             </div>
-            <select
-              className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-              value={cadence?.type}
-              onChange={(e) =>
-                onFieldChange('cadence', { ...cadence, type: e.target.value })
-              }
-              aria-description='Select the frequency of this budget item'
+          )}
+          
+          {/* Add sub-item button */}
+          <div className='mt-2 flex justify-end'>
+            <button
+              type='button'
+              onClick={handleAddSubItem}
+              className='flex items-center gap-1 text-sm underline opacity-70 hover:opacity-85'
             >
-              <option value='day'>day(s)</option>
-              <option value='week'>week(s)</option>
-              <option value='month'>month(s)</option>
-              <option value='year'>year(s)</option>
-            </select>
+              <PlusIcon className='size-4' />
+              {hasSubItems ? 'Add another sub-item' : 'Add sub-items'}
+            </button>
           </div>
         </div>
 

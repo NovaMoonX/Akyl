@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import { v4 as uuidv4 } from 'uuid';
 
-type ItemType = 'space' | 'node' | 'budget' | 'sheet';
+type ItemType = 'space' | 'node' | 'budget' | 'sheet' | 'subitem';
 export default function generateId(type: ItemType) {
   let uuid = '';
 
@@ -17,6 +17,9 @@ export default function generateId(type: ItemType) {
       break;
     case 'sheet':
       uuid = 'sh-' + nanoid();
+      break;
+    case 'subitem':
+      uuid = 'si-' + nanoid();
       break;
   }
 

@@ -21,6 +21,7 @@ export type {
   BudgetItemCadenceType,
   Expense,
   Income,
+  SubItem,
 } from './budget.types';
 
 // Cryptography
