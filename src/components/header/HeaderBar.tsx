@@ -53,9 +53,9 @@ export default function HeaderBar() {
 
   return (
     <>
-      <div className='bg-surface-light dark:bg-surface-dark relative flex flex-1 items-center justify-between rounded-lg px-4 py-2.5 shadow-md'>
-        <div className='flex-1 min-w-16 flex flex-col gap-1'>
-          <div className='flex items-center gap-2'>
+      <div className='bg-surface-light dark:bg-surface-dark group relative flex flex-1 flex-col rounded-lg px-4 py-2.5 shadow-md'>
+        <div className='flex items-center justify-between gap-4'>
+          <div className='flex min-w-16 flex-1 items-center gap-2'>
             <input
               value={title || ''}
               onChange={handleTextChange}
@@ -72,27 +72,27 @@ export default function HeaderBar() {
               />
             </button>
           </div>
-          <input
-            value={description || ''}
-            onChange={handleDescriptionChange}
-            placeholder='Add a description...'
-            className='text-surface-hover-dark dark:text-surface-hover-light text-sm placeholder:text-gray-400 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
-          />
+          <div className='flex items-center gap-3 text-sm'>
+            <button
+              onClick={() => handleOpenForm('income')}
+              className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-4 py-2.5 whitespace-nowrap transition'
+            >
+              add {CashFlowVerbiagePairs[cashFlowVerbiage].in}
+            </button>
+            <button
+              onClick={() => handleOpenForm('expense')}
+              className='text-surface-light not-dark:bg-outflow not-dark:hover:bg-outflow-darker dark:text-outflow-darker hover:dark:border-outflow-darker rounded border border-transparent px-4 py-2.5 whitespace-nowrap transition'
+            >
+              add {CashFlowVerbiagePairs[cashFlowVerbiage].out}
+            </button>
+          </div>
         </div>
-        <div className='flex items-center gap-3 text-sm ml-4'>
-          <button
-            onClick={() => handleOpenForm('income')}
-            className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-4 py-2.5 whitespace-nowrap transition'
-          >
-            add {CashFlowVerbiagePairs[cashFlowVerbiage].in}
-          </button>
-          <button
-            onClick={() => handleOpenForm('expense')}
-            className='text-surface-light not-dark:bg-outflow not-dark:hover:bg-outflow-darker dark:text-outflow-darker hover:dark:border-outflow-darker rounded border border-transparent px-4 py-2.5 whitespace-nowrap transition'
-          >
-            add {CashFlowVerbiagePairs[cashFlowVerbiage].out}
-          </button>
-        </div>
+        <input
+          value={description || ''}
+          onChange={handleDescriptionChange}
+          placeholder='Add a description...'
+          className='text-surface-hover-dark dark:text-surface-hover-light mt-1 overflow-hidden text-ellipsis whitespace-nowrap text-sm placeholder:text-gray-400 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50 group-hover:whitespace-normal group-hover:overflow-visible'
+        />
 
         {totalBudgetItemsInSpace === 0 && (
           <div className='absolute right-8 -bottom-20 flex animate-pulse flex-col items-center'>
