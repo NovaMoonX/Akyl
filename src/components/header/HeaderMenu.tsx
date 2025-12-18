@@ -1,16 +1,17 @@
 import {
   CopyPlusIcon,
+  DownloadIcon,
   FileImageIcon,
-  FolderIcon,
+  FolderOpenIcon,
   HomeIcon,
   LogInIcon,
   LogOutIcon,
   MenuIcon,
-  SaveIcon,
   SettingsIcon,
   ShieldQuestionIcon,
   SquarePlusIcon,
   TrashIcon,
+  UploadIcon,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
@@ -26,8 +27,9 @@ import ConfigModal from '../modals/ConfigModal';
 import ConfirmationModal from '../modals/ConfirmationModal';
 import DeleteSpaceModal from '../modals/DeleteSpaceModal';
 import DuplicateSpaceModal from '../modals/DuplicateSpaceModal';
+import ExportModal from '../modals/ExportModal';
 import HelpModal from '../modals/HelpModal';
-import SaveModal from '../modals/SaveModal';
+import ImportModal from '../modals/ImportModal';
 import Dropdown from '../ui/Dropdown';
 import ThemeToggle from '../ui/ThemeToggle';
 import Tooltip from '../ui/Tooltip';
@@ -47,12 +49,16 @@ const DEFAULT_ITEMS: MenuItem[] = [
     label: 'New Space',
   },
   {
-    icon: <FolderIcon />,
+    icon: <FolderOpenIcon />,
     label: 'Open',
   },
   {
-    icon: <SaveIcon />,
-    label: 'Save',
+    icon: <UploadIcon />,
+    label: 'Import CSV',
+  },
+  {
+    icon: <DownloadIcon />,
+    label: 'Export',
   },
   {
     icon: <FileImageIcon />,
@@ -88,7 +94,8 @@ export default function HeaderMenu() {
     message: string;
     onConfirm: () => void;
   }>();
-  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
@@ -132,14 +139,17 @@ export default function HeaderMenu() {
           title: 'Create New Space',
           message:
             'Any unsaved changes will be lost. Are you sure you want to create a new space?',
-          onConfirm: () => createNewSpace(currentUser?.uid),
+          onConfirm: () => createNewSpace({ userId: currentUser?.uid }),
         });
         break;
       case 'Open':
         importFile();
         break;
-      case 'Save':
-        setIsSaveModalOpen(true);
+      case 'Import CSV':
+        setIsImportModalOpen(true);
+        break;
+      case 'Export':
+        setIsExportModalOpen(true);
         break;
       case 'Download Image':
         download();
@@ -172,7 +182,7 @@ export default function HeaderMenu() {
     <>
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className='bg-surface-light dark:bg-surface-dark hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark rounded-lg px-3 py-4 sm:px-4 sm:py-5 text-teal-500 shadow-md'
+        className='bg-surface-light dark:bg-surface-dark hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark rounded-lg px-3 py-4 text-teal-500 shadow-md sm:px-4 sm:py-5'
       >
         <MenuIcon className='size-4 sm:size-5' />
       </button>
@@ -198,7 +208,7 @@ export default function HeaderMenu() {
                   if (isDisabled) return;
                   handleMenuItemClick(item.label);
                 }}
-                className='enabled:hover:bg-surface-hover-light enabled:hover:dark:bg-surface-hover-dark flex w-full flex-row items-center gap-1 px-4 py-2 text-left text-gray-500 enabled:hover:text-gray-900 disabled:!cursor-not-allowed enabled:hover:dark:text-gray-100 text-sm sm:text-base'
+                className='enabled:hover:bg-surface-hover-light enabled:hover:dark:bg-surface-hover-dark flex w-full flex-row items-center gap-1 px-4 py-2 text-left text-sm text-gray-500 enabled:hover:text-gray-900 disabled:!cursor-not-allowed sm:text-base enabled:hover:dark:text-gray-100'
               >
                 <Icon size={16} />
                 {item.label}
@@ -208,7 +218,7 @@ export default function HeaderMenu() {
         })}
         <div className='h-0.5 w-full bg-gray-200 dark:bg-gray-700' />
         <div className='flex items-center justify-between py-1 pr-3 pl-4'>
-          <p className='opacity-80 text-sm sm:text-base'>Theme</p>
+          <p className='text-sm opacity-80 sm:text-base'>Theme</p>
           <ThemeToggle />
         </div>
         <DreamTrigger />
@@ -229,9 +239,14 @@ export default function HeaderMenu() {
         />
       )}
 
-      <SaveModal
-        isOpen={isSaveModalOpen}
-        onClose={() => setIsSaveModalOpen(false)}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+      />
+
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
 
       <DuplicateSpaceModal
