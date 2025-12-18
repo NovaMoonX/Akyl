@@ -192,12 +192,48 @@ export default function BudgetItemForm({
           </div>
         )}
 
+        {/* Amount mode selector */}
+        <div>
+          <div className='flex gap-4'>
+            <label className='flex items-center gap-2 cursor-pointer'>
+              <input
+                type='radio'
+                name='amountMode'
+                value='direct'
+                checked={!hasSubItems}
+                onChange={() => {
+                  if (hasSubItems) {
+                    handleClearSubItems();
+                  }
+                }}
+                className='cursor-pointer'
+              />
+              <span className='text-sm'>Direct</span>
+            </label>
+            <label className='flex items-center gap-2 cursor-pointer'>
+              <input
+                type='radio'
+                name='amountMode'
+                value='itemize'
+                checked={hasSubItems}
+                onChange={() => {
+                  if (!hasSubItems) {
+                    handleAddSubItem();
+                  }
+                }}
+                className='cursor-pointer'
+              />
+              <span className='text-sm'>Itemize</span>
+            </label>
+          </div>
+        </div>
+
         <div>
           <label className='font-medium'>Amount</label>
           
           {/* Sub-items list */}
           {hasSubItems && (
-            <div className='mt-2 space-y-2 rounded border border-gray-300 p-3 dark:border-gray-700'>
+            <div className='mt-2 space-y-2'>
               {subItems.map((subItem) => (
                 <div key={subItem.id} className='flex flex-col gap-2 sm:flex-row sm:items-center'>
                   <input
@@ -234,158 +270,99 @@ export default function BudgetItemForm({
                   </div>
                 </div>
               ))}
-              <div className='flex items-center justify-between border-t border-gray-200 pt-2 dark:border-gray-600'>
-                <button
-                  type='button'
-                  onClick={handleClearSubItems}
-                  className='text-sm text-gray-600 underline opacity-70 hover:opacity-85 dark:text-gray-400'
-                >
-                  Switch to normal amount
-                </button>
-                <div className='flex items-center gap-2'>
-                  <span className='text-sm font-medium'>Total:</span>
-                  <span className='text-lg font-semibold'>
-                    {calculatedTotal.toFixed(2)} {getCurrencySymbol(currency)}
-                  </span>
-                </div>
+              <div className='flex items-center justify-end gap-2 border-t border-gray-200 pt-2 dark:border-gray-600'>
+                <span className='text-sm font-medium'>Total:</span>
+                <span className='text-lg font-semibold'>
+                  {calculatedTotal.toFixed(2)} {getCurrencySymbol(currency)}
+                </span>
               </div>
             </div>
           )}
           
           {/* Regular amount input - only shown when no sub-items */}
           {!hasSubItems && (
-            <div className='mt-1 flex flex-wrap items-center gap-2'>
-              <div className='flex items-center gap-1'>
-                <input
-                  type='number'
-                  min={0}
-                  step='0.01'
-                  className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-                  value={amount === 0 ? '' : amount}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '') {
-                      onFieldChange('amount', 0);
-                    } else {
-                      onFieldChange('amount', Number(val));
-                    }
-                  }}
-                  placeholder='0.00'
-                />
-                <button
-                  type='button'
-                  onClick={() => setShowCalculator(true)}
-                  className='rounded p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
-                  aria-label='Open calculator'
-                  title='Open calculator'
-                >
-                  <CalculatorIcon className='size-4' />
-                </button>
-              </div>
+            <div className='mt-1 flex items-center gap-2'>
+              <input
+                type='number'
+                min={0}
+                step='0.01'
+                className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                value={amount === 0 ? '' : amount}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    onFieldChange('amount', 0);
+                  } else {
+                    onFieldChange('amount', Number(val));
+                  }
+                }}
+                placeholder='0.00'
+              />
+              <button
+                type='button'
+                onClick={() => setShowCalculator(true)}
+                className='rounded p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+                aria-label='Open calculator'
+                title='Open calculator'
+              >
+                <CalculatorIcon className='size-4' />
+              </button>
               <span className='text-gray-700 dark:text-gray-200'>
                 {getCurrencySymbol(currency)}
               </span>
-              <span className='mx-1 text-gray-500'>every</span>
-
-              <div className='relative'>
-                <label className='absolute top-0 -translate-y-full pb-0.5 font-medium'>
-                  Frequency
-                </label>
-                <input
-                  type='number'
-                  min={1}
-                  className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-                  aria-description='Enter the frequency interval for this budget item'
-                  value={cadence?.interval === 0 ? '' : cadence?.interval}
-                  placeholder='1'
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '') {
-                      onFieldChange('cadence', { ...cadence, interval: 0 });
-                    } else {
-                      onFieldChange('cadence', {
-                        ...cadence,
-                        interval: Math.max(1, Number(e.target.value)),
-                      });
-                    }
-                  }}
-                />
-              </div>
-              <select
-                className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-                value={cadence?.type}
-                onChange={(e) =>
-                  onFieldChange('cadence', { ...cadence, type: e.target.value })
-                }
-                aria-description='Select the frequency of this budget item'
-              >
-                <option value='day'>day(s)</option>
-                <option value='week'>week(s)</option>
-                <option value='month'>month(s)</option>
-                <option value='year'>year(s)</option>
-              </select>
             </div>
           )}
           
-          {/* Frequency fields when using sub-items */}
-          {hasSubItems && (
-            <div className='mt-2 flex flex-wrap items-center gap-2'>
-              <span className='text-gray-700 dark:text-gray-200'>
-                {getCurrencySymbol(currency)}
-              </span>
-              <span className='mx-1 text-gray-500'>every</span>
-
-              <div className='relative'>
-                <label className='absolute top-0 -translate-y-full pb-0.5 font-medium'>
-                  Frequency
-                </label>
-                <input
-                  type='number'
-                  min={1}
-                  className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-                  aria-description='Enter the frequency interval for this budget item'
-                  value={cadence?.interval === 0 ? '' : cadence?.interval}
-                  placeholder='1'
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '') {
-                      onFieldChange('cadence', { ...cadence, interval: 0 });
-                    } else {
-                      onFieldChange('cadence', {
-                        ...cadence,
-                        interval: Math.max(1, Number(e.target.value)),
-                      });
-                    }
-                  }}
-                />
-              </div>
-              <select
-                className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-                value={cadence?.type}
-                onChange={(e) =>
-                  onFieldChange('cadence', { ...cadence, type: e.target.value })
+          {/* Frequency fields - always shown on their own row */}
+          <div className='mt-2 flex items-center gap-2'>
+            <span className='text-gray-500'>every</span>
+            <input
+              type='number'
+              min={1}
+              className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+              aria-description='Enter the frequency interval for this budget item'
+              value={cadence?.interval === 0 ? '' : cadence?.interval}
+              placeholder='1'
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '') {
+                  onFieldChange('cadence', { ...cadence, interval: 0 });
+                } else {
+                  onFieldChange('cadence', {
+                    ...cadence,
+                    interval: Math.max(1, Number(e.target.value)),
+                  });
                 }
-                aria-description='Select the frequency of this budget item'
-              >
-                <option value='day'>day(s)</option>
-                <option value='week'>week(s)</option>
-                <option value='month'>month(s)</option>
-                <option value='year'>year(s)</option>
-              </select>
-            </div>
-          )}
-          
-          {/* Add sub-item button */}
-          <div className='mt-2 flex justify-end'>
-            <button
-              type='button'
-              onClick={handleAddSubItem}
-              className='flex items-center gap-1 text-sm underline opacity-70 hover:opacity-85'
+              }}
+            />
+            <select
+              className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+              value={cadence?.type}
+              onChange={(e) =>
+                onFieldChange('cadence', { ...cadence, type: e.target.value })
+              }
+              aria-description='Select the frequency of this budget item'
             >
-              <PlusIcon className='size-4' />
-              {hasSubItems ? 'Add another sub-item' : 'Add sub-items'}
-            </button>
+              <option value='day'>day(s)</option>
+              <option value='week'>week(s)</option>
+              <option value='month'>month(s)</option>
+              <option value='year'>year(s)</option>
+            </select>
           </div>
+          
+          {/* Add another sub-item button - only shown when in itemize mode */}
+          {hasSubItems && (
+            <div className='mt-2 flex justify-end'>
+              <button
+                type='button'
+                onClick={handleAddSubItem}
+                className='flex items-center gap-1 text-sm underline opacity-70 hover:opacity-85'
+              >
+                <PlusIcon className='size-4' />
+                Add another sub-item
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Children for custom fields */}
