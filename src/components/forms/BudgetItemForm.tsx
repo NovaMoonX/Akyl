@@ -245,7 +245,7 @@ export default function BudgetItemForm({
                 <div className='flex items-center gap-2'>
                   <span className='text-sm font-medium'>Total:</span>
                   <span className='text-lg font-semibold'>
-                      {calculatedTotal.toFixed(2)} {getCurrencySymbol(currency)}
+                    {calculatedTotal.toFixed(2)} {getCurrencySymbol(currency)}
                   </span>
                 </div>
               </div>
