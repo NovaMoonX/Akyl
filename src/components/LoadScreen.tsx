@@ -5,6 +5,7 @@ import {
   LogOutIcon,
   ShieldQuestionIcon,
   SquarePlusIcon,
+  StarIcon,
   TrashIcon,
   UploadIcon,
 } from 'lucide-react';
@@ -61,11 +62,12 @@ export default function LoadScreen() {
   const [deletedSpaceIds, setDeletedSpaceIds] = useState<Set<string>>(
     new Set(),
   );
+  const [refreshKey, setRefreshKey] = useState(0);
   const { spaces: localSpaces, limitMet } = useBrowserSpaces();
   const { spaces: syncedSpaces, spacesMap: syncedSpacesMap } =
     useSyncAllSpaces();
 
-  const spaces = useMemo(() => {
+  const { starredSpaces, unstarredSpaces } = useMemo(() => {
     let chosenSpaces: Space[] = [];
     if (currentUser?.uid) {
       chosenSpaces = syncedSpaces;
@@ -98,13 +100,18 @@ export default function LoadScreen() {
       }
       return a.title.localeCompare(b.title);
     });
-    return sortedSpaces;
+    
+    const starred = sortedSpaces.filter(space => space.starred);
+    const unstarred = sortedSpaces.filter(space => !space.starred);
+    
+    return { starredSpaces: starred, unstarredSpaces: unstarred };
   }, [
     localSpaces,
     syncedSpaces,
     syncedSpacesMap,
     currentUser?.uid,
     deletedSpaceIds,
+    refreshKey,
   ]);
 
   const items = useMemo(() => {
@@ -149,6 +156,18 @@ export default function LoadScreen() {
         break;
       default:
         break;
+    }
+  };
+
+  const handleToggleStar = (spaceId: string, currentStarred: boolean) => {
+    const spaceData = localStorage.getItem(spaceId);
+    if (spaceData) {
+      const space = JSON.parse(spaceData) as Space;
+      space.starred = !currentStarred;
+      space.metadata.updatedAt = Date.now();
+      localStorage.setItem(spaceId, JSON.stringify(space));
+      // Force re-render
+      setRefreshKey(prev => prev + 1);
     }
   };
 
@@ -205,46 +224,104 @@ export default function LoadScreen() {
             </small>
           )}
 
-          {spaces.length > 0 && (
+          {(starredSpaces.length > 0 || unstarredSpaces.length > 0) && (
             <div className='absolute -bottom-4 sm:-bottom-8 left-0 flex w-full translate-y-full flex-col items-center pb-10'>
-              <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
-                Previous Spaces
-              </h2>
-              <div className='sm:w-lg'>
-                <div className='max-h-48 sm:max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
-                  <div className='grid sm:grid-cols-2 gap-1'>
-                    {spaces.map((space) => (
-                      <div
-                        key={space.id}
-                        className='group w-64 relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
-                      >
-                        <a
-                          role='button'
-                          href={`/${space.id}`}
-                          className='flex flex-1 flex-row items-center gap-1'
-                        >
-                          <ChevronRightIcon className='size-4' />
-                          <span
-                            title={space.title || 'Untitled Space'}
-                            className={join(
-                              'w-44 truncate text-sm sm:text-base',
-                              space.title.length === 0 && 'opacity-70',
-                            )}
+              {starredSpaces.length > 0 && (
+                <>
+                  <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
+                    Starred Spaces
+                  </h2>
+                  <div className='sm:w-lg mb-4'>
+                    <div className='max-h-48 sm:max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
+                      <div className='grid sm:grid-cols-2 gap-1'>
+                        {starredSpaces.map((space) => (
+                          <div
+                            key={space.id}
+                            className='group w-64 relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
                           >
-                            {space.title || 'Untitled Space'}
-                          </span>
-                        </a>
-                        <TrashIcon
-                          role='button'
-                          className='ml-2 size-4 shrink-0 text-gray-400 sm:opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
-                          aria-label='Delete Space'
-                          onClick={() => setDeleteSpaceId(space.id)}
-                        />
+                            <a
+                              role='button'
+                              href={`/${space.id}`}
+                              className='flex flex-1 flex-row items-center gap-1'
+                            >
+                              <ChevronRightIcon className='size-4' />
+                              <span
+                                title={space.title || 'Untitled Space'}
+                                className={join(
+                                  'w-32 truncate text-sm sm:text-base',
+                                  space.title.length === 0 && 'opacity-70',
+                                )}
+                              >
+                                {space.title || 'Untitled Space'}
+                              </span>
+                            </a>
+                            <StarIcon
+                              role='button'
+                              className='ml-2 size-4 shrink-0 fill-yellow-400 text-yellow-400 hover:fill-transparent hover:text-gray-400'
+                              aria-label='Unstar Space'
+                              onClick={() => handleToggleStar(space.id, true)}
+                            />
+                            <TrashIcon
+                              role='button'
+                              className='ml-2 size-4 shrink-0 text-gray-400 sm:opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
+                              aria-label='Delete Space'
+                              onClick={() => setDeleteSpaceId(space.id)}
+                            />
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </div>
-              </div>
+                </>
+              )}
+              {unstarredSpaces.length > 0 && (
+                <>
+                  <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
+                    {starredSpaces.length > 0 ? 'Other Spaces' : 'Previous Spaces'}
+                  </h2>
+                  <div className='sm:w-lg'>
+                    <div className='max-h-48 sm:max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
+                      <div className='grid sm:grid-cols-2 gap-1'>
+                        {unstarredSpaces.map((space) => (
+                          <div
+                            key={space.id}
+                            className='group w-64 relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
+                          >
+                            <a
+                              role='button'
+                              href={`/${space.id}`}
+                              className='flex flex-1 flex-row items-center gap-1'
+                            >
+                              <ChevronRightIcon className='size-4' />
+                              <span
+                                title={space.title || 'Untitled Space'}
+                                className={join(
+                                  'w-32 truncate text-sm sm:text-base',
+                                  space.title.length === 0 && 'opacity-70',
+                                )}
+                              >
+                                {space.title || 'Untitled Space'}
+                              </span>
+                            </a>
+                            <StarIcon
+                              role='button'
+                              className='ml-2 size-4 shrink-0 text-gray-400 hover:fill-yellow-400 hover:text-yellow-400'
+                              aria-label='Star Space'
+                              onClick={() => handleToggleStar(space.id, false)}
+                            />
+                            <TrashIcon
+                              role='button'
+                              className='ml-2 size-4 shrink-0 text-gray-400 sm:opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
+                              aria-label='Delete Space'
+                              onClick={() => setDeleteSpaceId(space.id)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

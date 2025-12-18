@@ -1,4 +1,4 @@
-import { ArrowUpIcon } from 'lucide-react';
+import { ArrowUpIcon, StarIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../../contexts/AuthContext';
@@ -16,9 +16,11 @@ import Dropdown from '../ui/Dropdown';
 
 export default function HeaderBar() {
   const { currentUser } = useAuth();
-  const [title, cashFlowVerbiage] = useSpace(
+  const [title, description, starred, cashFlowVerbiage] = useSpace(
     useShallow((state) => [
       state.space.title,
+      state.space.description,
+      state.space.starred,
       state.space.config.cashFlowVerbiage,
     ]),
   );
@@ -32,6 +34,15 @@ export default function HeaderBar() {
     setTabTitle(newTitle);
   };
 
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDescription = e.target.value;
+    updateSpace({ description: newDescription });
+  };
+
+  const handleToggleStar = () => {
+    updateSpace({ starred: !starred });
+  };
+
   const handleOpenForm = (type: BudgetType) => {
     setSearchParams({ [URL_PARAM_FORM]: type });
   };
@@ -43,13 +54,32 @@ export default function HeaderBar() {
   return (
     <>
       <div className='bg-surface-light dark:bg-surface-dark relative flex flex-1 items-center justify-between rounded-lg px-4 py-2.5 shadow-md'>
-        <input
-          value={title || ''}
-          onChange={handleTextChange}
-          placeholder='Space Title'
-          className='text-surface-hover-dark dark:text-surface-hover-light flex-1 min-w-16 text-xl font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
-        />
-        <div className='flex items-center gap-3 text-sm'>
+        <div className='flex-1 min-w-16 flex flex-col gap-1'>
+          <div className='flex items-center gap-2'>
+            <input
+              value={title || ''}
+              onChange={handleTextChange}
+              placeholder='Space Title'
+              className='text-surface-hover-dark dark:text-surface-hover-light flex-1 text-xl font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
+            />
+            <button
+              onClick={handleToggleStar}
+              className='shrink-0'
+              aria-label={starred ? 'Unstar Space' : 'Star Space'}
+            >
+              <StarIcon
+                className={starred ? 'size-5 fill-yellow-400 text-yellow-400' : 'size-5 text-gray-400 hover:text-yellow-400'}
+              />
+            </button>
+          </div>
+          <input
+            value={description || ''}
+            onChange={handleDescriptionChange}
+            placeholder='Add a description...'
+            className='text-surface-hover-dark dark:text-surface-hover-light text-sm placeholder:text-gray-400 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
+          />
+        </div>
+        <div className='flex items-center gap-3 text-sm ml-4'>
           <button
             onClick={() => handleOpenForm('income')}
             className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-4 py-2.5 whitespace-nowrap transition'

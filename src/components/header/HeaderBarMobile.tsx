@@ -1,4 +1,4 @@
-import { ArrowUpIcon, MinusIcon, PlusIcon } from 'lucide-react';
+import { ArrowUpIcon, MinusIcon, PlusIcon, StarIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../../contexts/AuthContext';
@@ -12,10 +12,11 @@ import Dropdown from '../ui/Dropdown';
 
 export default function HeaderBarMobile() {
   const { currentUser } = useAuth();
-  const [title] = useSpace(
+  const [title, description, starred] = useSpace(
     useShallow((state) => [
       state.space.title,
-      state.space.config.cashFlowVerbiage,
+      state.space.description,
+      state.space.starred,
     ]),
   );
   const { updateSpace } = useSpace();
@@ -28,6 +29,15 @@ export default function HeaderBarMobile() {
     setTabTitle(newTitle);
   };
 
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDescription = e.target.value;
+    updateSpace({ description: newDescription });
+  };
+
+  const handleToggleStar = () => {
+    updateSpace({ starred: !starred });
+  };
+
   const handleOpenForm = (type: BudgetType) => {
     setSearchParams({ [URL_PARAM_FORM]: type });
   };
@@ -38,26 +48,47 @@ export default function HeaderBarMobile() {
 
   return (
     <>
-      <div className='bg-surface-light dark:bg-surface-dark relative flex flex-grow items-center justify-between rounded-lg px-3 py-3 shadow-md sm:py-2.5'>
-        <input
-          value={title || ''}
-          onChange={handleTextChange}
-          placeholder='Space Title'
-          className='text-surface-hover-dark dark:text-surface-hover-light min-w-10 flex-1 font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
-        />
-        <div className='flex items-center gap-1 text-sm'>
-          <button
-            onClick={() => handleOpenForm('income')}
-            className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-2 py-1 transition'
-          >
-            <PlusIcon className='size-4 sm:size-5' />
-          </button>
-          <button
-            onClick={() => handleOpenForm('expense')}
-            className='text-surface-light not-dark:bg-outflow not-dark:hover:bg-outflow-darker dark:text-outflow-darker hover:dark:border-outflow-darker rounded border border-transparent px-2 py-1 transition'
-          >
-            <MinusIcon className='size-4 sm:size-5' />
-          </button>
+      <div className='bg-surface-light dark:bg-surface-dark relative flex flex-grow flex-col rounded-lg px-3 py-3 shadow-md sm:py-2.5'>
+        <div className='flex items-center justify-between'>
+          <div className='flex-1 min-w-10 flex flex-col gap-1'>
+            <div className='flex items-center gap-1.5'>
+              <input
+                value={title || ''}
+                onChange={handleTextChange}
+                placeholder='Space Title'
+                className='text-surface-hover-dark dark:text-surface-hover-light flex-1 font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
+              />
+              <button
+                onClick={handleToggleStar}
+                className='shrink-0'
+                aria-label={starred ? 'Unstar Space' : 'Star Space'}
+              >
+                <StarIcon
+                  className={starred ? 'size-4 fill-yellow-400 text-yellow-400' : 'size-4 text-gray-400'}
+                />
+              </button>
+            </div>
+            <input
+              value={description || ''}
+              onChange={handleDescriptionChange}
+              placeholder='Add a description...'
+              className='text-surface-hover-dark dark:text-surface-hover-light text-xs placeholder:text-gray-400 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
+            />
+          </div>
+          <div className='flex items-center gap-1 text-sm ml-2'>
+            <button
+              onClick={() => handleOpenForm('income')}
+              className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-2 py-1 transition'
+            >
+              <PlusIcon className='size-4 sm:size-5' />
+            </button>
+            <button
+              onClick={() => handleOpenForm('expense')}
+              className='text-surface-light not-dark:bg-outflow not-dark:hover:bg-outflow-darker dark:text-outflow-darker hover:dark:border-outflow-darker rounded border border-transparent px-2 py-1 transition'
+            >
+              <MinusIcon className='size-4 sm:size-5' />
+            </button>
+          </div>
         </div>
 
         {totalBudgetItemsInSpace === 0 && (

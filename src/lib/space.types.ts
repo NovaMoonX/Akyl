@@ -50,6 +50,7 @@ export interface Space {
   id: string;
   title: string;
   description: string;
+  starred?: boolean;
   metadata: SpaceMetadata;
   config: Config;
   incomes: Income[];
