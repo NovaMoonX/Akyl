@@ -72,22 +72,11 @@ export default function ExpenseForm() {
 
   const handleSave = () => {
     if (!formData) return;
-    
-    // If sub-items exist, calculate the total from them
-    if (formData.subItems && formData.subItems.length > 0) {
-      const calculatedTotal = formData.subItems.reduce((sum, item) => sum + (item.value || 0), 0);
-      const updatedFormData = { ...formData, amount: calculatedTotal };
-      if (expenseItemId) {
-        updateExpense(expenseItemId, updatedFormData);
-      } else {
-        addExpense(updatedFormData);
-      }
+    // Amount is already updated by BudgetItemForm when sub-items change
+    if (expenseItemId) {
+      updateExpense(expenseItemId, formData);
     } else {
-      if (expenseItemId) {
-        updateExpense(expenseItemId, formData);
-      } else {
-        addExpense(formData);
-      }
+      addExpense(formData);
     }
   };
 

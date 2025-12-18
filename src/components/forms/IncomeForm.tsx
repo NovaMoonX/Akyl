@@ -69,23 +69,11 @@ export default function IncomeForm() {
 
   const handleSave = () => {
     if (!formData) return;
-    
-    // If sub-items exist, calculate the total from them
-    if (formData.subItems && formData.subItems.length > 0) {
-      const calculatedTotal = formData.subItems.reduce((sum, item) => sum + (item.value || 0), 0);
-      const updatedFormData = { ...formData, amount: calculatedTotal };
-      if (incomeItemId) {
-        updateIncome(incomeItemId, updatedFormData);
-      } else {
-        addIncome(updatedFormData);
-      }
+    // Amount is already updated by BudgetItemForm when sub-items change
+    if (incomeItemId) {
+      updateIncome(incomeItemId, formData);
     } else {
-      // Save logic here, e.g., update the budget store or make an API call
-      if (incomeItemId) {
-        updateIncome(incomeItemId, formData);
-      } else {
-        addIncome(formData);
-      }
+      addIncome(formData);
     }
   };
 

@@ -96,10 +96,6 @@ export default function BudgetItemForm({
 
   const handleSave = () => {
     if (onSave && !saveButtonDisabled) {
-      // Update amount with calculated total from sub-items before saving
-      if (hasSubItems) {
-        onFieldChange('amount', calculatedTotal);
-      }
       onSave();
       handleClose();
     }
@@ -113,11 +109,17 @@ export default function BudgetItemForm({
     };
     const updatedSubItems = [...(subItems || []), newSubItem];
     onFieldChange('subItems', updatedSubItems);
+    // Update amount to reflect the new total
+    const newTotal = updatedSubItems.reduce((sum, item) => sum + (item.value || 0), 0);
+    onFieldChange('amount', newTotal);
   };
   
   const handleRemoveSubItem = (id: string) => {
     const updatedSubItems = (subItems || []).filter(item => item.id !== id);
     onFieldChange('subItems', updatedSubItems);
+    // Update amount to reflect the new total
+    const newTotal = updatedSubItems.reduce((sum, item) => sum + (item.value || 0), 0);
+    onFieldChange('amount', newTotal);
   };
   
   const handleUpdateSubItem = (id: string, field: 'title' | 'value', value: string | number) => {
@@ -125,6 +127,11 @@ export default function BudgetItemForm({
       item.id === id ? { ...item, [field]: value } : item
     );
     onFieldChange('subItems', updatedSubItems);
+    // Update amount to reflect the new total when value changes
+    if (field === 'value') {
+      const newTotal = updatedSubItems.reduce((sum, item) => sum + (item.value || 0), 0);
+      onFieldChange('amount', newTotal);
+    }
   };
 
   // use form to save on enter key
@@ -265,46 +272,49 @@ export default function BudgetItemForm({
                 {getCurrencySymbol(currency)}
               </span>
               <span className='mx-1 text-gray-500'>every</span>
-
-              <div className='relative'>
-                <label className='absolute top-0 -translate-y-full pb-0.5 font-medium'>
-                  Frequency
-                </label>
-                <input
-                  type='number'
-                  min={1}
-                  className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-                  aria-description='Enter the frequency interval for this budget item'
-                  value={cadence?.interval === 0 ? '' : cadence?.interval}
-                  placeholder='1'
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '') {
-                      onFieldChange('cadence', { ...cadence, interval: 0 });
-                    } else {
-                      onFieldChange('cadence', {
-                        ...cadence,
-                        interval: Math.max(1, Number(e.target.value)),
-                      });
-                    }
-                  }}
-                />
-              </div>
-              <select
-                className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-                value={cadence?.type}
-                onChange={(e) =>
-                  onFieldChange('cadence', { ...cadence, type: e.target.value })
-                }
-                aria-description='Select the frequency of this budget item'
-              >
-                <option value='day'>day(s)</option>
-                <option value='week'>week(s)</option>
-                <option value='month'>month(s)</option>
-                <option value='year'>year(s)</option>
-              </select>
             </div>
           )}
+          
+          {/* Frequency fields - always shown */}
+          <div className='mt-1 flex flex-wrap items-center gap-2'>
+            <div className='relative'>
+              <label className='absolute top-0 -translate-y-full pb-0.5 font-medium'>
+                Frequency
+              </label>
+              <input
+                type='number'
+                min={1}
+                className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                aria-description='Enter the frequency interval for this budget item'
+                value={cadence?.interval === 0 ? '' : cadence?.interval}
+                placeholder='1'
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    onFieldChange('cadence', { ...cadence, interval: 0 });
+                  } else {
+                    onFieldChange('cadence', {
+                      ...cadence,
+                      interval: Math.max(1, Number(e.target.value)),
+                    });
+                  }
+                }}
+              />
+            </div>
+            <select
+              className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+              value={cadence?.type}
+              onChange={(e) =>
+                onFieldChange('cadence', { ...cadence, type: e.target.value })
+              }
+              aria-description='Select the frequency of this budget item'
+            >
+              <option value='day'>day(s)</option>
+              <option value='week'>week(s)</option>
+              <option value='month'>month(s)</option>
+              <option value='year'>year(s)</option>
+            </select>
+          </div>
           
           {/* Add sub-item button */}
           <div className='mt-2 flex justify-end'>
