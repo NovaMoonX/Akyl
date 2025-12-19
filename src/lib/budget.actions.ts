@@ -1,5 +1,5 @@
 import { getUserLocale } from '../utils';
-import type { BudgetItemCadence, BudgetItemCadenceType } from './budget.types';
+import type { BudgetItemCadence } from './budget.types';
 
 export function formatCurrency(amount: number, currency: string): string {
   const locale = getUserLocale();
@@ -38,19 +38,20 @@ export function getCurrencySymbol(currency: string): string {
 
 function getBudgetItemDayAmount(
   amount: number,
-  cadenceType: BudgetItemCadenceType,
+  cadence: BudgetItemCadence,
 ): number {
-  switch (cadenceType) {
+  const { type, interval } = cadence;
+  switch (type) {
     case 'month':
-      return amount / 30;
+      return amount / (30 * interval);
     case 'week':
-      return amount / 7;
+      return amount / (7 * interval);
     case 'day':
-      return amount;
+      return amount / interval;
     case 'year':
-      return amount / 365;
+      return amount / (365 * interval);
     default:
-      throw new Error(`Unknown cadence type: ${cadenceType}`);
+      throw new Error(`Unknown cadence type: ${type}`);
   }
 }
 
@@ -59,7 +60,7 @@ export function getBudgetItemWindowAmount(
   itemCadence: BudgetItemCadence,
   window: BudgetItemCadence,
 ): number {
-  const itemDayAmount = getBudgetItemDayAmount(amount, itemCadence.type);
+  const itemDayAmount = getBudgetItemDayAmount(amount, itemCadence);
   switch (window.type) {
     case 'month':
       return itemDayAmount * 30 * window.interval;
