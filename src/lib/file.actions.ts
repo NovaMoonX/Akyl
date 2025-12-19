@@ -413,7 +413,6 @@ export function validateCSV(content: string): CSVValidationResult {
 
   // Validate that sections have data
   if (hasIncomeSection) {
-    let hasIncomeData = false;
     for (let i = incomeHeaderIndex + 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
@@ -423,7 +422,6 @@ export function validateCSV(content: string): CSVValidationResult {
         break;
       }
       if (cells.length >= 4) {
-        hasIncomeData = true;
         // Validate frequency values if present
         if (hasFrequency && cells.length >= 7) {
           const interval = parseInt(cells[5]);
@@ -435,22 +433,16 @@ export function validateCSV(content: string): CSVValidationResult {
             errors.push(`Invalid frequency type "${cells[6]}" on line ${i + 1} (must be: day, week, month, or year)`);
           }
         }
-        break;
       }
-    }
-    if (!hasIncomeData && hasIncomeSection) {
-      // It's OK to have headers but no data - this is not an error
     }
   }
 
   if (hasExpenseSection) {
-    let hasExpenseData = false;
     for (let i = expenseHeaderIndex + 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
       const cells = parseCSVLine(line);
       if (cells.length >= 4) {
-        hasExpenseData = true;
         // Validate frequency values if present
         if (hasFrequency && cells.length >= 7) {
           const interval = parseInt(cells[5]);
@@ -462,11 +454,7 @@ export function validateCSV(content: string): CSVValidationResult {
             errors.push(`Invalid frequency type "${cells[6]}" on line ${i + 1} (must be: day, week, month, or year)`);
           }
         }
-        break;
       }
-    }
-    if (!hasExpenseData && hasExpenseSection) {
-      // It's OK to have headers but no data - this is not an error
     }
   }
 
