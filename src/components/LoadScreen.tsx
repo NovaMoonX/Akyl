@@ -20,6 +20,7 @@ import {
   createNewSpace,
   importFile,
   type Space,
+  type SpaceMetadata,
 } from '../lib';
 import { join } from '../utils';
 import DreamTrigger from './DreamTrigger';
@@ -59,10 +60,7 @@ export default function LoadScreen() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
-  const [deletedSpaceIds, setDeletedSpaceIds] = useState<Set<string>>(
-    new Set(),
-  );
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [localSpaceOverrides, setLocalSpaceOverrides] = useState<Map<string, Space>>(new Map());
   const { spaces: localSpaces, limitMet } = useBrowserSpaces();
   const { spaces: syncedSpaces, spacesMap: syncedSpacesMap } =
     useSyncAllSpaces();
@@ -89,10 +87,18 @@ export default function LoadScreen() {
       chosenSpaces = localSpaces.filter((space) => !space.metadata?.createdBy);
     }
 
-    const filteredSpaces = chosenSpaces.filter(
-      (s) => !deletedSpaceIds.has(s.id),
-    );
-    const sortedSpaces = filteredSpaces.sort((a, b) => {
+    // Apply local overrides (for pinning and deletions)
+    const spacesWithOverrides = chosenSpaces
+      .map(space => {
+        const override = localSpaceOverrides.get(space.id);
+        return override || space;
+      })
+      .filter(space => {
+        const override = localSpaceOverrides.get(space.id);
+        return !override || !(override.metadata as SpaceMetadata & { deletedAt?: number })?.deletedAt;
+      });
+
+    const sortedSpaces = spacesWithOverrides.sort((a, b) => {
       const aUpdated = a.metadata?.updatedAt ?? 0;
       const bUpdated = b.metadata?.updatedAt ?? 0;
       if (bUpdated !== aUpdated) {
@@ -110,8 +116,7 @@ export default function LoadScreen() {
     syncedSpaces,
     syncedSpacesMap,
     currentUser?.uid,
-    deletedSpaceIds,
-    refreshKey,
+    localSpaceOverrides,
   ]);
 
   const items = useMemo(() => {
@@ -166,8 +171,13 @@ export default function LoadScreen() {
       space.pinned = !currentPinned;
       space.metadata.updatedAt = Date.now();
       localStorage.setItem(spaceId, JSON.stringify(space));
-      // Force re-render
-      setRefreshKey(prev => prev + 1);
+      
+      // Update local state
+      setLocalSpaceOverrides(prev => {
+        const newMap = new Map(prev);
+        newMap.set(spaceId, space);
+        return newMap;
+      });
     }
   };
 
@@ -346,7 +356,23 @@ export default function LoadScreen() {
         onClose={() => setDeleteSpaceId(undefined)}
         spaceId={deleteSpaceId}
         onDelete={(id) => {
-          setDeletedSpaceIds((prev) => new Set(prev).add(id));
+          const spaceData = localStorage.getItem(id);
+          if (spaceData) {
+            const space = JSON.parse(spaceData) as Space;
+            // Mark as deleted in local override by adding deletedAt to metadata
+            const deletedSpace: Space = {
+              ...space,
+              metadata: {
+                ...space.metadata,
+                deletedAt: Date.now(),
+              } as SpaceMetadata & { deletedAt: number }
+            };
+            setLocalSpaceOverrides(prev => {
+              const newMap = new Map(prev);
+              newMap.set(id, deletedSpace);
+              return newMap;
+            });
+          }
         }}
       />
 
