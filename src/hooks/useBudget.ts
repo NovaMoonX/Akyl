@@ -84,7 +84,8 @@ export default function useBudget() {
 
   const incomeSources = useMemo(() => {
     const sourceCount = new Map<string, number>();
-    for (const income of incomes) {
+    // Use incomesInSpace to share sources across all sheets
+    for (const income of incomesInSpace ?? []) {
       if (income.source) {
         sourceCount.set(
           income.source,
@@ -95,11 +96,12 @@ export default function useBudget() {
     return Array.from(sourceCount.entries())
       .sort((a, b) => b[1] - a[1])
       .map(([source]) => source);
-  }, [incomes]);
+  }, [incomesInSpace]);
 
   const expenseSubCategoriesMap = useMemo(() => {
     const map: Record<string, string[]> = {};
-    for (const expense of expenses) {
+    // Use expensesInSpace to share subcategories across all sheets
+    for (const expense of expensesInSpace ?? []) {
       if (expense.category && expense.subCategory) {
         if (!map[expense.category]) {
           map[expense.category] = [];
@@ -111,27 +113,29 @@ export default function useBudget() {
       }
     }
     return map;
-  }, [expenses]);
+  }, [expensesInSpace]);
 
   const incomeTypes = useMemo(() => {
     const types = new Set<string>(BaseIncomeTypes);
-    for (const income of incomes) {
+    // Use incomesInSpace to share types across all sheets
+    for (const income of incomesInSpace ?? []) {
       if (income.type) {
         types.add(income.type);
       }
     }
     return Array.from(types).sort();
-  }, [incomes]);
+  }, [incomesInSpace]);
 
   const expenseCategories = useMemo(() => {
     const categories = new Set<string>(BaseExpenseCategories);
-    for (const expense of expenses) {
+    // Use expensesInSpace to share categories across all sheets
+    for (const expense of expensesInSpace ?? []) {
       if (expense.category) {
         categories.add(expense.category);
       }
     }
     return Array.from(categories).sort();
-  }, [expenses]);
+  }, [expensesInSpace]);
 
   const incomesMap = useMemo(() => {
     return incomes.reduce(
