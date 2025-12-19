@@ -13,10 +13,19 @@ import { generateId } from '../utils';
 // Valid frequency types for CSV import/export
 const VALID_FREQUENCY_TYPES: BudgetItemCadenceType[] = ['day', 'week', 'month', 'year'];
 
-// CSV column count constants
-const MIN_REQUIRED_CELLS = 4; // Type, Label, Description, Amount
-const MIN_CELLS_WITH_FREQUENCY = 7; // Includes Frequency Interval and Type
-const MIN_CELLS_WITH_NOTES_AND_FREQUENCY = 8; // Includes Notes after frequency
+// Column mapping interface for CSV parsing
+interface ColumnMapping {
+  [key: string]: number;
+}
+
+// Helper function to create column mapping from header row
+function createColumnMapping(headers: string[]): ColumnMapping {
+  const mapping: ColumnMapping = {};
+  headers.forEach((header, index) => {
+    mapping[header.trim()] = index;
+  });
+  return mapping;
+}
 
 // Helper function to validate frequency values
 function validateFrequencyValues(
@@ -41,17 +50,21 @@ function validateFrequencyValues(
   }
 }
 
-// Helper function to parse frequency from CSV cells
-function parseFrequency(cells: string[], hasFrequency: boolean): {
+// Helper function to parse frequency from CSV cells using column mapping
+function parseFrequency(cells: string[], columnMap: ColumnMapping): {
   interval: number;
   type: BudgetItemCadenceType;
 } {
-  if (!hasFrequency || cells.length < MIN_CELLS_WITH_FREQUENCY) {
+  const intervalIdx = columnMap['Frequency Interval'];
+  const typeIdx = columnMap['Frequency Type'];
+  
+  // If frequency columns don't exist, return defaults
+  if (intervalIdx === undefined || typeIdx === undefined) {
     return { interval: 1, type: 'month' };
   }
   
-  const frequencyInterval = parseInt(cells[5]);
-  const frequencyType = cells[6].toLowerCase();
+  const frequencyInterval = parseInt(cells[intervalIdx]);
+  const frequencyType = cells[typeIdx]?.toLowerCase();
   
   return {
     interval: isNaN(frequencyInterval) || frequencyInterval < 1 ? 1 : frequencyInterval,
@@ -61,12 +74,13 @@ function parseFrequency(cells: string[], hasFrequency: boolean): {
   };
 }
 
-// Helper function to get notes from CSV cells
-function parseNotes(cells: string[], hasFrequency: boolean): string {
-  if (hasFrequency && cells.length >= MIN_CELLS_WITH_NOTES_AND_FREQUENCY) {
-    return cells[7] || '';
+// Helper function to get notes from CSV cells using column mapping
+function parseNotes(cells: string[], columnMap: ColumnMapping): string {
+  const notesIdx = columnMap['Notes'];
+  if (notesIdx !== undefined) {
+    return cells[notesIdx] || '';
   }
-  return cells[5] || '';
+  return '';
 }
 
 export function exportFile(fileName: string, space: Space) {
@@ -347,6 +361,8 @@ export function parseCSVContent(content: string, sheetId?: string): CSVParseResu
   let hasFrequency = false;
   let incomeHeaderIndex = -1;
   let expenseHeaderIndex = -1;
+  let incomeColumnMap: ColumnMapping = {};
+  let expenseColumnMap: ColumnMapping = {};
 
   // Find sections and validate headers
   for (let i = 0; i < lines.length; i++) {
@@ -360,38 +376,42 @@ export function parseCSVContent(content: string, sheetId?: string): CSVParseResu
       if (cells.includes('Source')) {
         hasIncomeSection = true;
         incomeHeaderIndex = i;
+        incomeColumnMap = createColumnMapping(cells);
         
         // Check for required columns
-        const hasType = cells.includes('Type');
-        const hasLabel = cells.includes('Label');
-        const hasAmount = cells.includes('Amount');
-        const hasSource = cells.includes('Source');
+        const hasType = incomeColumnMap['Type'] !== undefined;
+        const hasLabel = incomeColumnMap['Label'] !== undefined;
+        const hasAmount = incomeColumnMap['Amount'] !== undefined;
+        const hasSource = incomeColumnMap['Source'] !== undefined;
         
         if (!hasType || !hasLabel || !hasAmount || !hasSource) {
           errors.push('Income section missing required columns (Type, Label, Amount, Source)');
         }
         
         // Check if frequency columns are present
-        if (cells.includes('Frequency Interval') && cells.includes('Frequency Type')) {
+        if (incomeColumnMap['Frequency Interval'] !== undefined && 
+            incomeColumnMap['Frequency Type'] !== undefined) {
           hasFrequency = true;
         }
         
       } else if (cells.includes('Category')) {
         hasExpenseSection = true;
         expenseHeaderIndex = i;
+        expenseColumnMap = createColumnMapping(cells);
         
         // Check for required columns
-        const hasType = cells.includes('Type');
-        const hasLabel = cells.includes('Label');
-        const hasAmount = cells.includes('Amount');
-        const hasCategory = cells.includes('Category');
+        const hasType = expenseColumnMap['Type'] !== undefined;
+        const hasLabel = expenseColumnMap['Label'] !== undefined;
+        const hasAmount = expenseColumnMap['Amount'] !== undefined;
+        const hasCategory = expenseColumnMap['Category'] !== undefined;
         
         if (!hasType || !hasLabel || !hasAmount || !hasCategory) {
           errors.push('Expense section missing required columns (Type, Label, Amount, Category)');
         }
         
         // Check if frequency columns are present
-        if (cells.includes('Frequency Interval') && cells.includes('Frequency Type')) {
+        if (expenseColumnMap['Frequency Interval'] !== undefined && 
+            expenseColumnMap['Frequency Type'] !== undefined) {
           hasFrequency = true;
         }
       }
@@ -417,23 +437,38 @@ export function parseCSVContent(content: string, sheetId?: string): CSVParseResu
         // Hit expense section
         break;
       }
-      if (cells.length >= MIN_REQUIRED_CELLS) {
+      
+      // Check if we have minimum required data
+      const labelIdx = incomeColumnMap['Label'];
+      const amountIdx = incomeColumnMap['Amount'];
+      const sourceIdx = incomeColumnMap['Source'];
+      
+      if (labelIdx === undefined || amountIdx === undefined || sourceIdx === undefined) {
+        continue;
+      }
+      
+      if (cells.length > Math.max(labelIdx, amountIdx, sourceIdx)) {
         // Validate frequency values if present
-        if (hasFrequency && cells.length >= MIN_CELLS_WITH_FREQUENCY) {
-          validateFrequencyValues(cells[5], cells[6], i + 1, errors);
+        const intervalIdx = incomeColumnMap['Frequency Interval'];
+        const typeIdx = incomeColumnMap['Frequency Type'];
+        
+        if (intervalIdx !== undefined && typeIdx !== undefined && 
+            cells.length > Math.max(intervalIdx, typeIdx)) {
+          validateFrequencyValues(cells[intervalIdx], cells[typeIdx], i + 1, errors);
         }
         
         // Parse the income data
-        const cadence = parseFrequency(cells, hasFrequency);
-        const notes = parseNotes(cells, hasFrequency);
+        const cadence = parseFrequency(cells, incomeColumnMap);
+        const notes = parseNotes(cells, incomeColumnMap);
+        const descriptionIdx = incomeColumnMap['Description'];
         
         const income: Income = {
           id: generateId('budget'),
-          label: cells[1],
-          description: cells[2],
-          amount: parseFloat(cells[3]) || 0,
-          source: cells[4],
-          type: cells[4], // Using source as type
+          label: cells[labelIdx],
+          description: descriptionIdx !== undefined ? cells[descriptionIdx] : '',
+          amount: parseFloat(cells[amountIdx]) || 0,
+          source: cells[sourceIdx],
+          type: cells[sourceIdx], // Using source as type
           cadence,
           notes,
         };
@@ -453,22 +488,37 @@ export function parseCSVContent(content: string, sheetId?: string): CSVParseResu
       const line = lines[i].trim();
       if (!line) continue;
       const cells = parseCSVLine(line);
-      if (cells.length >= MIN_REQUIRED_CELLS) {
+      
+      // Check if we have minimum required data
+      const labelIdx = expenseColumnMap['Label'];
+      const amountIdx = expenseColumnMap['Amount'];
+      const categoryIdx = expenseColumnMap['Category'];
+      
+      if (labelIdx === undefined || amountIdx === undefined || categoryIdx === undefined) {
+        continue;
+      }
+      
+      if (cells.length > Math.max(labelIdx, amountIdx, categoryIdx)) {
         // Validate frequency values if present
-        if (hasFrequency && cells.length >= MIN_CELLS_WITH_FREQUENCY) {
-          validateFrequencyValues(cells[5], cells[6], i + 1, errors);
+        const intervalIdx = expenseColumnMap['Frequency Interval'];
+        const typeIdx = expenseColumnMap['Frequency Type'];
+        
+        if (intervalIdx !== undefined && typeIdx !== undefined && 
+            cells.length > Math.max(intervalIdx, typeIdx)) {
+          validateFrequencyValues(cells[intervalIdx], cells[typeIdx], i + 1, errors);
         }
         
         // Parse the expense data
-        const cadence = parseFrequency(cells, hasFrequency);
-        const notes = parseNotes(cells, hasFrequency);
+        const cadence = parseFrequency(cells, expenseColumnMap);
+        const notes = parseNotes(cells, expenseColumnMap);
+        const descriptionIdx = expenseColumnMap['Description'];
         
         const expense: Expense = {
           id: generateId('budget'),
-          label: cells[1],
-          description: cells[2],
-          amount: parseFloat(cells[3]) || 0,
-          category: cells[4],
+          label: cells[labelIdx],
+          description: descriptionIdx !== undefined ? cells[descriptionIdx] : '',
+          amount: parseFloat(cells[amountIdx]) || 0,
+          category: cells[categoryIdx],
           subCategory: '', // Default to empty since not included in CSV
           cadence,
           notes,
