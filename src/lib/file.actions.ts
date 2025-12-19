@@ -266,94 +266,17 @@ export async function importCSV(
     throw new Error('No file selected');
   }
 
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const content = event.target?.result as string;
-        const lines = content.split('\n').filter((line) => line.trim());
-
-        let currentSection: 'income' | 'expense' | null = null;
-        let hasFrequency = false;
-        const newIncomes: Income[] = [];
-        const newExpenses: Expense[] = [];
-
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line) continue;
-
-          const cells = parseCSVLine(line);
-
-          // Skip empty lines
-          if (cells.length === 0) continue;
-
-          // Detect section headers
-          if (cells[0] === 'Type' && cells[1] === 'Label') {
-            // Check if this is income or expense header
-            if (cells.includes('Source')) {
-              currentSection = 'income';
-            } else if (cells.includes('Category')) {
-              currentSection = 'expense';
-            }
-            // Check if frequency columns are present
-            if (cells.includes('Frequency Interval') && cells.includes('Frequency Type')) {
-              hasFrequency = true;
-            }
-            continue;
-          }
-
-          // Parse data rows
-          if (currentSection === 'income' && cells.length >= MIN_REQUIRED_CELLS) {
-            const cadence = parseFrequency(cells, hasFrequency);
-            const notes = parseNotes(cells, hasFrequency);
-            
-            const income: Income = {
-              id: generateId('budget'),
-              label: cells[1],
-              description: cells[2],
-              amount: parseFloat(cells[3]) || 0,
-              source: cells[4],
-              type: cells[4], // Using source as type
-              cadence,
-              notes,
-            };
-            // Assign to sheet if specified
-            if (sheetId && sheetId !== 'all') {
-              income.sheets = [sheetId];
-            }
-            newIncomes.push(income);
-          } else if (currentSection === 'expense' && cells.length >= MIN_REQUIRED_CELLS) {
-            const cadence = parseFrequency(cells, hasFrequency);
-            const notes = parseNotes(cells, hasFrequency);
-            
-            const expense: Expense = {
-              id: generateId('budget'),
-              label: cells[1],
-              description: cells[2],
-              amount: parseFloat(cells[3]) || 0,
-              category: cells[4],
-              subCategory: '', // Default to empty since not included in CSV
-              cadence,
-              notes,
-            };
-            // Assign to sheet if specified
-            if (sheetId && sheetId !== 'all') {
-              expense.sheets = [sheetId];
-            }
-            newExpenses.push(expense);
-          }
-        }
-
-        resolve({ incomes: newIncomes, expenses: newExpenses });
-      } catch (error) {
-        reject(error);
-      }
-    };
-    reader.onerror = (error) => {
-      reject(error);
-    };
-    reader.readAsText(file);
-  });
+  const content = await file.text();
+  const result = parseCSVContent(content, sheetId);
+  
+  if (!result.valid) {
+    throw new Error(result.errors.join('\n'));
+  }
+  
+  return {
+    incomes: result.incomes,
+    expenses: result.expenses,
+  };
 }
 
 function parseCSVLine(line: string): string[] {
@@ -389,18 +312,34 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
-export interface CSVValidationResult {
+export interface CSVParseResult {
   valid: boolean;
   errors: string[];
   hasFrequency: boolean;
+  incomes: Income[];
+  expenses: Expense[];
 }
 
-export function validateCSV(content: string): CSVValidationResult {
+/**
+ * Reads and parses CSV content, validating format and returning both data and any errors.
+ * This function combines validation and parsing in a single pass.
+ * 
+ * @param content - The CSV file content as a string
+ * @param sheetId - Optional sheet ID to assign parsed items to
+ * @returns CSVParseResult with validation status, errors, and parsed data
+ */
+export function parseCSVContent(content: string, sheetId?: string): CSVParseResult {
   const errors: string[] = [];
   const lines = content.split('\n').filter((line) => line.trim());
   
   if (lines.length === 0) {
-    return { valid: false, errors: ['CSV file is empty'], hasFrequency: false };
+    return { 
+      valid: false, 
+      errors: ['CSV file is empty'], 
+      hasFrequency: false,
+      incomes: [],
+      expenses: []
+    };
   }
 
   let hasIncomeSection = false;
@@ -462,9 +401,13 @@ export function validateCSV(content: string): CSVValidationResult {
   // At least one section is required
   if (!hasIncomeSection && !hasExpenseSection) {
     errors.push('CSV must contain at least one section (Income or Expense) with proper headers');
+    return { valid: false, errors, hasFrequency: false, incomes: [], expenses: [] };
   }
 
-  // Validate that sections have data
+  // Parse data and validate
+  const newIncomes: Income[] = [];
+  const newExpenses: Expense[] = [];
+
   if (hasIncomeSection) {
     for (let i = incomeHeaderIndex + 1; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -479,6 +422,28 @@ export function validateCSV(content: string): CSVValidationResult {
         if (hasFrequency && cells.length >= MIN_CELLS_WITH_FREQUENCY) {
           validateFrequencyValues(cells[5], cells[6], i + 1, errors);
         }
+        
+        // Parse the income data
+        const cadence = parseFrequency(cells, hasFrequency);
+        const notes = parseNotes(cells, hasFrequency);
+        
+        const income: Income = {
+          id: generateId('budget'),
+          label: cells[1],
+          description: cells[2],
+          amount: parseFloat(cells[3]) || 0,
+          source: cells[4],
+          type: cells[4], // Using source as type
+          cadence,
+          notes,
+        };
+        
+        // Assign to sheet if specified
+        if (sheetId && sheetId !== 'all') {
+          income.sheets = [sheetId];
+        }
+        
+        newIncomes.push(income);
       }
     }
   }
@@ -493,6 +458,28 @@ export function validateCSV(content: string): CSVValidationResult {
         if (hasFrequency && cells.length >= MIN_CELLS_WITH_FREQUENCY) {
           validateFrequencyValues(cells[5], cells[6], i + 1, errors);
         }
+        
+        // Parse the expense data
+        const cadence = parseFrequency(cells, hasFrequency);
+        const notes = parseNotes(cells, hasFrequency);
+        
+        const expense: Expense = {
+          id: generateId('budget'),
+          label: cells[1],
+          description: cells[2],
+          amount: parseFloat(cells[3]) || 0,
+          category: cells[4],
+          subCategory: '', // Default to empty since not included in CSV
+          cadence,
+          notes,
+        };
+        
+        // Assign to sheet if specified
+        if (sheetId && sheetId !== 'all') {
+          expense.sheets = [sheetId];
+        }
+        
+        newExpenses.push(expense);
       }
     }
   }
@@ -501,5 +488,7 @@ export function validateCSV(content: string): CSVValidationResult {
     valid: errors.length === 0,
     errors,
     hasFrequency,
+    incomes: newIncomes,
+    expenses: newExpenses,
   };
 }
