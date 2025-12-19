@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../../contexts/AuthContext';
-import { createNewSpace, exportCSVTemplate, importCSV } from '../../lib';
+import { createNewSpace, exportCSVTemplate, importCSV, validateCSV } from '../../lib';
+import type { CSVValidationResult } from '../../lib';
 import { useSpace } from '../../store';
 import Modal from '../ui/Modal';
 import { generateId } from '../../utils';
@@ -25,6 +26,8 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [validationResult, setValidationResult] = useState<CSVValidationResult | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
 
   const hasSheets = sheets && sheets.length > 0;
   const hasSpace = space && space.id;
@@ -38,11 +41,29 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = '.csv';
-      input.onchange = (e) => {
+      input.onchange = async (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
         if (file) {
           setSelectedFile(file);
           setError('');
+          setValidationResult(null);
+          
+          // Validate the CSV file
+          setIsValidating(true);
+          try {
+            const content = await file.text();
+            const result = validateCSV(content);
+            setValidationResult(result);
+            
+            if (!result.valid) {
+              setError('CSV validation failed. Please check the errors below.');
+            }
+          } catch {
+            setError('Failed to read or validate the file');
+            setValidationResult(null);
+          } finally {
+            setIsValidating(false);
+          }
         }
       };
       input.click();
@@ -193,6 +214,8 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
     setSelectedSheet('');
     setSelectedFile(null);
     setShowConfirmDialog(false);
+    setValidationResult(null);
+    setIsValidating(false);
     onClose();
   };
 
@@ -222,15 +245,37 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
             <button
               onClick={handleFileSelect}
               className='btn btn-secondary flex-1'
+              disabled={isValidating}
             >
-              {selectedFile ? selectedFile.name : 'Choose File'}
+              {isValidating ? 'Validating...' : selectedFile ? selectedFile.name : 'Choose File'}
             </button>
-            {selectedFile && (
+            {selectedFile && !isValidating && validationResult?.valid && (
               <span className='text-sm text-green-600 dark:text-green-400'>
                 ✓
               </span>
             )}
+            {selectedFile && !isValidating && validationResult && !validationResult.valid && (
+              <span className='text-sm text-red-600 dark:text-red-400'>
+                ✗
+              </span>
+            )}
           </div>
+          {selectedFile && validationResult && !validationResult.valid && (
+            <div className='mt-2 rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-300'>
+              <p className='font-medium mb-1'>Validation Errors:</p>
+              <ul className='list-disc list-inside space-y-1'>
+                {validationResult.errors.map((err, idx) => (
+                  <li key={idx}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {selectedFile && validationResult?.valid && !validationResult.hasFrequency && (
+            <div className='mt-2 rounded-md bg-blue-50 p-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'>
+              <p className='font-medium'>Note:</p>
+              <p>No frequency columns detected. All items will default to "1 each month".</p>
+            </div>
+          )}
         </div>
 
         {hasSpace && (
@@ -432,7 +477,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
             <button
               onClick={handleImport}
               className='btn btn-primary'
-              disabled={isLoading || !selectedFile}
+              disabled={isLoading || !selectedFile || isValidating || (validationResult !== null && !validationResult.valid)}
             >
               {isLoading ? 'Importing...' : 'Import CSV'}
             </button>

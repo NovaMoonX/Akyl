@@ -121,7 +121,7 @@ export function exportCSV(fileName: string, space: Space, sheetId?: string) {
 
   // Create CSV content for incomes
   const incomesCSV = [
-    'Type,Label,Description,Amount,Source,Notes',
+    'Type,Label,Description,Amount,Source,Frequency Interval,Frequency Type,Notes',
     ...incomes.map((income: Income) =>
       [
         'Income',
@@ -129,6 +129,8 @@ export function exportCSV(fileName: string, space: Space, sheetId?: string) {
         escapeCSV(income.description),
         income.amount,
         escapeCSV(income.source),
+        income.cadence?.interval || 1,
+        income.cadence?.type || 'month',
         escapeCSV(income.notes),
       ].join(',')
     ),
@@ -136,7 +138,7 @@ export function exportCSV(fileName: string, space: Space, sheetId?: string) {
 
   // Create CSV content for expenses
   const expensesCSV = [
-    'Type,Label,Description,Amount,Category,Notes',
+    'Type,Label,Description,Amount,Category,Frequency Interval,Frequency Type,Notes',
     ...expenses.map((expense: Expense) =>
       [
         'Expense',
@@ -144,6 +146,8 @@ export function exportCSV(fileName: string, space: Space, sheetId?: string) {
         escapeCSV(expense.description),
         expense.amount,
         escapeCSV(expense.category),
+        expense.cadence?.interval || 1,
+        expense.cadence?.type || 'month',
         escapeCSV(expense.notes),
       ].join(',')
     ),
@@ -163,15 +167,15 @@ export function exportCSV(fileName: string, space: Space, sheetId?: string) {
 
 export function exportCSVTemplate() {
   const incomesCSV = [
-    'Type,Label,Description,Amount,Source,Notes',
-    'Income,Salary,Monthly salary,5000,Tech Company,Regular income',
-    'Income,Freelance,Side projects,1000,Freelance Work,Variable income',
+    'Type,Label,Description,Amount,Source,Frequency Interval,Frequency Type,Notes',
+    'Income,Salary,Monthly salary,5000,Tech Company,1,month,Regular income',
+    'Income,Freelance,Side projects,1000,Freelance Work,2,week,Variable income',
   ];
 
   const expensesCSV = [
-    'Type,Label,Description,Amount,Category,Notes',
-    'Expense,Rent,Monthly rent payment,1500,Housing,Fixed cost',
-    'Expense,Groceries,Food and supplies,500,Food,Weekly shopping',
+    'Type,Label,Description,Amount,Category,Frequency Interval,Frequency Type,Notes',
+    'Expense,Rent,Monthly rent payment,1500,Housing,1,month,Fixed cost',
+    'Expense,Groceries,Food and supplies,500,Food,1,week,Weekly shopping',
   ];
 
   const csvContent = [...incomesCSV, '', ...expensesCSV].join('\n');
@@ -234,7 +238,11 @@ export async function importCSV(
           }
 
           // Parse data rows
-          if (currentSection === 'income' && cells.length >= 6) {
+          if (currentSection === 'income' && cells.length >= 4) {
+            // Determine if this row has frequency data
+            const frequencyInterval = cells.length >= 6 && cells[5] ? parseInt(cells[5]) : 1;
+            const frequencyType = cells.length >= 7 && cells[6] ? cells[6].toLowerCase() : 'month';
+            
             const income: Income = {
               id: generateId('budget'),
               label: cells[1],
@@ -243,17 +251,23 @@ export async function importCSV(
               source: cells[4],
               type: cells[4], // Using source as type
               cadence: {
-                type: 'month',
-                interval: 1,
+                type: (frequencyType === 'day' || frequencyType === 'week' || frequencyType === 'month' || frequencyType === 'year') 
+                  ? frequencyType 
+                  : 'month',
+                interval: isNaN(frequencyInterval) || frequencyInterval < 1 ? 1 : frequencyInterval,
               },
-              notes: cells[5] || '',
+              notes: cells.length >= 8 ? cells[7] || '' : (cells[5] || ''),
             };
             // Assign to sheet if specified
             if (sheetId && sheetId !== 'all') {
               income.sheets = [sheetId];
             }
             newIncomes.push(income);
-          } else if (currentSection === 'expense' && cells.length >= 6) {
+          } else if (currentSection === 'expense' && cells.length >= 4) {
+            // Determine if this row has frequency data
+            const frequencyInterval = cells.length >= 6 && cells[5] ? parseInt(cells[5]) : 1;
+            const frequencyType = cells.length >= 7 && cells[6] ? cells[6].toLowerCase() : 'month';
+            
             const expense: Expense = {
               id: generateId('budget'),
               label: cells[1],
@@ -262,10 +276,12 @@ export async function importCSV(
               category: cells[4],
               subCategory: '', // Default to empty since not included in CSV
               cadence: {
-                type: 'month',
-                interval: 1,
+                type: (frequencyType === 'day' || frequencyType === 'week' || frequencyType === 'month' || frequencyType === 'year') 
+                  ? frequencyType 
+                  : 'month',
+                interval: isNaN(frequencyInterval) || frequencyInterval < 1 ? 1 : frequencyInterval,
               },
-              notes: cells[5] || '',
+              notes: cells.length >= 8 ? cells[7] || '' : (cells[5] || ''),
             };
             // Assign to sheet if specified
             if (sheetId && sheetId !== 'all') {
@@ -318,4 +334,145 @@ function parseCSVLine(line: string): string[] {
   result.push(current);
 
   return result;
+}
+
+export interface CSVValidationResult {
+  valid: boolean;
+  errors: string[];
+  hasFrequency: boolean;
+}
+
+export function validateCSV(content: string): CSVValidationResult {
+  const errors: string[] = [];
+  const lines = content.split('\n').filter((line) => line.trim());
+  
+  if (lines.length === 0) {
+    return { valid: false, errors: ['CSV file is empty'], hasFrequency: false };
+  }
+
+  let hasIncomeSection = false;
+  let hasExpenseSection = false;
+  let hasFrequency = false;
+  let incomeHeaderIndex = -1;
+  let expenseHeaderIndex = -1;
+
+  // Find sections and validate headers
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const cells = parseCSVLine(line);
+    
+    // Detect section headers
+    if (cells[0] === 'Type' && cells[1] === 'Label') {
+      if (cells.includes('Source')) {
+        hasIncomeSection = true;
+        incomeHeaderIndex = i;
+        
+        // Check for required columns
+        const hasType = cells.includes('Type');
+        const hasLabel = cells.includes('Label');
+        const hasAmount = cells.includes('Amount');
+        const hasSource = cells.includes('Source');
+        
+        if (!hasType || !hasLabel || !hasAmount || !hasSource) {
+          errors.push('Income section missing required columns (Type, Label, Amount, Source)');
+        }
+        
+        // Check if frequency columns are present
+        if (cells.includes('Frequency Interval') && cells.includes('Frequency Type')) {
+          hasFrequency = true;
+        }
+        
+      } else if (cells.includes('Category')) {
+        hasExpenseSection = true;
+        expenseHeaderIndex = i;
+        
+        // Check for required columns
+        const hasType = cells.includes('Type');
+        const hasLabel = cells.includes('Label');
+        const hasAmount = cells.includes('Amount');
+        const hasCategory = cells.includes('Category');
+        
+        if (!hasType || !hasLabel || !hasAmount || !hasCategory) {
+          errors.push('Expense section missing required columns (Type, Label, Amount, Category)');
+        }
+        
+        // Check if frequency columns are present
+        if (cells.includes('Frequency Interval') && cells.includes('Frequency Type')) {
+          hasFrequency = true;
+        }
+      }
+    }
+  }
+
+  // At least one section is required
+  if (!hasIncomeSection && !hasExpenseSection) {
+    errors.push('CSV must contain at least one section (Income or Expense) with proper headers');
+  }
+
+  // Validate that sections have data
+  if (hasIncomeSection) {
+    let hasIncomeData = false;
+    for (let i = incomeHeaderIndex + 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      const cells = parseCSVLine(line);
+      if (cells[0] === 'Type' && cells.includes('Category')) {
+        // Hit expense section
+        break;
+      }
+      if (cells.length >= 4) {
+        hasIncomeData = true;
+        // Validate frequency values if present
+        if (hasFrequency && cells.length >= 7) {
+          const interval = parseInt(cells[5]);
+          const type = cells[6].toLowerCase();
+          if (isNaN(interval) || interval < 1) {
+            errors.push(`Invalid frequency interval "${cells[5]}" on line ${i + 1} (must be a positive number)`);
+          }
+          if (!['day', 'week', 'month', 'year'].includes(type)) {
+            errors.push(`Invalid frequency type "${cells[6]}" on line ${i + 1} (must be: day, week, month, or year)`);
+          }
+        }
+        break;
+      }
+    }
+    if (!hasIncomeData && hasIncomeSection) {
+      // It's OK to have headers but no data - this is not an error
+    }
+  }
+
+  if (hasExpenseSection) {
+    let hasExpenseData = false;
+    for (let i = expenseHeaderIndex + 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      const cells = parseCSVLine(line);
+      if (cells.length >= 4) {
+        hasExpenseData = true;
+        // Validate frequency values if present
+        if (hasFrequency && cells.length >= 7) {
+          const interval = parseInt(cells[5]);
+          const type = cells[6].toLowerCase();
+          if (isNaN(interval) || interval < 1) {
+            errors.push(`Invalid frequency interval "${cells[5]}" on line ${i + 1} (must be a positive number)`);
+          }
+          if (!['day', 'week', 'month', 'year'].includes(type)) {
+            errors.push(`Invalid frequency type "${cells[6]}" on line ${i + 1} (must be: day, week, month, or year)`);
+          }
+        }
+        break;
+      }
+    }
+    if (!hasExpenseData && hasExpenseSection) {
+      // It's OK to have headers but no data - this is not an error
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    hasFrequency,
+  };
 }

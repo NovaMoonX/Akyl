@@ -33,7 +33,9 @@ export {
   exportCSV,
   exportCSVTemplate,
   importCSV,
+  validateCSV,
 } from './file.actions';
+export type { CSVValidationResult } from './file.actions';
 
 export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 
