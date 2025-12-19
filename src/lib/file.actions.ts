@@ -6,8 +6,63 @@ import {
   FILE_TYPE,
 } from './file.constants';
 import type { Expense, Income } from './budget.types';
+import type { BudgetItemCadenceType } from './budget.types';
 import type { Space } from './space.types';
 import { generateId } from '../utils';
+
+// Valid frequency types for CSV import/export
+const VALID_FREQUENCY_TYPES: BudgetItemCadenceType[] = ['day', 'week', 'month', 'year'];
+
+// Helper function to validate frequency values
+function validateFrequencyValues(
+  interval: string,
+  type: string,
+  lineNumber: number,
+  errors: string[]
+): void {
+  const parsedInterval = parseInt(interval);
+  const lowerType = type.toLowerCase();
+  
+  if (isNaN(parsedInterval) || parsedInterval < 1) {
+    errors.push(
+      `Invalid frequency interval "${interval}" on line ${lineNumber} (must be a positive number)`
+    );
+  }
+  
+  if (!VALID_FREQUENCY_TYPES.includes(lowerType as BudgetItemCadenceType)) {
+    errors.push(
+      `Invalid frequency type "${type}" on line ${lineNumber} (must be: ${VALID_FREQUENCY_TYPES.join(', ')})`
+    );
+  }
+}
+
+// Helper function to parse frequency from CSV cells
+function parseFrequency(cells: string[], hasFrequency: boolean): {
+  interval: number;
+  type: BudgetItemCadenceType;
+} {
+  if (!hasFrequency || cells.length < 7) {
+    return { interval: 1, type: 'month' };
+  }
+  
+  const frequencyInterval = parseInt(cells[5]);
+  const frequencyType = cells[6].toLowerCase();
+  
+  return {
+    interval: isNaN(frequencyInterval) || frequencyInterval < 1 ? 1 : frequencyInterval,
+    type: VALID_FREQUENCY_TYPES.includes(frequencyType as BudgetItemCadenceType)
+      ? (frequencyType as BudgetItemCadenceType)
+      : 'month',
+  };
+}
+
+// Helper function to get notes from CSV cells
+function parseNotes(cells: string[], hasFrequency: boolean): string {
+  if (hasFrequency && cells.length >= 8) {
+    return cells[7] || '';
+  }
+  return cells[5] || '';
+}
 
 export function exportFile(fileName: string, space: Space) {
   const jsonData = JSON.stringify(space, null, 2);
@@ -214,6 +269,7 @@ export async function importCSV(
         const lines = content.split('\n').filter((line) => line.trim());
 
         let currentSection: 'income' | 'expense' | null = null;
+        let hasFrequency = false;
         const newIncomes: Income[] = [];
         const newExpenses: Expense[] = [];
 
@@ -234,14 +290,17 @@ export async function importCSV(
             } else if (cells.includes('Category')) {
               currentSection = 'expense';
             }
+            // Check if frequency columns are present
+            if (cells.includes('Frequency Interval') && cells.includes('Frequency Type')) {
+              hasFrequency = true;
+            }
             continue;
           }
 
           // Parse data rows
           if (currentSection === 'income' && cells.length >= 4) {
-            // Determine if this row has frequency data
-            const frequencyInterval = cells.length >= 6 && cells[5] ? parseInt(cells[5]) : 1;
-            const frequencyType = cells.length >= 7 && cells[6] ? cells[6].toLowerCase() : 'month';
+            const cadence = parseFrequency(cells, hasFrequency);
+            const notes = parseNotes(cells, hasFrequency);
             
             const income: Income = {
               id: generateId('budget'),
@@ -250,13 +309,8 @@ export async function importCSV(
               amount: parseFloat(cells[3]) || 0,
               source: cells[4],
               type: cells[4], // Using source as type
-              cadence: {
-                type: (frequencyType === 'day' || frequencyType === 'week' || frequencyType === 'month' || frequencyType === 'year') 
-                  ? frequencyType 
-                  : 'month',
-                interval: isNaN(frequencyInterval) || frequencyInterval < 1 ? 1 : frequencyInterval,
-              },
-              notes: cells.length >= 8 ? cells[7] || '' : (cells[5] || ''),
+              cadence,
+              notes,
             };
             // Assign to sheet if specified
             if (sheetId && sheetId !== 'all') {
@@ -264,9 +318,8 @@ export async function importCSV(
             }
             newIncomes.push(income);
           } else if (currentSection === 'expense' && cells.length >= 4) {
-            // Determine if this row has frequency data
-            const frequencyInterval = cells.length >= 6 && cells[5] ? parseInt(cells[5]) : 1;
-            const frequencyType = cells.length >= 7 && cells[6] ? cells[6].toLowerCase() : 'month';
+            const cadence = parseFrequency(cells, hasFrequency);
+            const notes = parseNotes(cells, hasFrequency);
             
             const expense: Expense = {
               id: generateId('budget'),
@@ -275,13 +328,8 @@ export async function importCSV(
               amount: parseFloat(cells[3]) || 0,
               category: cells[4],
               subCategory: '', // Default to empty since not included in CSV
-              cadence: {
-                type: (frequencyType === 'day' || frequencyType === 'week' || frequencyType === 'month' || frequencyType === 'year') 
-                  ? frequencyType 
-                  : 'month',
-                interval: isNaN(frequencyInterval) || frequencyInterval < 1 ? 1 : frequencyInterval,
-              },
-              notes: cells.length >= 8 ? cells[7] || '' : (cells[5] || ''),
+              cadence,
+              notes,
             };
             // Assign to sheet if specified
             if (sheetId && sheetId !== 'all') {
@@ -424,14 +472,7 @@ export function validateCSV(content: string): CSVValidationResult {
       if (cells.length >= 4) {
         // Validate frequency values if present
         if (hasFrequency && cells.length >= 7) {
-          const interval = parseInt(cells[5]);
-          const type = cells[6].toLowerCase();
-          if (isNaN(interval) || interval < 1) {
-            errors.push(`Invalid frequency interval "${cells[5]}" on line ${i + 1} (must be a positive number)`);
-          }
-          if (!['day', 'week', 'month', 'year'].includes(type)) {
-            errors.push(`Invalid frequency type "${cells[6]}" on line ${i + 1} (must be: day, week, month, or year)`);
-          }
+          validateFrequencyValues(cells[5], cells[6], i + 1, errors);
         }
       }
     }
@@ -445,14 +486,7 @@ export function validateCSV(content: string): CSVValidationResult {
       if (cells.length >= 4) {
         // Validate frequency values if present
         if (hasFrequency && cells.length >= 7) {
-          const interval = parseInt(cells[5]);
-          const type = cells[6].toLowerCase();
-          if (isNaN(interval) || interval < 1) {
-            errors.push(`Invalid frequency interval "${cells[5]}" on line ${i + 1} (must be a positive number)`);
-          }
-          if (!['day', 'week', 'month', 'year'].includes(type)) {
-            errors.push(`Invalid frequency type "${cells[6]}" on line ${i + 1} (must be: day, week, month, or year)`);
-          }
+          validateFrequencyValues(cells[5], cells[6], i + 1, errors);
         }
       }
     }
