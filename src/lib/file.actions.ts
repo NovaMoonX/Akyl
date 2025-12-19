@@ -13,6 +13,11 @@ import { generateId } from '../utils';
 // Valid frequency types for CSV import/export
 const VALID_FREQUENCY_TYPES: BudgetItemCadenceType[] = ['day', 'week', 'month', 'year'];
 
+// CSV column count constants
+const MIN_REQUIRED_CELLS = 4; // Type, Label, Description, Amount
+const MIN_CELLS_WITH_FREQUENCY = 7; // Includes Frequency Interval and Type
+const MIN_CELLS_WITH_NOTES_AND_FREQUENCY = 8; // Includes Notes after frequency
+
 // Helper function to validate frequency values
 function validateFrequencyValues(
   interval: string,
@@ -41,7 +46,7 @@ function parseFrequency(cells: string[], hasFrequency: boolean): {
   interval: number;
   type: BudgetItemCadenceType;
 } {
-  if (!hasFrequency || cells.length < 7) {
+  if (!hasFrequency || cells.length < MIN_CELLS_WITH_FREQUENCY) {
     return { interval: 1, type: 'month' };
   }
   
@@ -58,7 +63,7 @@ function parseFrequency(cells: string[], hasFrequency: boolean): {
 
 // Helper function to get notes from CSV cells
 function parseNotes(cells: string[], hasFrequency: boolean): string {
-  if (hasFrequency && cells.length >= 8) {
+  if (hasFrequency && cells.length >= MIN_CELLS_WITH_NOTES_AND_FREQUENCY) {
     return cells[7] || '';
   }
   return cells[5] || '';
@@ -298,7 +303,7 @@ export async function importCSV(
           }
 
           // Parse data rows
-          if (currentSection === 'income' && cells.length >= 4) {
+          if (currentSection === 'income' && cells.length >= MIN_REQUIRED_CELLS) {
             const cadence = parseFrequency(cells, hasFrequency);
             const notes = parseNotes(cells, hasFrequency);
             
@@ -317,7 +322,7 @@ export async function importCSV(
               income.sheets = [sheetId];
             }
             newIncomes.push(income);
-          } else if (currentSection === 'expense' && cells.length >= 4) {
+          } else if (currentSection === 'expense' && cells.length >= MIN_REQUIRED_CELLS) {
             const cadence = parseFrequency(cells, hasFrequency);
             const notes = parseNotes(cells, hasFrequency);
             
@@ -469,9 +474,9 @@ export function validateCSV(content: string): CSVValidationResult {
         // Hit expense section
         break;
       }
-      if (cells.length >= 4) {
+      if (cells.length >= MIN_REQUIRED_CELLS) {
         // Validate frequency values if present
-        if (hasFrequency && cells.length >= 7) {
+        if (hasFrequency && cells.length >= MIN_CELLS_WITH_FREQUENCY) {
           validateFrequencyValues(cells[5], cells[6], i + 1, errors);
         }
       }
@@ -483,9 +488,9 @@ export function validateCSV(content: string): CSVValidationResult {
       const line = lines[i].trim();
       if (!line) continue;
       const cells = parseCSVLine(line);
-      if (cells.length >= 4) {
+      if (cells.length >= MIN_REQUIRED_CELLS) {
         // Validate frequency values if present
-        if (hasFrequency && cells.length >= 7) {
+        if (hasFrequency && cells.length >= MIN_CELLS_WITH_FREQUENCY) {
           validateFrequencyValues(cells[5], cells[6], i + 1, errors);
         }
       }
