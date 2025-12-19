@@ -101,10 +101,10 @@ export default function LoadScreen() {
       return a.title.localeCompare(b.title);
     });
     
-    const starred = sortedSpaces.filter(space => space.pinned);
-    const unstarred = sortedSpaces.filter(space => !space.pinned);
+    const pinned = sortedSpaces.filter(space => space.pinned);
+    const unpinned = sortedSpaces.filter(space => !space.pinned);
     
-    return { pinnedSpaces: starred, unpinnedSpaces: unstarred };
+    return { pinnedSpaces: pinned, unpinnedSpaces: unpinned };
   }, [
     localSpaces,
     syncedSpaces,
