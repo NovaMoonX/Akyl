@@ -7,7 +7,7 @@ import {
   CalculatorIcon,
   TableIcon,
   WorkflowIcon,
-  StarIcon,
+  PinIcon,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
@@ -29,7 +29,7 @@ export default function BottomBar() {
     updateSheet,
     removeSheet,
     description,
-    starred,
+    pinned,
   ] = useSpace(
     useShallow((state) => [
       state?.space?.sheets,
@@ -39,7 +39,7 @@ export default function BottomBar() {
       state.updateSheet,
       state.removeSheet,
       state.space?.description,
-      state.space?.starred,
+      state.space?.pinned,
     ]),
   );
   const { updateSpace } = useSpace();
@@ -435,16 +435,16 @@ export default function BottomBar() {
             <div className='flex flex-col gap-2'>
               <div className='flex items-center gap-2'>
                 <button
-                  onClick={() => updateSpace({ starred: !starred })}
+                  onClick={() => updateSpace({ pinned: !pinned })}
                   className='shrink-0'
-                  aria-label={starred ? 'Unstar Space' : 'Star Space'}
+                  aria-label={pinned ? 'Unpin Space' : 'Pin Space'}
                 >
-                  <StarIcon
-                    className={starred ? 'size-5 fill-yellow-400 text-yellow-400' : 'size-5 text-gray-400'}
+                  <PinIcon
+                    className={pinned ? 'size-5 fill-yellow-400 text-yellow-400' : 'size-5 text-gray-400'}
                   />
                 </button>
                 <span className='text-sm text-gray-700 dark:text-gray-200'>
-                  {starred ? 'Starred' : 'Not starred'}
+                  {pinned ? 'Pinned' : 'Not pinned'}
                 </span>
               </div>
               <textarea

@@ -1,5 +1,5 @@
-import { ArrowUpIcon, StarIcon } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowUpIcon, PinIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../../contexts/AuthContext';
@@ -17,18 +17,19 @@ import Dropdown from '../ui/Dropdown';
 
 export default function HeaderBar() {
   const { currentUser } = useAuth();
-  const [title, description, starred, cashFlowVerbiage] = useSpace(
+  const [title, description, pinned, cashFlowVerbiage] = useSpace(
     useShallow((state) => [
       state.space.title,
       state.space.description,
-      state.space.starred,
+      state.space.pinned,
       state.space.config.cashFlowVerbiage,
     ]),
   );
   const { updateSpace } = useSpace();
   const { totalBudgetItemsInSpace } = useBudget();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isDescriptionHovered, setIsDescriptionHovered] = useState(false);
+  const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
@@ -41,8 +42,8 @@ export default function HeaderBar() {
     updateSpace({ description: newDescription });
   };
 
-  const handleToggleStar = () => {
-    updateSpace({ starred: !starred });
+  const handleTogglePin = () => {
+    updateSpace({ pinned: !pinned });
   };
 
   const handleOpenForm = (type: BudgetType) => {
@@ -52,6 +53,14 @@ export default function HeaderBar() {
   const handleCloseForm = () => {
     setSearchParams({});
   };
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [description, isDescriptionFocused]);
 
   return (
     <>
@@ -65,12 +74,12 @@ export default function HeaderBar() {
               className='text-surface-hover-dark dark:text-surface-hover-light flex-1 text-xl font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
             />
             <button
-              onClick={handleToggleStar}
+              onClick={handleTogglePin}
               className='shrink-0'
-              aria-label={starred ? 'Unstar Space' : 'Star Space'}
+              aria-label={pinned ? 'Unpin Space' : 'Pin Space'}
             >
-              <StarIcon
-                className={starred ? 'size-5 fill-yellow-400 text-yellow-400' : 'size-5 text-gray-400 hover:text-yellow-400'}
+              <PinIcon
+                className={pinned ? 'size-5 fill-yellow-400 text-yellow-400' : 'size-5 text-gray-400 hover:text-yellow-400'}
               />
             </button>
           </div>
@@ -90,25 +99,18 @@ export default function HeaderBar() {
           </div>
         </div>
         
-        <div 
-          className='bg-gray-50 dark:bg-gray-800/50 px-4 py-2 rounded-b-lg'
-          onMouseEnter={() => setIsDescriptionHovered(true)}
-          onMouseLeave={() => setIsDescriptionHovered(false)}
-        >
-          {isDescriptionHovered ? (
-            <textarea
-              value={description || ''}
-              onChange={handleDescriptionChange}
-              placeholder='Add a description...'
-              className='text-surface-hover-dark dark:text-surface-hover-light w-full resize-none bg-transparent text-sm placeholder:text-gray-400 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
-              rows={3}
-              autoFocus
-            />
-          ) : (
-            <div className='text-surface-hover-dark dark:text-surface-hover-light overflow-hidden text-ellipsis whitespace-nowrap text-sm opacity-70'>
-              {description || 'Add a description...'}
-            </div>
-          )}
+        <div className='bg-gray-50 dark:bg-gray-800/50 px-4 py-2 rounded-b-lg'>
+          <textarea
+            ref={textareaRef}
+            value={description || ''}
+            onChange={handleDescriptionChange}
+            onFocus={() => setIsDescriptionFocused(true)}
+            onBlur={() => setIsDescriptionFocused(false)}
+            placeholder='Add a description...'
+            className={`text-surface-hover-dark dark:text-surface-hover-light w-full resize-none bg-transparent text-sm placeholder:text-gray-400 focus:outline-none focus:placeholder:text-teal-600/50 ${!isDescriptionFocused && 'overflow-hidden text-ellipsis whitespace-nowrap opacity-70'} ${isDescriptionFocused && 'focus:text-teal-600'}`}
+            rows={1}
+            style={{ minHeight: '1.5rem' }}
+          />
         </div>
 
         {totalBudgetItemsInSpace === 0 && (

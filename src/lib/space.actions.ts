@@ -32,7 +32,7 @@ export function createNewSpace({
     id,
     title: title || '',
     description: '',
-    starred: false,
+    pinned: false,
     metadata: {
       createdBy: userId ?? '',
       createdAt: timestamp,

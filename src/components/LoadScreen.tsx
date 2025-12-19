@@ -5,7 +5,7 @@ import {
   LogOutIcon,
   ShieldQuestionIcon,
   SquarePlusIcon,
-  StarIcon,
+  PinIcon,
   TrashIcon,
   UploadIcon,
 } from 'lucide-react';
@@ -67,7 +67,7 @@ export default function LoadScreen() {
   const { spaces: syncedSpaces, spacesMap: syncedSpacesMap } =
     useSyncAllSpaces();
 
-  const { starredSpaces, unstarredSpaces } = useMemo(() => {
+  const { pinnedSpaces, unpinnedSpaces } = useMemo(() => {
     let chosenSpaces: Space[] = [];
     if (currentUser?.uid) {
       chosenSpaces = syncedSpaces;
@@ -101,10 +101,10 @@ export default function LoadScreen() {
       return a.title.localeCompare(b.title);
     });
     
-    const starred = sortedSpaces.filter(space => space.starred);
-    const unstarred = sortedSpaces.filter(space => !space.starred);
+    const starred = sortedSpaces.filter(space => space.pinned);
+    const unstarred = sortedSpaces.filter(space => !space.pinned);
     
-    return { starredSpaces: starred, unstarredSpaces: unstarred };
+    return { pinnedSpaces: starred, unpinnedSpaces: unstarred };
   }, [
     localSpaces,
     syncedSpaces,
@@ -159,11 +159,11 @@ export default function LoadScreen() {
     }
   };
 
-  const handleToggleStar = (spaceId: string, currentStarred: boolean) => {
+  const handleTogglePin = (spaceId: string, currentPinned: boolean) => {
     const spaceData = localStorage.getItem(spaceId);
     if (spaceData) {
       const space = JSON.parse(spaceData) as Space;
-      space.starred = !currentStarred;
+      space.pinned = !currentPinned;
       space.metadata.updatedAt = Date.now();
       localStorage.setItem(spaceId, JSON.stringify(space));
       // Force re-render
@@ -224,17 +224,17 @@ export default function LoadScreen() {
             </small>
           )}
 
-          {(starredSpaces.length > 0 || unstarredSpaces.length > 0) && (
+          {(pinnedSpaces.length > 0 || unpinnedSpaces.length > 0) && (
             <div className='absolute -bottom-4 sm:-bottom-8 left-0 flex w-full translate-y-full flex-col items-center pb-10'>
-              {starredSpaces.length > 0 && (
+              {pinnedSpaces.length > 0 && (
                 <>
                   <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
-                    Starred Spaces
+                    Pinned Spaces
                   </h2>
                   <div className='sm:w-lg mb-4'>
                     <div className='max-h-48 sm:max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
                       <div className='grid sm:grid-cols-2 gap-1'>
-                        {starredSpaces.map((space) => (
+                        {pinnedSpaces.map((space) => (
                           <div
                             key={space.id}
                             className='group w-64 relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
@@ -255,11 +255,11 @@ export default function LoadScreen() {
                                 {space.title || 'Untitled Space'}
                               </span>
                             </a>
-                            <StarIcon
+                            <PinIcon
                               role='button'
                               className='ml-2 size-4 shrink-0 fill-yellow-400 text-yellow-400 hover:fill-transparent hover:text-gray-400'
-                              aria-label='Unstar Space'
-                              onClick={() => handleToggleStar(space.id, true)}
+                              aria-label='Unpin Space'
+                              onClick={() => handleTogglePin(space.id, true)}
                             />
                             <TrashIcon
                               role='button'
@@ -274,15 +274,15 @@ export default function LoadScreen() {
                   </div>
                 </>
               )}
-              {unstarredSpaces.length > 0 && (
+              {unpinnedSpaces.length > 0 && (
                 <>
                   <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
-                    {starredSpaces.length > 0 ? 'Other Spaces' : 'Previous Spaces'}
+                    {pinnedSpaces.length > 0 ? 'Other Spaces' : 'Previous Spaces'}
                   </h2>
                   <div className='sm:w-lg'>
                     <div className='max-h-48 sm:max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
                       <div className='grid sm:grid-cols-2 gap-1'>
-                        {unstarredSpaces.map((space) => (
+                        {unpinnedSpaces.map((space) => (
                           <div
                             key={space.id}
                             className='group w-64 relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
@@ -303,11 +303,11 @@ export default function LoadScreen() {
                                 {space.title || 'Untitled Space'}
                               </span>
                             </a>
-                            <StarIcon
+                            <PinIcon
                               role='button'
                               className='ml-2 size-4 shrink-0 text-gray-400 hover:fill-yellow-400 hover:text-yellow-400'
-                              aria-label='Star Space'
-                              onClick={() => handleToggleStar(space.id, false)}
+                              aria-label='Pin Space'
+                              onClick={() => handleTogglePin(space.id, false)}
                             />
                             <TrashIcon
                               role='button'
