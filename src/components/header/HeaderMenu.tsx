@@ -182,7 +182,7 @@ export default function HeaderMenu() {
     <>
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className='bg-surface-light dark:bg-surface-dark hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark flex h-full items-center rounded-lg px-3 text-teal-500 shadow-md sm:px-4'
+        className='bg-surface-light dark:bg-surface-dark hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark flex items-center rounded-lg px-3 py-2.5 text-teal-500 shadow-md sm:px-4'
       >
         <MenuIcon className='size-4 sm:size-5' />
       </button>

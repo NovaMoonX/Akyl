@@ -1,4 +1,5 @@
 import { ArrowUpIcon, StarIcon } from 'lucide-react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../../contexts/AuthContext';
@@ -27,6 +28,7 @@ export default function HeaderBar() {
   const { updateSpace } = useSpace();
   const { totalBudgetItemsInSpace } = useBudget();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isDescriptionHovered, setIsDescriptionHovered] = useState(false);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
@@ -34,7 +36,7 @@ export default function HeaderBar() {
     setTabTitle(newTitle);
   };
 
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const newDescription = e.target.value;
     updateSpace({ description: newDescription });
   };
@@ -53,8 +55,8 @@ export default function HeaderBar() {
 
   return (
     <>
-      <div className='bg-surface-light dark:bg-surface-dark group relative flex flex-1 flex-col rounded-lg px-4 py-2.5 shadow-md'>
-        <div className='flex items-center justify-between gap-4'>
+      <div className='bg-surface-light dark:bg-surface-dark relative flex flex-1 flex-col rounded-lg shadow-md'>
+        <div className='flex items-center justify-between gap-4 px-4 py-2.5'>
           <div className='flex min-w-16 flex-1 items-center gap-2'>
             <input
               value={title || ''}
@@ -87,12 +89,27 @@ export default function HeaderBar() {
             </button>
           </div>
         </div>
-        <input
-          value={description || ''}
-          onChange={handleDescriptionChange}
-          placeholder='Add a description...'
-          className='text-surface-hover-dark dark:text-surface-hover-light mt-1 overflow-hidden text-ellipsis whitespace-nowrap text-sm placeholder:text-gray-400 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50 group-hover:whitespace-normal group-hover:overflow-visible'
-        />
+        
+        <div 
+          className='bg-gray-50 dark:bg-gray-800/50 px-4 py-2 rounded-b-lg'
+          onMouseEnter={() => setIsDescriptionHovered(true)}
+          onMouseLeave={() => setIsDescriptionHovered(false)}
+        >
+          {isDescriptionHovered ? (
+            <textarea
+              value={description || ''}
+              onChange={handleDescriptionChange}
+              placeholder='Add a description...'
+              className='text-surface-hover-dark dark:text-surface-hover-light w-full resize-none bg-transparent text-sm placeholder:text-gray-400 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
+              rows={3}
+              autoFocus
+            />
+          ) : (
+            <div className='text-surface-hover-dark dark:text-surface-hover-light overflow-hidden text-ellipsis whitespace-nowrap text-sm text-gray-600 dark:text-gray-300'>
+              {description || 'Add a description...'}
+            </div>
+          )}
+        </div>
 
         {totalBudgetItemsInSpace === 0 && (
           <div className='absolute right-8 -bottom-20 flex animate-pulse flex-col items-center'>
