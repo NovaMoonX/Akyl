@@ -36,7 +36,7 @@ export default function HeaderBar() {
     setTabTitle(newTitle);
   };
 
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newDescription = e.target.value;
     updateSpace({ description: newDescription });
   };
@@ -105,7 +105,7 @@ export default function HeaderBar() {
               autoFocus
             />
           ) : (
-            <div className='text-surface-hover-dark dark:text-surface-hover-light overflow-hidden text-ellipsis whitespace-nowrap text-sm text-gray-600 dark:text-gray-300'>
+            <div className='text-surface-hover-dark dark:text-surface-hover-light overflow-hidden text-ellipsis whitespace-nowrap text-sm opacity-70'>
               {description || 'Add a description...'}
             </div>
           )}
