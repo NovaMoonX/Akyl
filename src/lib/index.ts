@@ -33,7 +33,9 @@ export {
   exportCSV,
   exportCSVTemplate,
   importCSV,
+  parseCSVContent,
 } from './file.actions';
+export type { CSVParseResult } from './file.actions';
 
 export { FILE_EXTENSION, FILE_TYPE } from './file.constants';
 
