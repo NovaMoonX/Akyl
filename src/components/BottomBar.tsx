@@ -427,11 +427,8 @@ export default function BottomBar() {
         centerTitle={true}
       >
         <div className='flex flex-col items-center gap-4 pb-2'>
-          {/* Space Description and Star */}
+          {/* Space Description and Pin */}
           <div className='w-full'>
-            <span className='mb-2 block text-center font-medium text-gray-700 dark:text-gray-200'>
-              Space Details
-            </span>
             <div className='flex flex-col gap-2'>
               <div className='flex items-center gap-2'>
                 <button

@@ -9,7 +9,7 @@ import {
   TrashIcon,
   UploadIcon,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { signOutUser } from '../firebase';
 import useBrowserSpaces from '../hooks/useBrowserSpaces';
@@ -20,7 +20,6 @@ import {
   createNewSpace,
   importFile,
   type Space,
-  type SpaceMetadata,
 } from '../lib';
 import { join } from '../utils';
 import DreamTrigger from './DreamTrigger';
@@ -60,24 +59,18 @@ export default function LoadScreen() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
-  const [localSpaceOverrides, setLocalSpaceOverrides] = useState<Map<string, Space>>(new Map());
+  const [spaces, setSpaces] = useState<Space[]>([]);
   const { spaces: localSpaces, limitMet } = useBrowserSpaces();
   const { spaces: syncedSpaces, spacesMap: syncedSpacesMap } =
     useSyncAllSpaces();
 
-  const { pinnedSpaces, unpinnedSpaces } = useMemo(() => {
+  // Initialize and update spaces from cloud and local storage
+  useEffect(() => {
     let chosenSpaces: Space[] = [];
     if (currentUser?.uid) {
       chosenSpaces = syncedSpaces;
 
       // Add in any local spaces that are not synced yet
-      /* This serves two purposes:
-       * 1. It allows users to see their local spaces that haven't been synced yet.
-       * 2. It ensures that all synced spaces that were saved locally when app mounts
-       *   are still visible, as they will not be fetched again in `useSyncAllSpaces`
-       *   (due to `fetchAllSpacesAndUploadToLocalStorage` only being called when local
-       *   and server timestamps for `ALL_SPACES_LAST_SYNC_KEY` do not match).
-       */
       localSpaces.forEach((localSpace) => {
         if (!syncedSpacesMap[localSpace.id]) {
           chosenSpaces.push(localSpace);
@@ -87,18 +80,11 @@ export default function LoadScreen() {
       chosenSpaces = localSpaces.filter((space) => !space.metadata?.createdBy);
     }
 
-    // Apply local overrides (for pinning and deletions)
-    const spacesWithOverrides = chosenSpaces
-      .map(space => {
-        const override = localSpaceOverrides.get(space.id);
-        return override || space;
-      })
-      .filter(space => {
-        const override = localSpaceOverrides.get(space.id);
-        return !override || !(override.metadata as SpaceMetadata & { deletedAt?: number })?.deletedAt;
-      });
+    setSpaces(chosenSpaces);
+  }, [localSpaces, syncedSpaces, syncedSpacesMap, currentUser?.uid]);
 
-    const sortedSpaces = spacesWithOverrides.sort((a, b) => {
+  const { pinnedSpaces, unpinnedSpaces } = useMemo(() => {
+    const sortedSpaces = [...spaces].sort((a, b) => {
       const aUpdated = a.metadata?.updatedAt ?? 0;
       const bUpdated = b.metadata?.updatedAt ?? 0;
       if (bUpdated !== aUpdated) {
@@ -111,13 +97,7 @@ export default function LoadScreen() {
     const unpinned = sortedSpaces.filter(space => !space.pinned);
     
     return { pinnedSpaces: pinned, unpinnedSpaces: unpinned };
-  }, [
-    localSpaces,
-    syncedSpaces,
-    syncedSpacesMap,
-    currentUser?.uid,
-    localSpaceOverrides,
-  ]);
+  }, [spaces]);
 
   const items = useMemo(() => {
     if (currentUser) {
@@ -173,11 +153,9 @@ export default function LoadScreen() {
       localStorage.setItem(spaceId, JSON.stringify(space));
       
       // Update local state
-      setLocalSpaceOverrides(prev => {
-        const newMap = new Map(prev);
-        newMap.set(spaceId, space);
-        return newMap;
-      });
+      setSpaces(prevSpaces =>
+        prevSpaces.map(s => s.id === spaceId ? space : s)
+      );
     }
   };
 
@@ -356,23 +334,8 @@ export default function LoadScreen() {
         onClose={() => setDeleteSpaceId(undefined)}
         spaceId={deleteSpaceId}
         onDelete={(id) => {
-          const spaceData = localStorage.getItem(id);
-          if (spaceData) {
-            const space = JSON.parse(spaceData) as Space;
-            // Mark as deleted in local override by adding deletedAt to metadata
-            const deletedSpace: Space = {
-              ...space,
-              metadata: {
-                ...space.metadata,
-                deletedAt: Date.now(),
-              } as SpaceMetadata & { deletedAt: number }
-            };
-            setLocalSpaceOverrides(prev => {
-              const newMap = new Map(prev);
-              newMap.set(id, deletedSpace);
-              return newMap;
-            });
-          }
+          // Remove from local state
+          setSpaces(prevSpaces => prevSpaces.filter(s => s.id !== id));
         }}
       />
 
