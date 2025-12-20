@@ -56,7 +56,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
             setParseResult(result);
             
             if (!result.valid) {
-              setError('CSV validation failed. Please check the errors below.');
+              setError('File validation failed. Please resolve the errors specified.');
             }
           } catch {
             setError('Failed to read or parse the file');
@@ -135,7 +135,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
         const result = parseCSVContent(content, selectedSheet);
         
         if (!result.valid) {
-          setError('CSV validation failed');
+          setError('File validation failed');
           setIsLoading(false);
           return;
         }
@@ -174,7 +174,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
         const result = parseCSVContent(content, selectedSheet);
         
         if (!result.valid) {
-          setError('CSV validation failed');
+          setError('File validation failed');
           setIsLoading(false);
           return;
         }
@@ -202,7 +202,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
         const result = parseCSVContent(content, newSheetId);
         
         if (!result.valid) {
-          setError('CSV validation failed');
+          setError('File validation failed');
           setIsLoading(false);
           return;
         }
