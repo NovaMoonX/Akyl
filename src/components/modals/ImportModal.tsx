@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../../contexts/AuthContext';
-import { createNewSpace, exportCSVTemplate, importCSV } from '../../lib';
+import { createNewSpace, exportCSVTemplate, parseCSVContent } from '../../lib';
+import type { CSVParseResult } from '../../lib';
 import { useSpace } from '../../store';
 import Modal from '../ui/Modal';
 import { generateId } from '../../utils';
@@ -25,6 +26,8 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [parseResult, setParseResult] = useState<CSVParseResult | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
 
   const hasSheets = sheets && sheets.length > 0;
   const hasSpace = space && space.id;
@@ -38,11 +41,29 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = '.csv';
-      input.onchange = (e) => {
+      input.onchange = async (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
         if (file) {
           setSelectedFile(file);
           setError('');
+          setParseResult(null);
+          
+          // Parse and validate the CSV file
+          setIsValidating(true);
+          try {
+            const content = await file.text();
+            const result = parseCSVContent(content);
+            setParseResult(result);
+            
+            if (!result.valid) {
+              setError('File validation failed. Please resolve the errors specified.');
+            }
+          } catch {
+            setError('Failed to read or parse the file');
+            setParseResult(null);
+          } finally {
+            setIsValidating(false);
+          }
         }
       };
       input.click();
@@ -52,8 +73,14 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
   };
 
   const handleImport = async () => {
-    if (!selectedFile) {
+    if (!selectedFile || !parseResult) {
       setError('Please select a CSV file first');
+      return;
+    }
+
+    // Check if validation passed
+    if (!parseResult.valid) {
+      setError('Cannot import CSV with validation errors');
       return;
     }
 
@@ -74,8 +101,8 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           return;
         }
 
-        // Import CSV from selected file
-        const { incomes, expenses } = await importCSV(selectedFile);
+        // Use parsed data from parseResult
+        const { incomes, expenses } = parseResult;
 
         createNewSpace({
           userId: currentUser?.uid,
@@ -85,8 +112,8 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
         });
         handleClose();
       } else if (importMode === 'overwrite-space') {
-        // Import CSV and replace all budget items, delete all sheets
-        const { incomes, expenses } = await importCSV(selectedFile);
+        // Use parsed data from parseResult
+        const { incomes, expenses } = parseResult;
 
         setSpace({
           ...space,
@@ -103,11 +130,17 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           return;
         }
 
-        // Import and assign to selected sheet
-        const { incomes, expenses } = await importCSV(
-          selectedFile,
-          selectedSheet,
-        );
+        // Re-parse with sheet assignment
+        const content = await selectedFile.text();
+        const result = parseCSVContent(content, selectedSheet);
+        
+        if (!result.valid) {
+          setError('File validation failed');
+          setIsLoading(false);
+          return;
+        }
+
+        const { incomes, expenses } = result;
 
         // Remove existing items from the selected sheet
         const filteredIncomes = space.incomes.filter(
@@ -136,11 +169,17 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
           return;
         }
 
-        // Import and assign to selected sheet (add to existing items)
-        const { incomes, expenses } = await importCSV(
-          selectedFile,
-          selectedSheet,
-        );
+        // Re-parse with sheet assignment
+        const content = await selectedFile.text();
+        const result = parseCSVContent(content, selectedSheet);
+        
+        if (!result.valid) {
+          setError('File validation failed');
+          setIsLoading(false);
+          return;
+        }
+
+        const { incomes, expenses } = result;
 
         setSpace({
           ...space,
@@ -158,8 +197,17 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
 
         const newSheetId = generateId('sheet');
 
-        // Import and assign to new sheet
-        const { incomes, expenses } = await importCSV(selectedFile, newSheetId);
+        // Re-parse with sheet assignment
+        const content = await selectedFile.text();
+        const result = parseCSVContent(content, newSheetId);
+        
+        if (!result.valid) {
+          setError('File validation failed');
+          setIsLoading(false);
+          return;
+        }
+
+        const { incomes, expenses } = result;
 
         // Create the new sheet and update space with new items
         const newSheet = {
@@ -193,6 +241,8 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
     setSelectedSheet('');
     setSelectedFile(null);
     setShowConfirmDialog(false);
+    setParseResult(null);
+    setIsValidating(false);
     onClose();
   };
 
@@ -222,15 +272,37 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
             <button
               onClick={handleFileSelect}
               className='btn btn-secondary flex-1'
+              disabled={isValidating}
             >
-              {selectedFile ? selectedFile.name : 'Choose File'}
+              {isValidating ? 'Validating...' : selectedFile ? selectedFile.name : 'Choose File'}
             </button>
-            {selectedFile && (
+            {selectedFile && !isValidating && parseResult?.valid && (
               <span className='text-sm text-green-600 dark:text-green-400'>
                 ✓
               </span>
             )}
+            {selectedFile && !isValidating && parseResult && !parseResult.valid && (
+              <span className='text-sm text-red-600 dark:text-red-400'>
+                ✗
+              </span>
+            )}
           </div>
+          {selectedFile && parseResult && !parseResult.valid && (
+            <div className='mt-2 rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-300'>
+              <p className='font-medium mb-1'>Validation Errors:</p>
+              <ul className='list-disc list-inside space-y-1'>
+                {parseResult.errors.map((err, idx) => (
+                  <li key={idx}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {selectedFile && parseResult?.valid && !parseResult.hasFrequency && (
+            <div className='mt-2 rounded-md bg-blue-50 p-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'>
+              <p className='font-medium'>Note:</p>
+              <p>No frequency columns detected. All items will default to "1 each month".</p>
+            </div>
+          )}
         </div>
 
         {hasSpace && (
@@ -432,7 +504,7 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
             <button
               onClick={handleImport}
               className='btn btn-primary'
-              disabled={isLoading || !selectedFile}
+              disabled={isLoading || !selectedFile || isValidating || (parseResult !== null && !parseResult.valid)}
             >
               {isLoading ? 'Importing...' : 'Import CSV'}
             </button>
