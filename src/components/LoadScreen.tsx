@@ -19,6 +19,7 @@ import {
   APP_SPACE_LIMIT_REACHED,
   createNewSpace,
   importFile,
+  syncSpace,
   type Space,
 } from '../lib';
 import { join } from '../utils';
@@ -54,7 +55,7 @@ const DEFAULT_ITEMS: MenuItem[] = [
   },
 ];
 export default function LoadScreen() {
-  const { currentUser } = useAuth();
+  const { currentUser, cryptoKey } = useAuth();
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -144,7 +145,7 @@ export default function LoadScreen() {
     }
   };
 
-  const handleTogglePin = (spaceId: string, currentPinned: boolean) => {
+  const handleTogglePin = async (spaceId: string, currentPinned: boolean) => {
     const spaceData = localStorage.getItem(spaceId);
     if (spaceData) {
       const space = JSON.parse(spaceData) as Space;
@@ -156,6 +157,19 @@ export default function LoadScreen() {
       setSpaces(prevSpaces =>
         prevSpaces.map(s => s.id === spaceId ? space : s)
       );
+
+      // Sync to cloud if user is authenticated
+      if (currentUser?.uid && cryptoKey) {
+        try {
+          await syncSpace({
+            space,
+            cryptoKey,
+            userId: currentUser.uid,
+          });
+        } catch (error) {
+          console.error('Failed to sync space to cloud:', error);
+        }
+      }
     }
   };
 
