@@ -70,7 +70,7 @@ export default function HeaderBarMobile() {
       <Dropdown
         isOpen={Boolean(searchParams.get(URL_PARAM_FORM))}
         onClose={() => handleCloseForm()}
-        className='right-0 w-fit max-w-md !p-6'
+        className='right-1 left-1 w-fit max-w-screen !p-6'
         closeOnOverlayClick={false}
       >
         {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}

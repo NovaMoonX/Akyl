@@ -139,7 +139,7 @@ export function Combobox({
   const selectedLabel = allOptions.find((opt) => opt.value === value)?.label;
 
   return (
-    <div ref={containerRef} className={join('relative w-full', className)}>
+    <div ref={containerRef} className={join('relative w-full text-sm sm:text-base', className)}>
       <div
         className='dark:bg-surface-dark dark:text-surface-light flex items-center rounded border border-gray-300 bg-white px-3 py-2 focus-within:border-emerald-500 dark:border-gray-700'
         onClick={() => {

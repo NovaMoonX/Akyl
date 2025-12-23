@@ -104,7 +104,7 @@ export default function ExpenseForm() {
     >
       {/* Category */}
       <div>
-        <label className='font-medium'>Category</label>
+        <label className='font-medium text-sm sm:text-base'>Category</label>
         <Combobox
           value={formData?.category ?? ''}
           options={categoryOptions}
