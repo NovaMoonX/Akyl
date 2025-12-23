@@ -1,7 +1,6 @@
 import { ArrowUpIcon, MinusIcon, PlusIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
-import { useAuth } from '../../contexts/AuthContext';
 import { useBudget } from '../../hooks';
 import { URL_PARAM_FORM, type BudgetType } from '../../lib';
 import { useSpace } from '../../store';
@@ -11,7 +10,6 @@ import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
 
 export default function HeaderBarMobile() {
-  const { currentUser } = useAuth();
   const [title] = useSpace(
     useShallow((state) => [
       state.space.title,
@@ -66,15 +64,6 @@ export default function HeaderBarMobile() {
               add your first budget item~
             </span>
           </div>
-        )}
-
-        {currentUser?.email && (
-          <small className='absolute bottom-0 left-0 translate-y-full whitespace-nowrap'>
-            <span className='mr-1 font-light text-gray-500 dark:text-gray-400'>
-              Logged in as
-            </span>
-            <span>{currentUser?.email}</span>
-          </small>
         )}
       </div>
 

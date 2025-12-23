@@ -2,7 +2,6 @@ import { ArrowUpIcon, PinIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
-import { useAuth } from '../../contexts/AuthContext';
 import { useBudget } from '../../hooks';
 import {
   CashFlowVerbiagePairs,
@@ -10,13 +9,12 @@ import {
   type BudgetType,
 } from '../../lib';
 import { useSpace } from '../../store';
-import { setTabTitle } from '../../utils';
+import { join, setTabTitle } from '../../utils';
 import ExpenseForm from '../forms/ExpenseForm';
 import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
 
 export default function HeaderBar() {
-  const { currentUser } = useAuth();
   const [title, description, pinned, cashFlowVerbiage] = useSpace(
     useShallow((state) => [
       state.space.title,
@@ -37,7 +35,9 @@ export default function HeaderBar() {
     setTabTitle(newTitle);
   };
 
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleDescriptionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
     const newDescription = e.target.value;
     updateSpace({ description: newDescription });
   };
@@ -56,9 +56,15 @@ export default function HeaderBar() {
 
   // Auto-resize textarea
   useEffect(() => {
-    if (textareaRef.current) {
+    if (!textareaRef.current) {
+      return;
+    }
+
+    if (isDescriptionFocused) {
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + 'px';
+    } else {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
     }
   }, [description, isDescriptionFocused]);
 
@@ -79,7 +85,11 @@ export default function HeaderBar() {
               aria-label={pinned ? 'Unpin Space' : 'Pin Space'}
             >
               <PinIcon
-                className={pinned ? 'size-5 fill-yellow-400 text-yellow-400' : 'size-5 text-gray-400 hover:text-yellow-400'}
+                className={
+                  pinned
+                    ? 'size-5 fill-yellow-400 text-yellow-400'
+                    : 'size-5 text-gray-400 hover:text-yellow-400'
+                }
               />
             </button>
           </div>
@@ -98,8 +108,8 @@ export default function HeaderBar() {
             </button>
           </div>
         </div>
-        
-        <div className='bg-gray-50 dark:bg-gray-800/50 px-4 py-2 rounded-b-lg'>
+
+        <div className='rounded-b-lg bg-gray-50 px-4 py-2 dark:bg-gray-800/50'>
           <textarea
             ref={textareaRef}
             value={description || ''}
@@ -107,7 +117,12 @@ export default function HeaderBar() {
             onFocus={() => setIsDescriptionFocused(true)}
             onBlur={() => setIsDescriptionFocused(false)}
             placeholder='Add a description...'
-            className={`text-surface-hover-dark dark:text-surface-hover-light w-full resize-none bg-transparent text-sm placeholder:text-gray-400 focus:outline-none focus:placeholder:text-teal-600/50 ${!isDescriptionFocused && 'overflow-hidden text-ellipsis whitespace-nowrap opacity-70'} ${isDescriptionFocused && 'focus:text-teal-600'}`}
+            className={join(
+              'text-surface-hover-dark dark:text-surface-hover-light w-full resize-none bg-transparent text-sm placeholder:text-gray-400 focus:outline-none focus:placeholder:text-teal-600/50',
+              !isDescriptionFocused &&
+                'line-clamp-1 opacity-70',
+              isDescriptionFocused && 'focus:text-teal-600',
+            )}
             rows={1}
             style={{ minHeight: '1.5rem' }}
           />
@@ -120,15 +135,6 @@ export default function HeaderBar() {
               add your first budget item~
             </span>
           </div>
-        )}
-
-        {currentUser?.email && (
-          <small className='absolute bottom-0 left-0 translate-y-full'>
-            <span className='mr-1 font-light text-gray-500 dark:text-gray-400'>
-              Logged in as
-            </span>
-            <span>{currentUser?.email}</span>
-          </small>
         )}
       </div>
 
