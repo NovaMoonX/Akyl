@@ -19,9 +19,21 @@ export default function ImageDownloadModal({
 
   const handleDownload = async () => {
     // Download each selected sheet sequentially to avoid race conditions
+    const errors: string[] = [];
     for (const sheetId of selectedSheets) {
-      await downloadSheet(sheetId);
+      try {
+        await downloadSheet(sheetId);
+      } catch (error) {
+        const sheetName = sheetId === 'all' ? 'All Items' : sheets?.find(s => s.id === sheetId)?.name || sheetId;
+        errors.push(sheetName);
+        console.error(`Failed to download ${sheetName}:`, error);
+      }
     }
+    
+    if (errors.length > 0) {
+      alert(`Failed to download images for: ${errors.join(', ')}`);
+    }
+    
     onClose();
   };
 
