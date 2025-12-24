@@ -437,7 +437,10 @@ export default function BottomBar() {
                   aria-label={pinned ? 'Unpin Space' : 'Pin Space'}
                 >
                   <PinIcon
-                    className={pinned ? 'size-5 fill-yellow-400 text-yellow-400' : 'size-5 text-gray-400'}
+                    className={join(
+                      'size-5',
+                      pinned ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400',
+                    )}
                   />
                 </button>
                 <span className='text-sm text-gray-700 dark:text-gray-200'>
