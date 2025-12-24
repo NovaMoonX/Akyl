@@ -54,7 +54,8 @@ export default function ImageDownloadModal({
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${space?.title || 'budget'}-images.zip`;
+        const timestamp = Date.now();
+        a.download = `${space?.title || 'budget'}-images-${timestamp}.zip`;
         a.click();
         URL.revokeObjectURL(url);
       } catch (error) {

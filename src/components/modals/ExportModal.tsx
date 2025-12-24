@@ -63,7 +63,8 @@ export default function ExportModal({ isOpen, onClose }: ExportModalProps) {
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${fileName}-csvs.zip`;
+        const timestamp = Date.now();
+        a.download = `${fileName}-csvs-${timestamp}.zip`;
         a.click();
         URL.revokeObjectURL(url);
       }
