@@ -30,9 +30,9 @@ function downloadImage(
 
 const imageWidth = 1024;
 const imageHeight = 768;
-const minZoom = 0.5;
-const maxZoom = 2;
-const padding = 1;
+const minZoom = 0.1;
+const maxZoom = 4;
+const padding = 0.2;
 
 // REF: https://reactflow.dev/examples/misc/download-image
 export default function useDownloadPng() {
