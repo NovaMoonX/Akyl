@@ -18,7 +18,6 @@ import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../../contexts/AuthContext';
 import { signOutUser } from '../../firebase';
 import useBrowserSpaces from '../../hooks/useBrowserSpaces';
-import useDownloadPng from '../../hooks/useDownloadPng';
 import { APP_SPACE_LIMIT_REACHED, createNewSpace, importFile } from '../../lib';
 import { useSpaceStore } from '../../store/config';
 import DreamTrigger from '../DreamTrigger';
@@ -29,6 +28,7 @@ import DeleteSpaceModal from '../modals/DeleteSpaceModal';
 import DuplicateSpaceModal from '../modals/DuplicateSpaceModal';
 import ExportModal from '../modals/ExportModal';
 import HelpModal from '../modals/HelpModal';
+import ImageDownloadModal from '../modals/ImageDownloadModal';
 import ImportModal from '../modals/ImportModal';
 import Dropdown from '../ui/Dropdown';
 import ThemeToggle from '../ui/ThemeToggle';
@@ -100,10 +100,10 @@ export default function HeaderMenu() {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isImageDownloadModalOpen, setIsImageDownloadModalOpen] = useState(false);
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
   const spaceId = useSpaceStore(useShallow((state) => state?.space?.id));
   const { limitMet } = useBrowserSpaces();
-  const { download } = useDownloadPng();
 
   const items = useMemo(() => {
     if (currentUser) {
@@ -152,7 +152,7 @@ export default function HeaderMenu() {
         setIsExportModalOpen(true);
         break;
       case 'Download Image':
-        download();
+        setIsImageDownloadModalOpen(true);
         break;
       case 'Duplicate':
         setIsDuplicateModalOpen(true);
@@ -273,6 +273,11 @@ export default function HeaderMenu() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
+      />
+
+      <ImageDownloadModal
+        isOpen={isImageDownloadModalOpen}
+        onClose={() => setIsImageDownloadModalOpen(false)}
       />
     </>
   );

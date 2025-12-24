@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { exportCSV, exportFile, FILE_EXTENSION } from '../../lib';
+import JSZip from 'jszip';
+import { exportCSV, exportFile, FILE_EXTENSION, generateCSVContent } from '../../lib';
 import { useSpace } from '../../store';
 import { toKebabCase } from '../../utils';
 import Modal from '../ui/Modal';
@@ -24,10 +25,11 @@ export default function ExportModal({ isOpen, onClose }: ExportModalProps) {
     setFileName(kebabCaseTitle);
   }, [space.title]);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (format === 'csv') {
-      // Export each selected sheet as a separate file
-      selectedSheets.forEach((sheetId) => {
+      // If only one sheet is selected, export directly without zip
+      if (selectedSheets.length === 1) {
+        const sheetId = selectedSheets[0];
         let sheetFileName = fileName;
         if (sheetId === 'all') {
           sheetFileName = `${fileName} - All`;
@@ -38,7 +40,34 @@ export default function ExportModal({ isOpen, onClose }: ExportModalProps) {
           }
         }
         exportCSV(sheetFileName, space, sheetId);
-      });
+      } else {
+        // Multiple sheets: create a zip file
+        const zip = new JSZip();
+        
+        selectedSheets.forEach((sheetId) => {
+          let sheetFileName = fileName;
+          if (sheetId === 'all') {
+            sheetFileName = `${fileName} - All`;
+          } else {
+            const sheet = sheets?.find((s) => s.id === sheetId);
+            if (sheet) {
+              sheetFileName = `${fileName} - ${sheet.name}`;
+            }
+          }
+          const csvContent = generateCSVContent(space, sheetId);
+          zip.file(`${sheetFileName}.csv`, csvContent);
+        });
+        
+        // Generate and download the zip file
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        const timestamp = Date.now();
+        a.download = `${fileName}-csvs-${timestamp}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
     } else {
       exportFile(fileName, space);
     }
@@ -108,7 +137,9 @@ export default function ExportModal({ isOpen, onClose }: ExportModalProps) {
           <div className='flex grow flex-col gap-1'>
             <label className='font-medium'>Sheets to Export</label>
             <p className='text-sm text-gray-500 dark:text-gray-400 mb-2'>
-              Each sheet will be exported as a separate CSV file.
+              {selectedSheets.length > 1
+                ? 'Multiple sheets will be exported as a ZIP file.'
+                : 'Each sheet will be exported as a separate CSV file.'}
             </p>
             <div className='flex flex-col gap-2'>
               <label className='flex items-center gap-2 cursor-pointer'>
