@@ -42,6 +42,10 @@ export function getImageFilename(
   return `${formattedTitle}${sheetSuffix}-${formattedTimeWindow}.png`;
 }
 
+const PADDING_FACTOR = 0.1; // 10% padding
+const MIN_WIDTH = 800;
+const MIN_HEIGHT = 600;
+
 // REF: https://reactflow.dev/examples/misc/download-image
 export default function useDownloadPng() {
   const { getNodes } = useReactFlow();
@@ -55,62 +59,52 @@ export default function useDownloadPng() {
   );
   const { theme } = useTheme();
 
-  const captureImage = useCallback(
-    () => {
-      const nodesBounds = getNodesBounds(getNodes());
+  const captureImage = useCallback(() => {
+    const nodesBounds = getNodesBounds(getNodes());
 
-      // Calculate dimensions based on node bounds to ensure all nodes fit
-      const boundsWidth = nodesBounds.width;
-      const boundsHeight = nodesBounds.height;
+    // Calculate dimensions based on node bounds to ensure all nodes fit
+    const boundsWidth = nodesBounds.width;
+    const boundsHeight = nodesBounds.height;
 
-      // Set minimum dimensions but allow growth based on content
-      const minWidth = 1024;
-      const minHeight = 768;
-      const maxWidth = 4096;
-      const maxHeight = 4096;
+    // Add padding around the nodes (10% on each side)
+    const imageWidth = Math.max(
+      MIN_WIDTH,
+      boundsWidth * (1 + PADDING_FACTOR * 2),
+    );
+    const imageHeight = Math.max(
+      MIN_HEIGHT,
+      boundsHeight * (1 + PADDING_FACTOR * 2),
+    );
 
-      // Add padding around the nodes (10% on each side)
-      const paddingFactor = 0.1;
-      const imageWidth = Math.min(
-        maxWidth,
-        Math.max(minWidth, boundsWidth * (1 + paddingFactor * 2)),
-      );
-      const imageHeight = Math.min(
-        maxHeight,
-        Math.max(minHeight, boundsHeight * (1 + paddingFactor * 2)),
-      );
+    // Calculate viewport with much more flexible zoom constraints
+    const viewport = getViewportForBounds(
+      nodesBounds,
+      imageWidth,
+      imageHeight,
+      0.05, // Allow significant zoom out
+      10, // Allow significant zoom in
+      PADDING_FACTOR,
+    );
 
-      // Calculate viewport with much more flexible zoom constraints
-      const viewport = getViewportForBounds(
-        nodesBounds,
-        imageWidth,
-        imageHeight,
-        0.05, // Allow significant zoom out
-        10, // Allow significant zoom in
-        paddingFactor,
-      );
+    const viewportEl = document.querySelector(
+      '.react-flow__viewport',
+    ) as HTMLElement;
+    if (!viewportEl) {
+      console.error('Viewport not found');
+      return Promise.reject(new Error('Viewport not found'));
+    }
 
-      const viewportEl = document.querySelector(
-        '.react-flow__viewport',
-      ) as HTMLElement;
-      if (!viewportEl) {
-        console.error('Viewport not found');
-        return Promise.reject(new Error('Viewport not found'));
-      }
-
-      return toPng(viewportEl, {
-        backgroundColor: theme === 'dark' ? '#1f2937' : '#f0fdfa',
-        width: imageWidth,
-        height: imageHeight,
-        style: {
-          width: `${imageWidth}px`,
-          height: `${imageHeight}px`,
-          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
-        },
-      });
-    },
-    [getNodes, theme],
-  );
+    return toPng(viewportEl, {
+      backgroundColor: theme === 'dark' ? '#1f2937' : '#f0fdfa',
+      width: imageWidth,
+      height: imageHeight,
+      style: {
+        width: `${imageWidth}px`,
+        height: `${imageHeight}px`,
+        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom / 1.25})`,
+      },
+    });
+  }, [getNodes, theme]);
 
   const captureAndDownload = useCallback(
     (sheetName?: string) => {
