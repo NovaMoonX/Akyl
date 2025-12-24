@@ -262,7 +262,7 @@ export default function BudgetItemForm({
             <div className='mb-4 flex justify-end'>
               <button
                 type='button'
-                className='sm:sm mt-1 ml-auto text-xs underline opacity-70 hover:opacity-85'
+                className='mt-1 ml-auto text-xs underline opacity-70 hover:opacity-85 sm:text-sm'
                 onClick={() => setShowNotes(true)}
               >
                 Add notes
