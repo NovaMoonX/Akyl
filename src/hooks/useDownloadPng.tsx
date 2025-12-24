@@ -15,13 +15,15 @@ function downloadImage(
   dataUrl: string,
   title: string,
   timeWindow: BudgetItemCadence,
+  sheetName?: string,
 ) {
   const a = document.createElement('a');
 
   const formattedTitle = toKebabCase(title || 'Untitled Space');
   const formattedTimeWindow = `${timeWindow.interval}${timeWindow.type}${timeWindow.interval > 1 ? 's' : ''}`;
+  const sheetSuffix = sheetName ? `-${toKebabCase(sheetName)}` : '';
 
-  a.setAttribute('download', `${formattedTitle}-${formattedTimeWindow}.png`);
+  a.setAttribute('download', `${formattedTitle}${sheetSuffix}-${formattedTimeWindow}.png`);
   a.setAttribute('href', dataUrl);
   a.click();
 }
@@ -35,15 +37,17 @@ const padding = 1;
 // REF: https://reactflow.dev/examples/misc/download-image
 export default function useDownloadPng() {
   const { getNodes } = useReactFlow();
-  const [title, timeWindow] = useSpace(
+  const [title, timeWindow, sheets, setActiveSheet] = useSpace(
     useShallow((state) => [
       state?.space?.title,
       state?.space?.config?.timeWindow,
+      state?.space?.sheets,
+      state.setActiveSheet,
     ]),
   );
   const { theme } = useTheme();
 
-  const download = useCallback(() => {
+  const captureAndDownload = useCallback((sheetName?: string) => {
     // we calculate a transform for the nodes so that all nodes are visible
     // we then overwrite the transform of the `.react-flow__viewport` element
     // with the style option of the html-to-image library
@@ -74,10 +78,47 @@ export default function useDownloadPng() {
         height: `${imageHeight}px`,
         transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
       },
-    }).then((url) => downloadImage(url, title, timeWindow));
+    }).then((url) => downloadImage(url, title, timeWindow, sheetName));
   }, [getNodes, theme, title, timeWindow]);
+
+  const download = useCallback(() => {
+    captureAndDownload();
+  }, [captureAndDownload]);
+
+  const downloadSheet = useCallback((sheetId: string) => {
+    const currentActiveSheet = useSpace.getState()?.space?.config?.activeSheet || 'all';
+    
+    // Determine sheet name for filename
+    let sheetName: string | undefined;
+    if (sheetId === 'all') {
+      sheetName = 'All';
+    } else {
+      const sheet = sheets?.find((s) => s.id === sheetId);
+      sheetName = sheet?.name;
+    }
+
+    // If already on the correct sheet, just download
+    if (currentActiveSheet === sheetId) {
+      captureAndDownload(sheetName);
+      return;
+    }
+
+    // Switch to the sheet, wait for render, then capture
+    setActiveSheet(sheetId);
+    
+    // Use a longer timeout to ensure the flow has re-rendered
+    setTimeout(() => {
+      captureAndDownload(sheetName);
+      
+      // Restore the original active sheet after a brief delay
+      setTimeout(() => {
+        setActiveSheet(currentActiveSheet);
+      }, 100);
+    }, 500);
+  }, [captureAndDownload, sheets, setActiveSheet]);
 
   return {
     download,
+    downloadSheet,
   };
 }
