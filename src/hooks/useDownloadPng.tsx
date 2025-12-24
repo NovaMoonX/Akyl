@@ -31,6 +31,17 @@ function downloadImage(
   a.click();
 }
 
+export function getImageFilename(
+  title: string,
+  timeWindow: BudgetItemCadence,
+  sheetName?: string,
+): string {
+  const formattedTitle = toKebabCase(title || 'Untitled Space');
+  const formattedTimeWindow = `${timeWindow.interval}${timeWindow.type}${timeWindow.interval > 1 ? 's' : ''}`;
+  const sheetSuffix = sheetName ? `-${toKebabCase(sheetName)}` : '';
+  return `${formattedTitle}${sheetSuffix}-${formattedTimeWindow}.png`;
+}
+
 // REF: https://reactflow.dev/examples/misc/download-image
 export default function useDownloadPng() {
   const { getNodes } = useReactFlow();
@@ -44,8 +55,8 @@ export default function useDownloadPng() {
   );
   const { theme } = useTheme();
 
-  const captureAndDownload = useCallback(
-    (sheetName?: string) => {
+  const captureImage = useCallback(
+    () => {
       const nodesBounds = getNodesBounds(getNodes());
 
       // Calculate dimensions based on node bounds to ensure all nodes fit
@@ -55,16 +66,18 @@ export default function useDownloadPng() {
       // Set minimum dimensions but allow growth based on content
       const minWidth = 1024;
       const minHeight = 768;
+      const maxWidth = 4096;
+      const maxHeight = 4096;
 
       // Add padding around the nodes (10% on each side)
       const paddingFactor = 0.1;
-      const imageWidth = Math.max(
-        minWidth,
-        boundsWidth * (1 + paddingFactor * 2),
+      const imageWidth = Math.min(
+        maxWidth,
+        Math.max(minWidth, boundsWidth * (1 + paddingFactor * 2)),
       );
-      const imageHeight = Math.max(
-        minHeight,
-        boundsHeight * (1 + paddingFactor * 2),
+      const imageHeight = Math.min(
+        maxHeight,
+        Math.max(minHeight, boundsHeight * (1 + paddingFactor * 2)),
       );
 
       // Calculate viewport with much more flexible zoom constraints
@@ -92,16 +105,76 @@ export default function useDownloadPng() {
         style: {
           width: `${imageWidth}px`,
           height: `${imageHeight}px`,
-          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom / 1.25})`,
+          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
         },
-      }).then((url) => downloadImage(url, title, timeWindow, sheetName));
+      });
     },
-    [getNodes, theme, title, timeWindow],
+    [getNodes, theme],
+  );
+
+  const captureAndDownload = useCallback(
+    (sheetName?: string) => {
+      return captureImage().then((url) =>
+        downloadImage(url, title, timeWindow, sheetName),
+      );
+    },
+    [captureImage, title, timeWindow],
   );
 
   const download = useCallback(() => {
     return captureAndDownload();
   }, [captureAndDownload]);
+
+  const captureSheetImage = useCallback(
+    async (sheetId: string): Promise<{ filename: string; dataUrl: string }> => {
+      const currentActiveSheet =
+        useSpace.getState()?.space?.config?.activeSheet || 'all';
+
+      // Determine sheet name for filename
+      let sheetName: string | undefined;
+      if (sheetId === 'all') {
+        sheetName = 'All';
+      } else {
+        const sheet = sheets?.find((s) => s.id === sheetId);
+        sheetName = sheet?.name;
+      }
+
+      const filename = getImageFilename(title, timeWindow, sheetName);
+
+      // If already on the correct sheet, just capture
+      if (currentActiveSheet === sheetId) {
+        const dataUrl = await captureImage();
+        return { filename, dataUrl };
+      }
+
+      // Switch to the sheet, wait for render, then capture
+      setActiveSheet(sheetId);
+
+      // Use a promise-based approach to ensure sequential execution
+      return new Promise<{ filename: string; dataUrl: string }>(
+        (resolve, reject) => {
+          // Wait 500ms for React Flow to re-render with the new sheet's filtered items
+          setTimeout(() => {
+            captureImage()
+              .then((dataUrl) => {
+                // Wait 100ms before restoring to ensure capture has completed
+                setTimeout(() => {
+                  setActiveSheet(currentActiveSheet);
+                  resolve({ filename, dataUrl });
+                }, 100);
+              })
+              .catch((error) => {
+                // Always restore the original sheet even if capture fails
+                setActiveSheet(currentActiveSheet);
+                console.error('Failed to capture sheet image:', error);
+                reject(error);
+              });
+          }, 500);
+        },
+      );
+    },
+    [captureImage, sheets, setActiveSheet, title, timeWindow],
+  );
 
   const downloadSheet = useCallback(
     async (sheetId: string) => {
@@ -152,5 +225,6 @@ export default function useDownloadPng() {
   return {
     download,
     downloadSheet,
+    captureSheetImage,
   };
 }

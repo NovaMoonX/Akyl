@@ -176,6 +176,17 @@ export function pickFile(acceptedFileTypes?: string): Promise<File> {
 }
 
 export function exportCSV(fileName: string, space: Space, sheetId?: string) {
+  const csvContent = generateCSVContent(space, sheetId);
+  const file = new Blob([csvContent], { type: 'text/csv' });
+  const url = URL.createObjectURL(file);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${fileName.trim()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export function generateCSVContent(space: Space, sheetId?: string): string {
   // Filter items by sheet if specified
   let incomes = space.incomes;
   let expenses = space.expenses;
@@ -228,15 +239,7 @@ export function exportCSV(fileName: string, space: Space, sheetId?: string) {
   ];
 
   // Combine incomes and expenses
-  const csvContent = [...incomesCSV, '', ...expensesCSV].join('\n');
-
-  const file = new Blob([csvContent], { type: 'text/csv' });
-  const url = URL.createObjectURL(file);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${fileName.trim()}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  return [...incomesCSV, '', ...expensesCSV].join('\n');
 }
 
 export function exportCSVTemplate() {

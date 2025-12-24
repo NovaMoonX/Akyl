@@ -34,6 +34,7 @@ export {
   exportCSVTemplate,
   importCSV,
   parseCSVContent,
+  generateCSVContent,
 } from './file.actions';
 export type { CSVParseResult } from './file.actions';
 

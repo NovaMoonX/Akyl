@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
+import JSZip from 'jszip';
 import useDownloadPng from '../../hooks/useDownloadPng';
 import { useSpace } from '../../store';
 import Modal from '../ui/Modal';
@@ -13,20 +14,52 @@ export default function ImageDownloadModal({
   isOpen,
   onClose,
 }: ImageDownloadModalProps) {
+  const space = useSpace(useShallow((state) => state?.space));
   const sheets = useSpace(useShallow((state) => state?.space?.sheets));
   const [selectedSheets, setSelectedSheets] = useState<string[]>(['all']);
-  const { downloadSheet } = useDownloadPng();
+  const { downloadSheet, captureSheetImage } = useDownloadPng();
 
   const handleDownload = async () => {
-    // Download each selected sheet sequentially to avoid race conditions
     const errors: string[] = [];
-    for (const sheetId of selectedSheets) {
+    
+    // If only one sheet is selected, download directly without zip
+    if (selectedSheets.length === 1) {
       try {
-        await downloadSheet(sheetId);
+        await downloadSheet(selectedSheets[0]);
       } catch (error) {
-        const sheetName = sheetId === 'all' ? 'All Items' : sheets?.find(s => s.id === sheetId)?.name || sheetId;
+        const sheetName = selectedSheets[0] === 'all' ? 'All Items' : sheets?.find(s => s.id === selectedSheets[0])?.name || selectedSheets[0];
         errors.push(sheetName);
         console.error(`Failed to download ${sheetName}:`, error);
+      }
+    } else {
+      // Multiple sheets: create a zip file
+      const zip = new JSZip();
+      
+      for (const sheetId of selectedSheets) {
+        try {
+          const { filename, dataUrl } = await captureSheetImage(sheetId);
+          // Convert data URL to blob
+          const base64Data = dataUrl.split(',')[1];
+          zip.file(filename, base64Data, { base64: true });
+        } catch (error) {
+          const sheetName = sheetId === 'all' ? 'All Items' : sheets?.find(s => s.id === sheetId)?.name || sheetId;
+          errors.push(sheetName);
+          console.error(`Failed to capture ${sheetName}:`, error);
+        }
+      }
+      
+      // Generate and download the zip file
+      try {
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${space?.title || 'budget'}-images.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Failed to create zip file:', error);
+        alert('Failed to create zip file');
       }
     }
     
@@ -52,7 +85,9 @@ export default function ImageDownloadModal({
         <div className='flex grow flex-col gap-1'>
           <label className='font-medium'>Sheets to Download</label>
           <p className='text-sm text-gray-500 dark:text-gray-400 mb-2'>
-            Each sheet will be downloaded as a separate PNG image.
+            {selectedSheets.length > 1
+              ? 'Multiple sheets will be downloaded as a ZIP file.'
+              : 'Each sheet will be downloaded as a separate PNG image.'}
           </p>
           <div className='flex flex-col gap-2'>
             <label className='flex items-center gap-2 cursor-pointer'>
