@@ -66,10 +66,10 @@ export default function useDownloadPng() {
     ) as HTMLElement;
     if (!viewportEl) {
       console.error('Viewport not found');
-      return;
+      return Promise.reject(new Error('Viewport not found'));
     }
 
-    toPng(viewportEl, {
+    return toPng(viewportEl, {
       backgroundColor: theme === 'dark' ? '#1f2937' : '#f0fdfa',
       width: imageWidth,
       height: imageHeight,
@@ -82,10 +82,10 @@ export default function useDownloadPng() {
   }, [getNodes, theme, title, timeWindow]);
 
   const download = useCallback(() => {
-    captureAndDownload();
+    return captureAndDownload();
   }, [captureAndDownload]);
 
-  const downloadSheet = useCallback((sheetId: string) => {
+  const downloadSheet = useCallback(async (sheetId: string) => {
     const currentActiveSheet = useSpace.getState()?.space?.config?.activeSheet || 'all';
     
     // Determine sheet name for filename
@@ -99,22 +99,24 @@ export default function useDownloadPng() {
 
     // If already on the correct sheet, just download
     if (currentActiveSheet === sheetId) {
-      captureAndDownload(sheetName);
-      return;
+      return captureAndDownload(sheetName);
     }
 
     // Switch to the sheet, wait for render, then capture
     setActiveSheet(sheetId);
     
-    // Use a longer timeout to ensure the flow has re-rendered
-    setTimeout(() => {
-      captureAndDownload(sheetName);
-      
-      // Restore the original active sheet after a brief delay
+    // Use a promise-based approach to ensure sequential execution
+    return new Promise<void>((resolve) => {
       setTimeout(() => {
-        setActiveSheet(currentActiveSheet);
-      }, 100);
-    }, 500);
+        captureAndDownload(sheetName).then(() => {
+          // Restore the original active sheet after download completes
+          setTimeout(() => {
+            setActiveSheet(currentActiveSheet);
+            resolve();
+          }, 100);
+        });
+      }, 500);
+    });
   }, [captureAndDownload, sheets, setActiveSheet]);
 
   return {

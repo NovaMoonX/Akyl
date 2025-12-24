@@ -17,11 +17,11 @@ export default function ImageDownloadModal({
   const [selectedSheets, setSelectedSheets] = useState<string[]>(['all']);
   const { downloadSheet } = useDownloadPng();
 
-  const handleDownload = () => {
-    // Download each selected sheet as a separate image
-    selectedSheets.forEach((sheetId) => {
-      downloadSheet(sheetId);
-    });
+  const handleDownload = async () => {
+    // Download each selected sheet sequentially to avoid race conditions
+    for (const sheetId of selectedSheets) {
+      await downloadSheet(sheetId);
+    }
     onClose();
   };
 
