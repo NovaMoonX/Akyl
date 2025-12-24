@@ -28,12 +28,6 @@ function downloadImage(
   a.click();
 }
 
-const imageWidth = 1024;
-const imageHeight = 768;
-const minZoom = 0.1;
-const maxZoom = 4;
-const padding = 0.2;
-
 // REF: https://reactflow.dev/examples/misc/download-image
 export default function useDownloadPng() {
   const { getNodes } = useReactFlow();
@@ -48,17 +42,37 @@ export default function useDownloadPng() {
   const { theme } = useTheme();
 
   const captureAndDownload = useCallback((sheetName?: string) => {
-    // we calculate a transform for the nodes so that all nodes are visible
-    // we then overwrite the transform of the `.react-flow__viewport` element
-    // with the style option of the html-to-image library
     const nodesBounds = getNodesBounds(getNodes());
+    
+    // Calculate dimensions based on node bounds to ensure all nodes fit
+    const boundsWidth = nodesBounds.width;
+    const boundsHeight = nodesBounds.height;
+    
+    // Set minimum dimensions but allow growth based on content
+    const minWidth = 1024;
+    const minHeight = 768;
+    const maxWidth = 4096;
+    const maxHeight = 4096;
+    
+    // Add padding around the nodes (10% on each side)
+    const paddingFactor = 0.1;
+    const imageWidth = Math.min(
+      maxWidth,
+      Math.max(minWidth, boundsWidth * (1 + paddingFactor * 2))
+    );
+    const imageHeight = Math.min(
+      maxHeight,
+      Math.max(minHeight, boundsHeight * (1 + paddingFactor * 2))
+    );
+    
+    // Calculate viewport with much more flexible zoom constraints
     const viewport = getViewportForBounds(
       nodesBounds,
       imageWidth,
       imageHeight,
-      minZoom,
-      maxZoom,
-      padding,
+      0.05, // Allow significant zoom out
+      10,   // Allow significant zoom in
+      paddingFactor,
     );
 
     const viewportEl = document.querySelector(
