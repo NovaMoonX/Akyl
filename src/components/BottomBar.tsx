@@ -7,6 +7,7 @@ import {
   CalculatorIcon,
   TableIcon,
   WorkflowIcon,
+  PinIcon,
 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
@@ -27,6 +28,8 @@ export default function BottomBar() {
     addSheet,
     updateSheet,
     removeSheet,
+    description,
+    pinned,
   ] = useSpace(
     useShallow((state) => [
       state?.space?.sheets,
@@ -35,8 +38,11 @@ export default function BottomBar() {
       state.addSheet,
       state.updateSheet,
       state.removeSheet,
+      state.space?.description,
+      state.space?.pinned,
     ]),
   );
+  const { updateSpace } = useSpace();
   const [
     selectedBudgetItems,
     isBulkEditMode,
@@ -421,6 +427,36 @@ export default function BottomBar() {
         centerTitle={true}
       >
         <div className='flex flex-col items-center gap-4 pb-2'>
+          {/* Space Description and Pin */}
+          <div className='w-full'>
+            <div className='flex flex-col gap-2'>
+              <div className='flex items-center gap-2'>
+                <button
+                  onClick={() => updateSpace({ pinned: !pinned })}
+                  className='shrink-0'
+                  aria-label={pinned ? 'Unpin Space' : 'Pin Space'}
+                >
+                  <PinIcon
+                    className={join(
+                      'size-5',
+                      pinned ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400',
+                    )}
+                  />
+                </button>
+                <span className='text-sm text-gray-700 dark:text-gray-200'>
+                  {pinned ? 'Pinned' : 'Not pinned'}
+                </span>
+              </div>
+              <textarea
+                value={description || ''}
+                onChange={(e) => updateSpace({ description: e.target.value })}
+                placeholder='Add a description...'
+                className='w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                rows={3}
+              />
+            </div>
+          </div>
+
           <div>
             <span className='mb-1 block text-center font-medium text-gray-700 dark:text-gray-200'>
               Budget Time Window

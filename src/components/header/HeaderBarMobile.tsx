@@ -1,7 +1,6 @@
 import { ArrowUpIcon, MinusIcon, PlusIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
-import { useAuth } from '../../contexts/AuthContext';
 import { useBudget } from '../../hooks';
 import { URL_PARAM_FORM, type BudgetType } from '../../lib';
 import { useSpace } from '../../store';
@@ -11,11 +10,9 @@ import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
 
 export default function HeaderBarMobile() {
-  const { currentUser } = useAuth();
   const [title] = useSpace(
     useShallow((state) => [
       state.space.title,
-      state.space.config.cashFlowVerbiage,
     ]),
   );
   const { updateSpace } = useSpace();
@@ -45,7 +42,7 @@ export default function HeaderBarMobile() {
           placeholder='Space Title'
           className='text-surface-hover-dark dark:text-surface-hover-light min-w-10 flex-1 font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
         />
-        <div className='flex items-center gap-1 text-sm'>
+        <div className='flex items-center gap-1 text-sm ml-2'>
           <button
             onClick={() => handleOpenForm('income')}
             className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-2 py-1 transition'
@@ -68,21 +65,12 @@ export default function HeaderBarMobile() {
             </span>
           </div>
         )}
-
-        {currentUser?.email && (
-          <small className='absolute bottom-0 left-0 translate-y-full whitespace-nowrap'>
-            <span className='mr-1 font-light text-gray-500 dark:text-gray-400'>
-              Logged in as
-            </span>
-            <span>{currentUser?.email}</span>
-          </small>
-        )}
       </div>
 
       <Dropdown
         isOpen={Boolean(searchParams.get(URL_PARAM_FORM))}
         onClose={() => handleCloseForm()}
-        className='right-0 w-fit max-w-md !p-6'
+        className='right-1 left-1 w-fit max-w-screen !p-6'
         closeOnOverlayClick={false}
       >
         {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}

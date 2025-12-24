@@ -182,7 +182,7 @@ export default function HeaderMenu() {
     <>
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className='bg-surface-light dark:bg-surface-dark hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark rounded-lg px-3 py-4 text-teal-500 shadow-md sm:px-4 sm:py-5'
+        className='bg-surface-light dark:bg-surface-dark hover:bg-surface-hover-light hover:dark:bg-surface-hover-dark flex items-center rounded-lg px-3 py-4 sm:py-5 text-teal-500 shadow-md sm:px-5'
       >
         <MenuIcon className='size-4 sm:size-5' />
       </button>
@@ -190,7 +190,7 @@ export default function HeaderMenu() {
       <Dropdown
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
-        className='left-2 sm:left-4'
+        className='left-2 sm:left-4 sm:-translate-y-14'
       >
         {items.map((item, index) => {
           const Icon = (item.icon as React.ReactElement).type;

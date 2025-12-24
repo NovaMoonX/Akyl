@@ -98,211 +98,215 @@ export default function BudgetItemForm({
   return (
     <>
       <form
-        className='flex flex-col gap-4'
+        className='max-h-svh'
         onSubmit={(e) => {
           e.preventDefault();
           handleSave();
         }}
       >
-        <h2 className='text-xl font-bold capitalize'>
-          {itemId ? 'edit' : 'add'}{' '}
-          {type === 'income'
-            ? CashFlowVerbiagePairs[cashFlowVerbiage].in
-            : CashFlowVerbiagePairs[cashFlowVerbiage].out}{' '}
-        </h2>
-        <div>
-          <label className='font-medium'>Name</label>
-          <input
-            type='text'
-            className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-            value={label}
-            onChange={(e) => onFieldChange('label', e.target.value)}
-            placeholder={nameInputPlaceholder}
-            autoFocus={true}
-          />
-
-          {!showDescription && (
-            <div className='flex justify-end'>
-              <button
-                type='button'
-                className='mt-1 ml-auto text-sm underline opacity-70 hover:opacity-85'
-                onClick={() => setShowDescription(true)}
-              >
-                Add description
-              </button>
-            </div>
-          )}
-        </div>
-
-        {showDescription && (
+        <div className='flex flex-col gap-4 overflow-y-auto'>
+          <h2 className='text-lg font-bold capitalize sm:text-xl'>
+            {itemId ? 'edit' : 'add'}{' '}
+            {type === 'income'
+              ? CashFlowVerbiagePairs[cashFlowVerbiage].in
+              : CashFlowVerbiagePairs[cashFlowVerbiage].out}{' '}
+          </h2>
           <div>
-            <label className='font-medium'>Description</label>
+            <label className='text-sm font-medium sm:text-base'>Name</label>
             <input
               type='text'
               className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-              value={description}
-              onChange={(e) => onFieldChange('description', e.target.value)}
+              value={label}
+              onChange={(e) => onFieldChange('label', e.target.value)}
+              placeholder={nameInputPlaceholder}
+              autoFocus={true}
             />
+
+            {!showDescription && (
+              <div className='flex justify-end'>
+                <button
+                  type='button'
+                  className='mt-1 ml-auto text-xs underline opacity-70 hover:opacity-85 sm:text-sm'
+                  onClick={() => setShowDescription(true)}
+                >
+                  Add description
+                </button>
+              </div>
+            )}
           </div>
-        )}
 
-        <div>
-          <label className='font-medium'>Amount</label>
-          <div className='mt-1 flex flex-wrap items-center gap-2'>
-            <div className='flex items-center gap-1'>
-              <input
-                type='number'
-                min={0}
-                step='0.01'
-                className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-                value={amount === 0 ? '' : amount}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === '') {
-                    onFieldChange('amount', 0);
-                  } else {
-                    onFieldChange('amount', Number(val));
-                  }
-                }}
-                placeholder='0.00'
-              />
-              <button
-                type='button'
-                onClick={() => setShowCalculator(true)}
-                className='rounded p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
-                aria-label='Open calculator'
-                title='Open calculator'
-              >
-                <CalculatorIcon className='size-4' />
-              </button>
-            </div>
-            <span className='text-gray-700 dark:text-gray-200'>
-              {getCurrencySymbol(currency)}
-            </span>
-            <span className='mx-1 text-gray-500'>every</span>
-
-            <div className='relative'>
-              <label className='absolute top-0 -translate-y-full pb-0.5 font-medium'>
-                Frequency
+          {showDescription && (
+            <div>
+              <label className='text-sm font-medium sm:text-base'>
+                Description
               </label>
               <input
-                type='number'
-                min={1}
-                className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-                aria-description='Enter the frequency interval for this budget item'
-                value={cadence?.interval === 0 ? '' : cadence?.interval}
-                placeholder='1'
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === '') {
-                    onFieldChange('cadence', { ...cadence, interval: 0 });
-                  } else {
-                    onFieldChange('cadence', {
-                      ...cadence,
-                      interval: Math.max(1, Number(e.target.value)),
-                    });
-                  }
-                }}
+                type='text'
+                className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                value={description}
+                onChange={(e) => onFieldChange('description', e.target.value)}
               />
             </div>
-            <select
-              className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-              value={cadence?.type}
-              onChange={(e) =>
-                onFieldChange('cadence', { ...cadence, type: e.target.value })
-              }
-              aria-description='Select the frequency of this budget item'
-            >
-              <option value='day'>day(s)</option>
-              <option value='week'>week(s)</option>
-              <option value='month'>month(s)</option>
-              <option value='year'>year(s)</option>
-            </select>
-          </div>
-        </div>
+          )}
 
-        {/* Children for custom fields */}
-        {children}
-
-        {/* Sheets */}
-        {availableSheets.length > 0 && (
           <div>
-            <label className='font-medium'>Sheets</label>
-            <div className='flex flex-wrap gap-2 mt-2'>
-              {availableSheets.map((sheet) => {
-                const isSelected = sheets?.includes(sheet.id) ?? false;
-                return (
-                  <button
-                    key={sheet.id}
-                    type='button'
-                    className={`px-3 py-1 rounded border text-sm transition-colors ${
-                      isSelected
-                        ? 'bg-emerald-500 text-white border-emerald-600'
-                        : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 hover:border-emerald-500'
-                    }`}
-                    onClick={() => {
-                      const newSheets = isSelected
-                        ? (sheets || []).filter((id) => id !== sheet.id)
-                        : [...(sheets || []), sheet.id];
-                      onFieldChange('sheets', newSheets);
-                    }}
-                  >
-                    {sheet.name}
-                  </button>
-                );
-              })}
+            <label className='text-sm font-medium sm:text-base'>Amount</label>
+            <div className='mt-1 flex flex-wrap items-center gap-2'>
+              <div className='flex items-center gap-1'>
+                <input
+                  type='number'
+                  min={0}
+                  step='0.01'
+                  className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                  value={amount === 0 ? '' : amount}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      onFieldChange('amount', 0);
+                    } else {
+                      onFieldChange('amount', Number(val));
+                    }
+                  }}
+                  placeholder='0.00'
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowCalculator(true)}
+                  className='rounded p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+                  aria-label='Open calculator'
+                  title='Open calculator'
+                >
+                  <CalculatorIcon className='size-4' />
+                </button>
+              </div>
+              <span className='text-gray-700 dark:text-gray-200'>
+                {getCurrencySymbol(currency)}
+              </span>
+              <span className='mx-1 text-gray-500'>every</span>
+
+              <div className='relative'>
+                <label className='absolute top-0 -translate-y-full pb-0.5 text-sm font-medium sm:text-base'>
+                  Frequency
+                </label>
+                <input
+                  type='number'
+                  min={1}
+                  className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                  aria-description='Enter the frequency interval for this budget item'
+                  value={cadence?.interval === 0 ? '' : cadence?.interval}
+                  placeholder='1'
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      onFieldChange('cadence', { ...cadence, interval: 0 });
+                    } else {
+                      onFieldChange('cadence', {
+                        ...cadence,
+                        interval: Math.max(1, Number(e.target.value)),
+                      });
+                    }
+                  }}
+                />
+              </div>
+              <select
+                className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                value={cadence?.type}
+                onChange={(e) =>
+                  onFieldChange('cadence', { ...cadence, type: e.target.value })
+                }
+                aria-description='Select the frequency of this budget item'
+              >
+                <option value='day'>day(s)</option>
+                <option value='week'>week(s)</option>
+                <option value='month'>month(s)</option>
+                <option value='year'>year(s)</option>
+              </select>
             </div>
           </div>
-        )}
 
-        {!showNotes && (
-          <div className='mb-4 flex justify-end'>
-            <button
-              type='button'
-              className='mt-1 ml-auto text-sm underline opacity-70 hover:opacity-85'
-              onClick={() => setShowNotes(true)}
-            >
-              Add notes
-            </button>
-          </div>
-        )}
-        {showNotes && (
-          <div>
-            <label className='font-medium'>Notes</label>
-            <textarea
-              className='min-h-20 w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
-              value={notes}
-              onChange={(e) => onFieldChange('notes', e.target.value)}
-              rows={2}
-            />
-          </div>
-        )}
+          {/* Children for custom fields */}
+          {children}
 
-        <div className='flex justify-end gap-2'>
-          {itemId && (
-            <button
-              type='button'
-              className='btn btn-danger mr-auto'
-              onClick={() => setShowDeleteConfirmation(true)}
-            >
-              Delete
-            </button>
+          {/* Sheets */}
+          {availableSheets.length > 0 && (
+            <div>
+              <label className='text-sm font-medium sm:text-base'>Sheets</label>
+              <div className='mt-2 flex flex-wrap gap-2'>
+                {availableSheets.map((sheet) => {
+                  const isSelected = sheets?.includes(sheet.id) ?? false;
+                  return (
+                    <button
+                      key={sheet.id}
+                      type='button'
+                      className={`rounded border px-3 py-1 text-xs transition-colors sm:text-sm ${
+                        isSelected
+                          ? 'border-emerald-600 bg-emerald-500 text-white'
+                          : 'border-gray-300 bg-white hover:border-emerald-500 dark:border-gray-700 dark:bg-gray-800'
+                      }`}
+                      onClick={() => {
+                        const newSheets = isSelected
+                          ? (sheets || []).filter((id) => id !== sheet.id)
+                          : [...(sheets || []), sheet.id];
+                        onFieldChange('sheets', newSheets);
+                      }}
+                    >
+                      {sheet.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
-          <button
-            type='button'
-            className='btn btn-secondary'
-            onClick={handleClose}
-          >
-            Cancel
-          </button>
-          <button
-            type='submit'
-            className='btn btn-primary'
-            onClick={handleSave}
-            disabled={saveButtonDisabled}
-          >
-            Save
-          </button>
+
+          {!showNotes && (
+            <div className='mb-4 flex justify-end'>
+              <button
+                type='button'
+                className='mt-1 ml-auto text-xs underline opacity-70 hover:opacity-85 sm:text-sm'
+                onClick={() => setShowNotes(true)}
+              >
+                Add notes
+              </button>
+            </div>
+          )}
+          {showNotes && (
+            <div>
+              <label className='text-sm font-medium sm:text-base'>Notes</label>
+              <textarea
+                className='min-h-20 w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700 text-sm sm:text-base'
+                value={notes}
+                onChange={(e) => onFieldChange('notes', e.target.value)}
+                rows={2}
+              />
+            </div>
+          )}
+
+          <div className='flex justify-end gap-2'>
+            {itemId && (
+              <button
+                type='button'
+                className='btn btn-danger mr-auto'
+                onClick={() => setShowDeleteConfirmation(true)}
+              >
+                Delete
+              </button>
+            )}
+            <button
+              type='button'
+              className='btn btn-secondary'
+              onClick={handleClose}
+            >
+              Cancel
+            </button>
+            <button
+              type='submit'
+              className='btn btn-primary'
+              onClick={handleSave}
+              disabled={saveButtonDisabled}
+            >
+              Save
+            </button>
+          </div>
         </div>
       </form>
 

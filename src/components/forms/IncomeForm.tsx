@@ -103,7 +103,7 @@ export default function IncomeForm() {
     >
       {/* Source */}
       <div>
-        <label className='font-medium'>Source</label>
+        <label className='font-medium text-sm sm:text-base'>Source</label>
         <Combobox
           value={formData?.source ?? ''}
           options={sourceOptions}

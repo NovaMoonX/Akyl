@@ -5,10 +5,11 @@ import {
   LogOutIcon,
   ShieldQuestionIcon,
   SquarePlusIcon,
+  PinIcon,
   TrashIcon,
   UploadIcon,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { signOutUser } from '../firebase';
 import useBrowserSpaces from '../hooks/useBrowserSpaces';
@@ -18,6 +19,7 @@ import {
   APP_SPACE_LIMIT_REACHED,
   createNewSpace,
   importFile,
+  syncSpace,
   type Space,
 } from '../lib';
 import { join } from '../utils';
@@ -53,31 +55,23 @@ const DEFAULT_ITEMS: MenuItem[] = [
   },
 ];
 export default function LoadScreen() {
-  const { currentUser } = useAuth();
+  const { currentUser, cryptoKey } = useAuth();
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
-  const [deletedSpaceIds, setDeletedSpaceIds] = useState<Set<string>>(
-    new Set(),
-  );
+  const [spaces, setSpaces] = useState<Space[]>([]);
   const { spaces: localSpaces, limitMet } = useBrowserSpaces();
   const { spaces: syncedSpaces, spacesMap: syncedSpacesMap } =
     useSyncAllSpaces();
 
-  const spaces = useMemo(() => {
+  // Initialize and update spaces from cloud and local storage
+  useEffect(() => {
     let chosenSpaces: Space[] = [];
     if (currentUser?.uid) {
       chosenSpaces = syncedSpaces;
 
       // Add in any local spaces that are not synced yet
-      /* This serves two purposes:
-       * 1. It allows users to see their local spaces that haven't been synced yet.
-       * 2. It ensures that all synced spaces that were saved locally when app mounts
-       *   are still visible, as they will not be fetched again in `useSyncAllSpaces`
-       *   (due to `fetchAllSpacesAndUploadToLocalStorage` only being called when local
-       *   and server timestamps for `ALL_SPACES_LAST_SYNC_KEY` do not match).
-       */
       localSpaces.forEach((localSpace) => {
         if (!syncedSpacesMap[localSpace.id]) {
           chosenSpaces.push(localSpace);
@@ -87,10 +81,11 @@ export default function LoadScreen() {
       chosenSpaces = localSpaces.filter((space) => !space.metadata?.createdBy);
     }
 
-    const filteredSpaces = chosenSpaces.filter(
-      (s) => !deletedSpaceIds.has(s.id),
-    );
-    const sortedSpaces = filteredSpaces.sort((a, b) => {
+    setSpaces(chosenSpaces);
+  }, [localSpaces, syncedSpaces, syncedSpacesMap, currentUser?.uid]);
+
+  const { pinnedSpaces, unpinnedSpaces } = useMemo(() => {
+    const sortedSpaces = [...spaces].sort((a, b) => {
       const aUpdated = a.metadata?.updatedAt ?? 0;
       const bUpdated = b.metadata?.updatedAt ?? 0;
       if (bUpdated !== aUpdated) {
@@ -98,14 +93,12 @@ export default function LoadScreen() {
       }
       return a.title.localeCompare(b.title);
     });
-    return sortedSpaces;
-  }, [
-    localSpaces,
-    syncedSpaces,
-    syncedSpacesMap,
-    currentUser?.uid,
-    deletedSpaceIds,
-  ]);
+    
+    const pinned = sortedSpaces.filter(space => space.pinned);
+    const unpinned = sortedSpaces.filter(space => !space.pinned);
+    
+    return { pinnedSpaces: pinned, unpinnedSpaces: unpinned };
+  }, [spaces]);
 
   const items = useMemo(() => {
     if (currentUser) {
@@ -149,6 +142,34 @@ export default function LoadScreen() {
         break;
       default:
         break;
+    }
+  };
+
+  const handleTogglePin = async (spaceId: string, currentPinned: boolean) => {
+    const spaceData = localStorage.getItem(spaceId);
+    if (spaceData) {
+      const space = JSON.parse(spaceData) as Space;
+      space.pinned = !currentPinned;
+      space.metadata.updatedAt = Date.now();
+      localStorage.setItem(spaceId, JSON.stringify(space));
+      
+      // Update local state
+      setSpaces(prevSpaces =>
+        prevSpaces.map(s => s.id === spaceId ? space : s)
+      );
+
+      // Sync to cloud if user is authenticated
+      if (currentUser?.uid && cryptoKey) {
+        try {
+          await syncSpace({
+            space,
+            cryptoKey,
+            userId: currentUser.uid,
+          });
+        } catch (error) {
+          console.error('Failed to sync space to cloud:', error);
+        }
+      }
     }
   };
 
@@ -205,46 +226,104 @@ export default function LoadScreen() {
             </small>
           )}
 
-          {spaces.length > 0 && (
+          {(pinnedSpaces.length > 0 || unpinnedSpaces.length > 0) && (
             <div className='absolute -bottom-4 sm:-bottom-8 left-0 flex w-full translate-y-full flex-col items-center pb-10'>
-              <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
-                Previous Spaces
-              </h2>
-              <div className='sm:w-lg'>
-                <div className='max-h-48 sm:max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
-                  <div className='grid sm:grid-cols-2 gap-1'>
-                    {spaces.map((space) => (
-                      <div
-                        key={space.id}
-                        className='group w-64 relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
-                      >
-                        <a
-                          role='button'
-                          href={`/${space.id}`}
-                          className='flex flex-1 flex-row items-center gap-1'
-                        >
-                          <ChevronRightIcon className='size-4' />
-                          <span
-                            title={space.title || 'Untitled Space'}
-                            className={join(
-                              'w-44 truncate text-sm sm:text-base',
-                              space.title.length === 0 && 'opacity-70',
-                            )}
+              {pinnedSpaces.length > 0 && (
+                <>
+                  <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
+                    Pinned Spaces
+                  </h2>
+                  <div className='sm:w-lg mb-4'>
+                    <div className='max-h-48 sm:max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
+                      <div className='grid sm:grid-cols-2 gap-1'>
+                        {pinnedSpaces.map((space) => (
+                          <div
+                            key={space.id}
+                            className='group w-64 relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
                           >
-                            {space.title || 'Untitled Space'}
-                          </span>
-                        </a>
-                        <TrashIcon
-                          role='button'
-                          className='ml-2 size-4 shrink-0 text-gray-400 sm:opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
-                          aria-label='Delete Space'
-                          onClick={() => setDeleteSpaceId(space.id)}
-                        />
+                            <a
+                              role='button'
+                              href={`/${space.id}`}
+                              className='flex flex-1 flex-row items-center gap-1'
+                            >
+                              <ChevronRightIcon className='size-4' />
+                              <span
+                                title={space.title || 'Untitled Space'}
+                                className={join(
+                                  'w-32 truncate text-sm sm:text-base',
+                                  space.title.length === 0 && 'opacity-70',
+                                )}
+                              >
+                                {space.title || 'Untitled Space'}
+                              </span>
+                            </a>
+                            <PinIcon
+                              role='button'
+                              className='ml-2 size-4 shrink-0 fill-yellow-400 text-yellow-400 hover:fill-transparent hover:text-gray-400'
+                              aria-label='Unpin Space'
+                              onClick={() => handleTogglePin(space.id, true)}
+                            />
+                            <TrashIcon
+                              role='button'
+                              className='ml-2 size-4 shrink-0 text-gray-400 sm:opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
+                              aria-label='Delete Space'
+                              onClick={() => setDeleteSpaceId(space.id)}
+                            />
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </div>
-              </div>
+                </>
+              )}
+              {unpinnedSpaces.length > 0 && (
+                <>
+                  <h2 className='pb-1 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
+                    {pinnedSpaces.length > 0 ? 'Other Spaces' : 'Previous Spaces'}
+                  </h2>
+                  <div className='sm:w-lg'>
+                    <div className='max-h-48 sm:max-h-68 overflow-y-auto rounded-sm border border-gray-300 dark:border-gray-700'>
+                      <div className='grid sm:grid-cols-2 gap-1'>
+                        {unpinnedSpaces.map((space) => (
+                          <div
+                            key={space.id}
+                            className='group w-64 relative flex flex-row items-center gap-1 rounded-sm px-4 py-2 text-left text-gray-500 hover:bg-black/5 hover:text-gray-900 hover:dark:bg-white/5 hover:dark:text-gray-100'
+                          >
+                            <a
+                              role='button'
+                              href={`/${space.id}`}
+                              className='flex flex-1 flex-row items-center gap-1'
+                            >
+                              <ChevronRightIcon className='size-4' />
+                              <span
+                                title={space.title || 'Untitled Space'}
+                                className={join(
+                                  'w-32 truncate text-sm sm:text-base',
+                                  space.title.length === 0 && 'opacity-70',
+                                )}
+                              >
+                                {space.title || 'Untitled Space'}
+                              </span>
+                            </a>
+                            <PinIcon
+                              role='button'
+                              className='ml-2 size-4 shrink-0 text-gray-400 hover:fill-yellow-400 hover:text-yellow-400'
+                              aria-label='Pin Space'
+                              onClick={() => handleTogglePin(space.id, false)}
+                            />
+                            <TrashIcon
+                              role='button'
+                              className='ml-2 size-4 shrink-0 text-gray-400 sm:opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500'
+                              aria-label='Delete Space'
+                              onClick={() => setDeleteSpaceId(space.id)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -269,7 +348,8 @@ export default function LoadScreen() {
         onClose={() => setDeleteSpaceId(undefined)}
         spaceId={deleteSpaceId}
         onDelete={(id) => {
-          setDeletedSpaceIds((prev) => new Set(prev).add(id));
+          // Remove from local state
+          setSpaces(prevSpaces => prevSpaces.filter(s => s.id !== id));
         }}
       />
 
