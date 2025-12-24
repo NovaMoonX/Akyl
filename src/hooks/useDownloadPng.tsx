@@ -106,15 +106,23 @@ export default function useDownloadPng() {
     setActiveSheet(sheetId);
     
     // Use a promise-based approach to ensure sequential execution
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
+      // Wait 500ms for React Flow to re-render with the new sheet's filtered items
       setTimeout(() => {
-        captureAndDownload(sheetName).then(() => {
-          // Restore the original active sheet after download completes
-          setTimeout(() => {
+        captureAndDownload(sheetName)
+          .then(() => {
+            // Wait 100ms before restoring to ensure download has initiated
+            setTimeout(() => {
+              setActiveSheet(currentActiveSheet);
+              resolve();
+            }, 100);
+          })
+          .catch((error) => {
+            // Always restore the original sheet even if download fails
             setActiveSheet(currentActiveSheet);
-            resolve();
-          }, 100);
-        });
+            console.error('Failed to download sheet image:', error);
+            reject(error);
+          });
       }, 500);
     });
   }, [captureAndDownload, sheets, setActiveSheet]);
