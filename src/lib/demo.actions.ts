@@ -276,9 +276,6 @@ export function createDemoSpace(userId?: string): Space {
       sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
   ];
-      sheets: [sheets[0].id],
-    },
-  ];
 
   // Budget breakdown using app's calculation method (monthly view):
   // The app converts all amounts to daily first, then to monthly for display
