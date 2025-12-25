@@ -8,7 +8,7 @@ import {
 import type { Expense, Income } from './budget.types';
 import type { BudgetItemCadenceType } from './budget.types';
 import type { Space } from './space.types';
-import { generateId } from '../utils';
+import { generateId, ensureDefaultSheet } from '../utils';
 
 // Valid frequency types for CSV import/export
 const VALID_FREQUENCY_TYPES: BudgetItemCadenceType[] = ['day', 'week', 'month', 'year'];
@@ -121,38 +121,9 @@ export async function importFile(): Promise<Space> {
           const space = JSON.parse(jsonData) as Space;
           
           // Ensure all budget items have at least one sheet
-          const hasItemsWithoutSheets = 
-            space.incomes.some(income => !income.sheets || income.sheets.length === 0) ||
-            space.expenses.some(expense => !expense.sheets || expense.sheets.length === 0);
+          const needsUpdate = ensureDefaultSheet(space);
           
-          if (hasItemsWithoutSheets) {
-            // Create a default sheet if none exist
-            if (!space.sheets || space.sheets.length === 0) {
-              const defaultSheetId = generateId('sheet');
-              space.sheets = [{
-                id: defaultSheetId,
-                name: 'Sheet 1',
-              }];
-            }
-            
-            // Get the first sheet ID
-            const defaultSheetId = space.sheets[0].id;
-            
-            // Assign all budget items without sheets to the default sheet
-            space.incomes = space.incomes.map(income => {
-              if (!income.sheets || income.sheets.length === 0) {
-                return { ...income, sheets: [defaultSheetId] };
-              }
-              return income;
-            });
-            
-            space.expenses = space.expenses.map(expense => {
-              if (!expense.sheets || expense.sheets.length === 0) {
-                return { ...expense, sheets: [defaultSheetId] };
-              }
-              return expense;
-            });
-            
+          if (needsUpdate) {
             space.metadata.updatedAt = Date.now();
           }
           
