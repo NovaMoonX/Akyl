@@ -20,8 +20,12 @@ export function createDemoSpace(userId?: string): Space {
   const timestamp = Date.now();
   const theme = getTheme();
 
-  // Create sheets first
+  // Create sheets first - start with default sheet
   const sheets: Sheet[] = [
+    {
+      id: generateId('sheet'),
+      name: 'Sheet 1',
+    },
     {
       id: generateId('sheet'),
       name: 'Monthly Essentials',
@@ -45,7 +49,7 @@ export function createDemoSpace(userId?: string): Space {
       type: 'Salary',
       cadence: { type: 'month', interval: 1 },
       notes: 'Direct deposit on the 1st of each month',
-      sheets: [sheets[0].id], // Monthly Essentials
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
     {
       id: generateId('budget'),
@@ -56,7 +60,7 @@ export function createDemoSpace(userId?: string): Space {
       type: 'Bonus',
       cadence: { type: 'year', interval: 1 },
       notes: 'Typically paid in December',
-      sheets: [sheets[1].id], // Annual Planning
+      sheets: [sheets[0].id, sheets[2].id], // Sheet 1 and Annual Planning
     },
     {
       id: generateId('budget'),
@@ -67,7 +71,7 @@ export function createDemoSpace(userId?: string): Space {
       type: 'Freelance',
       cadence: { type: 'month', interval: 1 },
       notes: 'Average monthly income from side projects',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
     {
       id: generateId('budget'),
@@ -78,7 +82,7 @@ export function createDemoSpace(userId?: string): Space {
       type: 'Investment',
       cadence: { type: 'month', interval: 1 },
       notes: 'Reinvest half, use half for expenses',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
   ];
 
@@ -98,7 +102,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Includes parking spot',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
     {
       id: generateId('budget'),
@@ -109,7 +113,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Internet is $80/month',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
     {
       id: generateId('budget'),
@@ -120,7 +124,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'year', interval: 1 },
       notes: 'Covers $50k personal property',
-      sheets: [sheets[1].id],
+      sheets: [sheets[0].id, sheets[2].id], // Sheet 1 and Annual Planning
     },
 
     {
@@ -132,7 +136,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: '24 months remaining',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
     {
       id: generateId('budget'),
@@ -143,7 +147,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: '',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
     {
       id: generateId('budget'),
@@ -154,7 +158,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'year', interval: 1 },
       notes: 'Paid semi-annually',
-      sheets: [sheets[1].id],
+      sheets: [sheets[0].id, sheets[2].id], // Sheet 1 and Annual Planning
     },
 
     {
@@ -166,7 +170,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'week', interval: 1 },
       notes: 'Trader Joes and farmers market',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
 
     {
@@ -178,7 +182,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Family plan shared with roommate',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
     {
       id: generateId('budget'),
@@ -189,7 +193,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Budget for social activities',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
 
     {
@@ -201,7 +205,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Deducted from paycheck',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
     {
       id: generateId('budget'),
@@ -212,7 +216,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Average monthly healthcare costs',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
 
     {
@@ -224,7 +228,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: '',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
     {
       id: generateId('budget'),
@@ -235,7 +239,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: '24/7 access',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
 
     {
@@ -247,7 +251,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Goal: $30,000',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
     {
       id: generateId('budget'),
@@ -258,7 +262,7 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Contributing 10% of salary',
-      sheets: [sheets[0].id],
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
     },
     {
       id: generateId('budget'),
@@ -269,6 +273,9 @@ export function createDemoSpace(userId?: string): Space {
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Long-term growth strategy',
+      sheets: [sheets[0].id, sheets[1].id], // Sheet 1 and Monthly Essentials
+    },
+  ];
       sheets: [sheets[0].id],
     },
   ];

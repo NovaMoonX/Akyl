@@ -46,6 +46,19 @@ export default function useBudget() {
       items = items.filter((income) => 
         income.sheets?.includes(activeSheet) ?? false
       );
+    } else if (activeSheet === 'all' && sheets) {
+      // In "All" view, filter out items from disabled sheets
+      const disabledSheetIds = sheets
+        .filter(sheet => sheet.disabled)
+        .map(sheet => sheet.id);
+      
+      if (disabledSheetIds.length > 0) {
+        items = items.filter((income) => {
+          const itemSheets = income.sheets || [];
+          // Only exclude if ALL of the item's sheets are disabled
+          return !itemSheets.every(sheetId => disabledSheetIds.includes(sheetId));
+        });
+      }
     }
     
     const itemsAdjustedAmount = items.map((income) => {
@@ -58,7 +71,7 @@ export default function useBudget() {
     });
     itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
-  }, [incomesInSpace, timeWindow, activeSheet]);
+  }, [incomesInSpace, timeWindow, activeSheet, sheets]);
 
   const expenses = useMemo(() => {
     let items = expensesInSpace ?? [];
@@ -68,6 +81,19 @@ export default function useBudget() {
       items = items.filter((expense) => 
         expense.sheets?.includes(activeSheet) ?? false
       );
+    } else if (activeSheet === 'all' && sheets) {
+      // In "All" view, filter out items from disabled sheets
+      const disabledSheetIds = sheets
+        .filter(sheet => sheet.disabled)
+        .map(sheet => sheet.id);
+      
+      if (disabledSheetIds.length > 0) {
+        items = items.filter((expense) => {
+          const itemSheets = expense.sheets || [];
+          // Only exclude if ALL of the item's sheets are disabled
+          return !itemSheets.every(sheetId => disabledSheetIds.includes(sheetId));
+        });
+      }
     }
     
     const itemsAdjustedAmount = items.map((expense) => {
@@ -80,7 +106,7 @@ export default function useBudget() {
     });
     itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
-  }, [expensesInSpace, timeWindow, activeSheet]);
+  }, [expensesInSpace, timeWindow, activeSheet, sheets]);
 
   const incomeSources = useMemo(() => {
     const sourceCount = new Map<string, number>();

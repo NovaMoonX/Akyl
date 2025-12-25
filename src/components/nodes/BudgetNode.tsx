@@ -21,10 +21,11 @@ interface BudgetNodeProps {
 
 function BudgetNode({ data }: BudgetNodeProps) {
   const { budgetItemId } = data;
-  const [currency, activeSheet] = useSpace(
+  const [currency, activeSheet, sheets] = useSpace(
     useShallow((state) => [
       state?.space?.config?.currency || 'USD',
       state?.space?.config?.activeSheet || 'all',
+      state?.space?.sheets,
     ]),
   );
   const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems, isBulkEditMode } = useSpace(
@@ -50,6 +51,18 @@ function BudgetNode({ data }: BudgetNodeProps) {
     }
     return budgetItem.hiddenInSheets?.includes(activeSheet) ?? false;
   }, [budgetItem, activeSheet]);
+
+  // Get sheet names for display in "All" view
+  const sheetNames = useMemo(() => {
+    if (activeSheet !== 'all' || !budgetItem || !sheets) return '';
+    
+    const itemSheets = budgetItem.sheets || [];
+    const names = itemSheets
+      .map(sheetId => sheets.find(s => s.id === sheetId)?.name)
+      .filter(Boolean);
+    
+    return names.join(', ');
+  }, [activeSheet, budgetItem, sheets]);
 
   const toggleHide = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -189,6 +202,15 @@ function BudgetNode({ data }: BudgetNodeProps) {
             {formatCurrency(budgetItem.amount, currency)}
           </span>
         </div>
+
+        {/* Sheet names - only shown in All view */}
+        {activeSheet === 'all' && sheetNames && (
+          <div className='border-node-border border-t px-2 py-1.5'>
+            <small className='block text-center text-xs opacity-60 line-clamp-2'>
+              {sheetNames}
+            </small>
+          </div>
+        )}
 
         {/* move handle inward for smoother edge animation */}
         <Handle

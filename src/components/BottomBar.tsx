@@ -304,7 +304,7 @@ export default function BottomBar() {
                       />
                     </div>
                   )}
-                  <div>
+                   <div>
                     <span className='mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-200'>
                       Manage Sheets
                     </span>
@@ -343,6 +343,23 @@ export default function BottomBar() {
                               </>
                             ) : (
                               <>
+                                {activeSheet === 'all' && (
+                                  <input
+                                    type='checkbox'
+                                    checked={!sheet.disabled}
+                                    onChange={() =>
+                                      updateSheet(sheet.id, {
+                                        disabled: !sheet.disabled,
+                                      })
+                                    }
+                                    className='size-4 accent-emerald-500'
+                                    title={
+                                      sheet.disabled
+                                        ? 'Enable sheet in All view'
+                                        : 'Disable sheet in All view'
+                                    }
+                                  />
+                                )}
                                 <span className='flex-1 text-sm'>
                                   {sheet.name}
                                 </span>
@@ -516,6 +533,23 @@ export default function BottomBar() {
                       </>
                     ) : (
                       <>
+                        {activeSheet === 'all' && (
+                          <input
+                            type='checkbox'
+                            checked={!sheet.disabled}
+                            onChange={() =>
+                              updateSheet(sheet.id, {
+                                disabled: !sheet.disabled,
+                              })
+                            }
+                            className='size-4 accent-emerald-500'
+                            title={
+                              sheet.disabled
+                                ? 'Enable sheet in All view'
+                                : 'Disable sheet in All view'
+                            }
+                          />
+                        )}
                         <span className='flex-1 text-sm'>{sheet.name}</span>
                         <button
                           onClick={() => {

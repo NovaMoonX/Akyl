@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createDemoSpace, type Space } from '../lib';
 import { useSpace } from '../store';
 import useURL from './useURL';
-import { isFirebaseChannel, isValidSpace, setTabTitle } from '../utils';
+import { isFirebaseChannel, isValidSpace, setTabTitle, generateId } from '../utils';
 
 export default function useInitSpace() {
   const { setSpace } = useSpace();
@@ -55,7 +55,54 @@ export default function useInitSpace() {
     }
 
     if (urlSpaceId && fetchedSpace) {
-      const space = JSON.parse(fetchedSpace);
+      const space = JSON.parse(fetchedSpace) as Space;
+      
+      // Ensure all budget items have at least one sheet
+      let needsUpdate = false;
+      
+      // Check if there are budget items without sheets
+      const hasItemsWithoutSheets = 
+        space.incomes.some(income => !income.sheets || income.sheets.length === 0) ||
+        space.expenses.some(expense => !expense.sheets || expense.sheets.length === 0);
+      
+      if (hasItemsWithoutSheets) {
+        // Create a default sheet if none exist
+        if (!space.sheets || space.sheets.length === 0) {
+          const defaultSheetId = generateId('sheet');
+          space.sheets = [{
+            id: defaultSheetId,
+            name: 'Sheet 1',
+          }];
+          needsUpdate = true;
+        }
+        
+        // Get the first sheet ID (or create one if needed)
+        const defaultSheetId = space.sheets[0].id;
+        
+        // Assign all budget items without sheets to the default sheet
+        space.incomes = space.incomes.map(income => {
+          if (!income.sheets || income.sheets.length === 0) {
+            needsUpdate = true;
+            return { ...income, sheets: [defaultSheetId] };
+          }
+          return income;
+        });
+        
+        space.expenses = space.expenses.map(expense => {
+          if (!expense.sheets || expense.sheets.length === 0) {
+            needsUpdate = true;
+            return { ...expense, sheets: [defaultSheetId] };
+          }
+          return expense;
+        });
+      }
+      
+      // Update localStorage if changes were made
+      if (needsUpdate) {
+        space.metadata.updatedAt = Date.now();
+        localStorage.setItem(urlSpaceId, JSON.stringify(space));
+      }
+      
       setSpace(space);
       setShowLoadScreen(false);
 

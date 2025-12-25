@@ -27,6 +27,7 @@ export interface Sheet {
   hideSources?: boolean; // Per-sheet display option
   hideCategories?: boolean; // Per-sheet display option
   listExpenses?: boolean; // Per-sheet display option
+  disabled?: boolean; // Whether the sheet is disabled (only in "All" view)
 }
 
 export interface Config {
