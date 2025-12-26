@@ -8,7 +8,7 @@ import {
 import type { Expense, Income } from './budget.types';
 import type { BudgetItemCadenceType } from './budget.types';
 import type { Space } from './space.types';
-import { generateId } from '../utils';
+import { generateId, ensureDefaultSheet } from '../utils';
 
 // Valid frequency types for CSV import/export
 const VALID_FREQUENCY_TYPES: BudgetItemCadenceType[] = ['day', 'week', 'month', 'year'];
@@ -118,7 +118,15 @@ export async function importFile(): Promise<Space> {
         }
         const jsonData = lines.slice(3)?.join('\n') || '';
         try {
-          const space = JSON.parse(jsonData);
+          const space = JSON.parse(jsonData) as Space;
+          
+          // Ensure all budget items have at least one sheet
+          const needsUpdate = ensureDefaultSheet(space);
+          
+          if (needsUpdate) {
+            space.metadata.updatedAt = Date.now();
+          }
+          
           resolve(space);
         } catch (error) {
           reject(error);

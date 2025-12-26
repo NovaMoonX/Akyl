@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createDemoSpace, type Space } from '../lib';
 import { useSpace } from '../store';
 import useURL from './useURL';
-import { isFirebaseChannel, isValidSpace, setTabTitle } from '../utils';
+import { isFirebaseChannel, isValidSpace, setTabTitle, ensureDefaultSheet } from '../utils';
 
 export default function useInitSpace() {
   const { setSpace } = useSpace();
@@ -55,7 +55,17 @@ export default function useInitSpace() {
     }
 
     if (urlSpaceId && fetchedSpace) {
-      const space = JSON.parse(fetchedSpace);
+      const space = JSON.parse(fetchedSpace) as Space;
+      
+      // Ensure all budget items have at least one sheet
+      const needsUpdate = ensureDefaultSheet(space);
+      
+      // Update localStorage if changes were made
+      if (needsUpdate) {
+        space.metadata.updatedAt = Date.now();
+        localStorage.setItem(urlSpaceId, JSON.stringify(space));
+      }
+      
       setSpace(space);
       setShowLoadScreen(false);
 
