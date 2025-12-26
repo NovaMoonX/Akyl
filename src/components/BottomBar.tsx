@@ -1,7 +1,6 @@
 import {
   PlusIcon,
   Settings2Icon,
-  CheckSquareIcon,
   XIcon,
   ArrowRightIcon,
   CalculatorIcon,
@@ -19,6 +18,7 @@ import Modal from './ui/Modal';
 import BottomActions from './BottomActions';
 import HeaderBarTimeWindow from './header/HeaderBarTimeWindow';
 import CalculatorModal from './modals/CalculatorModal';
+import SidebarActions from './SidebarActions';
 
 export default function BottomBar() {
   const [
@@ -184,7 +184,7 @@ export default function BottomBar() {
           </div>
 
           {/* Mobile: Select-based sheet selector */}
-          <div className='flex items-center gap-1.5 sm:hidden'>
+          <div className='sm:hidden'>
             <select
               value={activeSheet}
               onChange={(e) => setActiveSheet(e.target.value)}
@@ -198,29 +198,6 @@ export default function BottomBar() {
                   </option>
                 ))}
             </select>
-            {viewMode === 'flowchart' && (
-              <button
-                onClick={handleToggleBulkEdit}
-                className={join(
-                  'rounded p-1 transition-colors',
-                  isBulkEditMode || isBulkSelecting
-                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-700',
-                )}
-                aria-label={
-                  isBulkEditMode
-                    ? 'Exit bulk edit mode'
-                    : 'Enter bulk edit mode'
-                }
-                title={
-                  isBulkEditMode
-                    ? 'Exit bulk edit mode'
-                    : 'Enter bulk edit mode'
-                }
-              >
-                <CheckSquareIcon className='size-4' />
-              </button>
-            )}
           </div>
 
           <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
@@ -249,19 +226,19 @@ export default function BottomBar() {
             )}
           </button>
 
-          <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
+          <div className='hidden h-6 w-px bg-gray-300 dark:bg-gray-700 sm:block' />
 
-          {/* Calculator Button */}
+          {/* Calculator Button - Desktop only on mobile, sidebar has it */}
           <button
             onClick={() => setIsCalculatorOpen(true)}
-            className='rounded-full p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+            className='hidden rounded-full p-1.5 transition-colors hover:bg-gray-100 sm:block dark:hover:bg-gray-700'
             aria-label='Open Calculator'
             title='Open Calculator'
           >
             <CalculatorIcon className='size-5' />
           </button>
 
-          <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
+          <div className='hidden h-6 w-px bg-gray-300 sm:block dark:bg-gray-700' />
 
           {/* Desktop: Custom Popup */}
           <div className='relative hidden sm:block'>
@@ -380,16 +357,6 @@ export default function BottomBar() {
               </div>
             )}
           </div>
-
-          {/* Mobile: Modal */}
-          <button
-            onClick={() => setIsSettingsModalOpen(true)}
-            className='rounded-full p-1.5 transition-colors hover:bg-gray-100 sm:hidden dark:hover:bg-gray-700'
-            aria-label='Settings'
-            title='Settings'
-          >
-            <Settings2Icon className='size-5' />
-          </button>
         </div>
       </div>
 
@@ -628,6 +595,16 @@ export default function BottomBar() {
         isOpen={isCalculatorOpen}
         onClose={() => setIsCalculatorOpen(false)}
       />
+
+      {/* Mobile Sidebar Actions */}
+      {viewMode === 'flowchart' && (
+        <SidebarActions
+          onMultiSelectClick={handleToggleBulkEdit}
+          onCalculatorClick={() => setIsCalculatorOpen(true)}
+          onSettingsClick={() => setIsSettingsModalOpen(true)}
+          isMultiSelectActive={isBulkEditMode || isBulkSelecting}
+        />
+      )}
     </>
   );
 }
