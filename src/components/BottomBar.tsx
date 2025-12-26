@@ -200,7 +200,7 @@ export default function BottomBar() {
             </select>
           </div>
 
-          <div className='hidden h-6 w-px bg-gray-300 dark:bg-gray-700 sm:block' />
+          <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
 
           {/* View Toggle Button */}
           <button
@@ -226,7 +226,7 @@ export default function BottomBar() {
             )}
           </button>
 
-          <div className='h-6 w-px bg-gray-300 dark:bg-gray-700' />
+          <div className='hidden h-6 w-px bg-gray-300 dark:bg-gray-700 sm:block' />
 
           {/* Calculator Button - Desktop only on mobile, sidebar has it */}
           <button
