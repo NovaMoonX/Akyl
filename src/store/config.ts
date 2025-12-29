@@ -172,14 +172,21 @@ const useSpaceStore = create<SpaceStore>()(
         if (!state.space) return state;
         
         // Remove sheet from all budget items
-        const updatedIncomes = state.space.incomes.map((income: Income) => ({
-          ...income,
-          sheets: (income.sheets || []).filter((sheetId: string) => sheetId !== id),
-        }));
-        const updatedExpenses = state.space.expenses.map((expense: Expense) => ({
-          ...expense,
-          sheets: (expense.sheets || []).filter((sheetId: string) => sheetId !== id),
-        }));
+        const updatedIncomes = state.space.incomes
+          .map((income: Income) => ({
+            ...income,
+            sheets: (income.sheets || []).filter((sheetId: string) => sheetId !== id),
+          }))
+          // Delete budget items that are left without any sheets
+          .filter((income: Income) => (income.sheets || []).length > 0);
+        
+        const updatedExpenses = state.space.expenses
+          .map((expense: Expense) => ({
+            ...expense,
+            sheets: (expense.sheets || []).filter((sheetId: string) => sheetId !== id),
+          }))
+          // Delete budget items that are left without any sheets
+          .filter((expense: Expense) => (expense.sheets || []).length > 0);
         
         // If the deleted sheet was active, switch to 'all'
         const newActiveSheet = state.space.config?.activeSheet === id ? 'all' : (state.space.config?.activeSheet || 'all');

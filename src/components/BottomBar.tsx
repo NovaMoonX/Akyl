@@ -603,7 +603,7 @@ export default function BottomBar() {
         <div className='flex flex-col gap-4 pb-2'>
           <p className='text-center text-gray-700 dark:text-gray-200'>
             Are you sure you want to delete this sheet? This will remove the
-            sheet from all budget items.
+            sheet from all budget items. Any budget items left without a sheet will be deleted.
           </p>
           <div className='flex justify-center gap-2'>
             <button
