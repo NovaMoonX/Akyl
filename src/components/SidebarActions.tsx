@@ -41,12 +41,12 @@ export default function SidebarActions({
         <div
           className={join(
             'bg-surface-light dark:bg-surface-dark fixed top-1/2 z-40 -translate-y-1/2 rounded-lg border border-gray-300 shadow-lg dark:border-gray-700 sm:hidden',
-            isLeft ? 'left-0 rounded-l-none' : 'right-0 rounded-r-none',
+            isLeft ? '-left-1 rounded-l-none' : '-right-1 rounded-r-none',
           )}
         >
           <button
             onClick={toggleCollapsed}
-            className='p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+            className='py-2 px-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
             aria-label='Expand sidebar'
             title='Expand sidebar'
           >
