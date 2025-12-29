@@ -27,7 +27,13 @@ function BudgetNode({ data }: BudgetNodeProps) {
       state?.space?.config?.activeSheet || 'all',
     ]),
   );
-  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems, isBulkEditMode } = useSpace(
+  const {
+    updateIncome,
+    updateExpense,
+    toggleBudgetItemSelection,
+    selectedBudgetItems,
+    isBulkEditMode,
+  } = useSpace(
     useShallow((state) => ({
       updateIncome: state.updateIncome,
       updateExpense: state.updateExpense,
@@ -54,7 +60,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
   const toggleHide = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!budgetItem) return;
-    
+
     if (activeSheet === 'all') {
       // Toggle global hidden state
       const nowHidden = budgetItem.hidden ? false : true;
@@ -70,7 +76,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
       const updatedHiddenInSheets = nowHidden
         ? hiddenInSheets.filter((id) => id !== activeSheet)
         : [...hiddenInSheets, activeSheet];
-      
+
       if (type === 'income') {
         updateIncome(budgetItemId, { hiddenInSheets: updatedHiddenInSheets });
       } else if (type === 'expense') {
@@ -122,8 +128,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
     // Wrapper div for styling and hiding
     <div
       className={join(
-        isHidden &&
-          'bg-surface-light group dark:bg-surface-dark rounded-lg',
+        isHidden && 'bg-surface-light group dark:bg-surface-dark rounded-lg',
       )}
       onClick={handleNodeClick}
     >
@@ -137,11 +142,13 @@ function BudgetNode({ data }: BudgetNodeProps) {
       >
         {/* Selection indicator */}
         {isSelected && (
-          <div className={join(
-            'absolute -top-2 -right-2 rounded-full p-1 z-10',
-            type === 'income' && 'bg-green-500',
-            type === 'expense' && 'bg-red-500',
-          )}>
+          <div
+            className={join(
+              'absolute -top-2 -right-2 z-10 rounded-full p-1',
+              type === 'income' && 'bg-green-500',
+              type === 'expense' && 'bg-red-500',
+            )}
+          >
             <CheckIcon className='size-3 text-white' />
           </div>
         )}
@@ -157,10 +164,11 @@ function BudgetNode({ data }: BudgetNodeProps) {
           <button
             type='button'
             onClick={toggleHide}
-            className='shrink-0 translate-x-0.5 -translate-y-0.5 opacity-0 group-hover:opacity-70 hover:opacity-90'
-            aria-label={
-              isHidden ? 'Unhide Budget Item' : 'Hide Budget Item'
-            }
+            className={join(
+              'shrink-0 translate-x-0.5 -translate-y-0.5 sm:opacity-0 sm:group-hover:opacity-70 sm:hover:opacity-90',
+              isBulkEditMode && 'invisible',
+            )}
+            aria-label={isBulkEditMode ? undefined : isHidden ? 'Unhide Budget Item' : 'Hide Budget Item'}
           >
             {isHidden ? (
               <EyeIcon className='size-3' />
@@ -171,8 +179,11 @@ function BudgetNode({ data }: BudgetNodeProps) {
           <button
             type='button'
             onClick={handleEdit}
-            className='shrink-0 translate-x-0.5 -translate-y-0.5 opacity-0 group-hover:opacity-70 hover:opacity-90'
-            aria-label='Edit Budget Item'
+            className={join(
+              'shrink-0 translate-x-0.5 -translate-y-0.5 sm:opacity-0 sm:group-hover:opacity-70 sm:hover:opacity-90',
+              isBulkEditMode && 'invisible',
+            )}
+            aria-label={isBulkEditMode ? undefined : 'Edit Budget Item'}
           >
             <PencilIcon className='size-3' />
           </button>
