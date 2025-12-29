@@ -22,7 +22,13 @@ function L1Node({ data }: L1NodeProps) {
       state?.space?.sheets,
     ]),
   );
-  const { updateIncome, updateExpense, toggleBudgetItemSelection, selectedBudgetItems, isBulkEditMode } = useSpace(
+  const {
+    updateIncome,
+    updateExpense,
+    toggleBudgetItemSelection,
+    selectedBudgetItems,
+    isBulkEditMode,
+  } = useSpace(
     useShallow((state) => ({
       updateIncome: state.updateIncome,
       updateExpense: state.updateExpense,
@@ -39,9 +45,10 @@ function L1Node({ data }: L1NodeProps) {
   } = useBudget();
 
   // Get current sheet's listExpenses or fall back to global
-  const activeSheetObj = activeSheet !== 'all' && sheets
-    ? sheets.find((s) => s.id === activeSheet)
-    : null;
+  const activeSheetObj =
+    activeSheet !== 'all' && sheets
+      ? sheets.find((s) => s.id === activeSheet)
+      : null;
 
   const currentListExpenses = activeSheetObj?.listExpenses ?? listExpenses;
 
@@ -118,9 +125,7 @@ function L1Node({ data }: L1NodeProps) {
 
   return (
     // Wrapper div for styling and hiding
-    <div 
-      onClick={handleNodeClick}
-    >
+    <div onClick={handleNodeClick}>
       <div
         className={join(
           isHidden &&
@@ -137,11 +142,13 @@ function L1Node({ data }: L1NodeProps) {
         >
           {/* Selection indicator */}
           {isAllItemsSelected && (
-            <div className={join(
-              'absolute -top-2 -right-2 rounded-full p-1 z-10',
-              type === 'income' && 'bg-green-500',
-              type === 'expense' && 'bg-red-500',
-            )}>
+            <div
+              className={join(
+                'absolute -top-2 -right-2 z-10 rounded-full p-1',
+                type === 'income' && 'bg-green-500',
+                type === 'expense' && 'bg-red-500',
+              )}
+            >
               <CheckIcon className='size-3 text-white' />
             </div>
           )}
@@ -153,9 +160,16 @@ function L1Node({ data }: L1NodeProps) {
           <button
             type='button'
             onClick={toggleHide}
-            className='absolute top-0.5 right-0.5 shrink-0 p-1 opacity-0 group-hover:opacity-70 hover:opacity-90'
+            className={join(
+              'absolute top-0.5 right-0.5 shrink-0 p-1 sm:opacity-0 sm:group-hover:opacity-70 sm:hover:opacity-90',
+              isBulkEditMode && 'invisible',
+            )}
             aria-label={
-              isHidden ? `Unhide all ${type} items` : `Hide all ${type} items`
+              isBulkEditMode
+                ? undefined
+                : isHidden
+                  ? `Unhide all ${type} items`
+                  : `Hide all ${type} items`
             }
           >
             {isHidden ? (
