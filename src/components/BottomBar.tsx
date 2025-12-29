@@ -188,7 +188,7 @@ export default function BottomBar() {
             <select
               value={activeSheet}
               onChange={(e) => setActiveSheet(e.target.value)}
-              className='max-w-36 rounded border border-gray-300 bg-white px-3 py-1 text-sm text-ellipsis focus:border-emerald-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800'
+              className='max-w-36 rounded border border-gray-300 bg-white px-3 py-1 text-xs text-ellipsis focus:border-emerald-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800'
             >
               <option value='all'>All</option>
               {sheets &&
@@ -207,7 +207,7 @@ export default function BottomBar() {
             onClick={() =>
               setViewMode(viewMode === 'flowchart' ? 'table' : 'flowchart')
             }
-            className='rounded-full p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+            className='rounded-full p-1.5 px-0 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
             aria-label={
               viewMode === 'flowchart'
                 ? 'Switch to Table View'
