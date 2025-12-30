@@ -8,7 +8,7 @@ import {
   WorkflowIcon,
   PinIcon,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../store';
 import { generateId, join } from '../utils';
@@ -78,6 +78,20 @@ export default function BottomBar() {
   const quickTimerRef = useRef<number | null>(null);
 
   const isBulkSelecting = selectedBudgetItems.length > 0;
+
+  // Calculate sheet counts for "All" label
+  const allLabel = useMemo(() => {
+    if (!sheets || sheets.length === 0) return 'All';
+    
+    const totalSheets = sheets.length;
+    const enabledSheets = sheets.filter(sheet => !sheet.disabled).length;
+    
+    if (enabledSheets === totalSheets) {
+      return `All (${totalSheets})`;
+    } else {
+      return `All (${enabledSheets}/${totalSheets})`;
+    }
+  }, [sheets]);
 
   const handleAddSheet = () => {
     if (newSheetName.trim()) {
@@ -190,7 +204,7 @@ export default function BottomBar() {
               onChange={(e) => setActiveSheet(e.target.value)}
               className='max-w-36 rounded border border-gray-300 bg-white px-3 py-1 text-xs text-ellipsis focus:border-emerald-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800'
             >
-              <option value='all'>All</option>
+              <option value='all'>{allLabel}</option>
               {sheets &&
                 sheets.map((sheet) => (
                   <option key={sheet.id} value={sheet.id}>
