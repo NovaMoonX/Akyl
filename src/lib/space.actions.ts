@@ -28,6 +28,24 @@ export function createNewSpace({
   const timestamp = Date.now();
   const theme = getTheme();
 
+  // Create default sheet
+  const defaultSheetId = generateId('sheet');
+  const defaultSheet = {
+    id: defaultSheetId,
+    name: 'Sheet 1',
+  };
+
+  // Assign all budget items to the default sheet
+  const processedIncomes = (incomes || []).map(income => ({
+    ...income,
+    sheets: income.sheets && income.sheets.length > 0 ? income.sheets : [defaultSheetId],
+  }));
+
+  const processedExpenses = (expenses || []).map(expense => ({
+    ...expense,
+    sheets: expense.sheets && expense.sheets.length > 0 ? expense.sheets : [defaultSheetId],
+  }));
+
   const space: Space = {
     id,
     title: title || '',
@@ -42,9 +60,9 @@ export function createNewSpace({
       appVersion: CURRENT_APP_VERSION,
       language: getUserLocale(),
     },
-    incomes: incomes || [],
-    expenses: expenses || [],
-    sheets: [],
+    incomes: processedIncomes,
+    expenses: processedExpenses,
+    sheets: [defaultSheet],
     config: {
       theme,
       backgroundPattern: BackgroundVariant.Cross,

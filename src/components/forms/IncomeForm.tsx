@@ -83,7 +83,9 @@ export default function IncomeForm() {
     formData?.amount <= 0 ||
     !formData?.source ||
     !formData?.type ||
-    !formData?.cadence?.interval;
+    !formData?.cadence?.interval ||
+    !formData?.sheets ||
+    formData?.sheets.length === 0;
 
   return (
     <BudgetItemForm

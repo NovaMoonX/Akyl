@@ -8,7 +8,7 @@ import {
   WorkflowIcon,
   PinIcon,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../store';
 import { generateId, join } from '../utils';
@@ -78,6 +78,20 @@ export default function BottomBar() {
   const quickTimerRef = useRef<number | null>(null);
 
   const isBulkSelecting = selectedBudgetItems.length > 0;
+
+  // Calculate sheet counts for "All" label
+  const allLabel = useMemo(() => {
+    if (!sheets || sheets.length === 0) return 'All';
+    
+    const totalSheets = sheets.length;
+    const enabledSheets = sheets.filter(sheet => !sheet.disabled).length;
+    
+    if (enabledSheets === totalSheets) {
+      return `All (${totalSheets})`;
+    } else {
+      return `All (${enabledSheets}/${totalSheets})`;
+    }
+  }, [sheets]);
 
   const handleAddSheet = () => {
     if (newSheetName.trim()) {
@@ -190,7 +204,7 @@ export default function BottomBar() {
               onChange={(e) => setActiveSheet(e.target.value)}
               className='max-w-36 rounded border border-gray-300 bg-white px-3 py-1 text-xs text-ellipsis focus:border-emerald-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800'
             >
-              <option value='all'>All</option>
+              <option value='all'>{allLabel}</option>
               {sheets &&
                 sheets.map((sheet) => (
                   <option key={sheet.id} value={sheet.id}>
@@ -281,7 +295,7 @@ export default function BottomBar() {
                       />
                     </div>
                   )}
-                  <div>
+                   <div>
                     <span className='mb-2 block text-center text-sm font-medium text-gray-700 dark:text-gray-200'>
                       Manage Sheets
                     </span>
@@ -320,6 +334,23 @@ export default function BottomBar() {
                               </>
                             ) : (
                               <>
+                                {activeSheet === 'all' && (
+                                  <input
+                                    type='checkbox'
+                                    checked={!sheet.disabled}
+                                    onChange={() =>
+                                      updateSheet(sheet.id, {
+                                        disabled: !sheet.disabled,
+                                      })
+                                    }
+                                    className='size-4 accent-emerald-500'
+                                    title={
+                                      sheet.disabled
+                                        ? 'Enable sheet in All view'
+                                        : 'Disable sheet in All view'
+                                    }
+                                  />
+                                )}
                                 <span className='flex-1 text-sm'>
                                   {sheet.name}
                                 </span>
@@ -483,6 +514,23 @@ export default function BottomBar() {
                       </>
                     ) : (
                       <>
+                        {activeSheet === 'all' && (
+                          <input
+                            type='checkbox'
+                            checked={!sheet.disabled}
+                            onChange={() =>
+                              updateSheet(sheet.id, {
+                                disabled: !sheet.disabled,
+                              })
+                            }
+                            className='size-4 accent-emerald-500'
+                            title={
+                              sheet.disabled
+                                ? 'Enable sheet in All view'
+                                : 'Disable sheet in All view'
+                            }
+                          />
+                        )}
                         <span className='flex-1 text-sm'>{sheet.name}</span>
                         <button
                           onClick={() => {
@@ -569,7 +617,7 @@ export default function BottomBar() {
         <div className='flex flex-col gap-4 pb-2'>
           <p className='text-center text-gray-700 dark:text-gray-200'>
             Are you sure you want to delete this sheet? This will remove the
-            sheet from all budget items.
+            sheet from all budget items. Any budget items left without a sheet will be deleted.
           </p>
           <div className='flex justify-center gap-2'>
             <button

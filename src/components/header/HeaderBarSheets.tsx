@@ -1,5 +1,5 @@
 import { PlusIcon, XIcon } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../../store';
 import { generateId } from '../../utils';
@@ -23,6 +23,20 @@ export default function HeaderBarSheets({
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [newSheetName, setNewSheetName] = useState('');
   const [showHint, setShowHint] = useState(false);
+
+  // Calculate sheet counts for "All" label
+  const allLabel = useMemo(() => {
+    if (!sheets || sheets.length === 0) return 'All';
+    
+    const totalSheets = sheets.length;
+    const enabledSheets = sheets.filter(sheet => !sheet.disabled).length;
+    
+    if (enabledSheets === totalSheets) {
+      return `All (${totalSheets})`;
+    } else {
+      return `All (${enabledSheets}/${totalSheets})`;
+    }
+  }, [sheets]);
 
   const handleAddSheet = useCallback(() => {
     if (newSheetName.trim()) {
@@ -77,7 +91,7 @@ export default function HeaderBarSheets({
             : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
         }`}
       >
-        All
+        {allLabel}
       </button>
       {sheets &&
         sheets.map((sheet) => (

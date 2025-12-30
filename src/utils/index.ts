@@ -7,3 +7,4 @@ export { default as join } from './join';
 export { default as setTabTitle } from './setTabTitle';
 export { default as timeoutAsyncFunction } from './timeoutAsyncFunction';
 export { default as toKebabCase } from './toKebabCase';
+export { ensureDefaultSheet } from './ensureDefaultSheet';
