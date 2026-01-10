@@ -26,6 +26,19 @@ const currencyOptions = [
   { label: 'EUR (€)', value: 'EUR' },
 ];
 
+const periodConversionOptions = [
+  { 
+    label: 'Exact Ratios', 
+    value: 'exact',
+    description: 'Uses 4 weeks/month, 52 weeks/year, 12 months/year. Example: $100/week = $400/month',
+  },
+  { 
+    label: 'Day-Based', 
+    value: 'day-based',
+    description: 'Uses days as intermediate (30 days/month, 365 days/year). Example: $100/week = $428.57/month',
+  },
+];
+
 export default function ConfigModal({ isOpen, onClose }: ConfigModalProps) {
   const { space, updateConfig } = useSpace();
   const config = space.config;
@@ -105,6 +118,32 @@ export default function ConfigModal({ isOpen, onClose }: ConfigModalProps) {
                 </button>
               ),
             )}
+          </div>
+        </div>
+        {/* Period Conversion Method */}
+        <div>
+          <label className='font-medium'>Period Conversion Method</label>
+          <div className='mt-1 flex flex-col gap-2'>
+            {periodConversionOptions.map((opt) => (
+              <button
+                key={opt.value}
+                className={join(
+                  'btn btn-sm text-left flex flex-col items-start gap-1 h-auto py-2',
+                  (config.periodConversionMethod || 'exact') === opt.value
+                    ? 'btn-primary'
+                    : 'btn-secondary',
+                )}
+                onClick={() =>
+                  updateConfig({
+                    periodConversionMethod: opt.value as 'exact' | 'day-based',
+                  })
+                }
+                type='button'
+              >
+                <span className='font-semibold'>{opt.label}</span>
+                <span className='text-xs opacity-80'>{opt.description}</span>
+              </button>
+            ))}
           </div>
         </div>
         <div className='flex justify-end'>

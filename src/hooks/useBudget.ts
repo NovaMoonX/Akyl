@@ -12,13 +12,14 @@ import type { BudgetType } from '../lib/node.types';
 import { useSpace } from '../store';
 
 export default function useBudget() {
-  const [incomesInSpace, expensesInSpace, spaceTimeWindow, activeSheet, sheets] = useSpace(
+  const [incomesInSpace, expensesInSpace, spaceTimeWindow, activeSheet, sheets, periodConversionMethod] = useSpace(
     useShallow((state) => [
       state?.space?.incomes,
       state?.space?.expenses,
       state?.space?.config?.timeWindow,
       state?.space?.config?.activeSheet || 'all',
       state?.space?.sheets,
+      state?.space?.config?.periodConversionMethod,
     ]),
   );
 
@@ -66,12 +67,13 @@ export default function useBudget() {
         income.amount,
         income.cadence,
         timeWindow,
+        periodConversionMethod || 'exact',
       );
       return { ...income, amount: adjustedAmount, originalAmount: income.amount };
     });
     itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
-  }, [incomesInSpace, timeWindow, activeSheet, sheets]);
+  }, [incomesInSpace, timeWindow, activeSheet, sheets, periodConversionMethod]);
 
   const expenses = useMemo(() => {
     let items = expensesInSpace ?? [];
@@ -101,12 +103,13 @@ export default function useBudget() {
         expense.amount,
         expense.cadence,
         timeWindow,
+        periodConversionMethod || 'exact',
       );
       return { ...expense, amount: adjustedAmount, originalAmount: expense.amount };
     });
     itemsAdjustedAmount.sort((a, b) => b.amount - a.amount);
     return itemsAdjustedAmount;
-  }, [expensesInSpace, timeWindow, activeSheet, sheets]);
+  }, [expensesInSpace, timeWindow, activeSheet, sheets, periodConversionMethod]);
 
   const incomeSources = useMemo(() => {
     const sourceCount = new Map<string, number>();

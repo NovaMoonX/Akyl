@@ -84,6 +84,7 @@ export type {
   CashFlowVerbiage,
   Config,
   Currency,
+  PeriodConversionMethod,
   Space,
   SpaceMetadata,
   Theme,
