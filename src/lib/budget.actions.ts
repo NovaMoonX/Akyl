@@ -36,23 +36,51 @@ export function getCurrencySymbol(currency: string): string {
     .trim();
 }
 
-function getBudgetItemDayAmount(
-  amount: number,
-  cadence: BudgetItemCadence,
+/**
+ * Get the conversion ratio from one period type to another using exact ratios.
+ * Examples:
+ * - week to month: 4 weeks per month
+ * - month to year: 12 months per year
+ * - week to year: 52 weeks per year
+ */
+function getConversionRatio(
+  fromType: string,
+  toType: string,
 ): number {
-  const { type, interval } = cadence;
-  switch (type) {
-    case 'month':
-      return amount / (30 * interval);
-    case 'week':
-      return amount / (7 * interval);
-    case 'day':
-      return amount / interval;
-    case 'year':
-      return amount / (365 * interval);
-    default:
-      throw new Error(`Unknown cadence type: ${type}`);
+  // Same type, no conversion needed
+  if (fromType === toType) {
+    return 1;
   }
+
+  // Define exact conversion ratios
+  const conversions: Record<string, Record<string, number>> = {
+    day: {
+      week: 1 / 7,
+      month: 1 / 30,
+      year: 1 / 365,
+    },
+    week: {
+      day: 7,
+      month: 4, // 4 weeks per month (exact ratio)
+      year: 52, // 52 weeks per year (exact ratio)
+    },
+    month: {
+      day: 30,
+      week: 1 / 4, // 1 month = 1/4 of 4 weeks
+      year: 12, // 12 months per year (exact ratio)
+    },
+    year: {
+      day: 365,
+      week: 1 / 52, // 1 year = 1/52 of 52 weeks
+      month: 1 / 12, // 1 year = 1/12 of 12 months
+    },
+  };
+
+  const ratio = conversions[fromType]?.[toType];
+  if (ratio === undefined) {
+    throw new Error(`Unknown conversion from ${fromType} to ${toType}`);
+  }
+  return ratio;
 }
 
 export function getBudgetItemWindowAmount(
@@ -60,17 +88,10 @@ export function getBudgetItemWindowAmount(
   itemCadence: BudgetItemCadence,
   window: BudgetItemCadence,
 ): number {
-  const itemDayAmount = getBudgetItemDayAmount(amount, itemCadence);
-  switch (window.type) {
-    case 'month':
-      return itemDayAmount * 30 * window.interval;
-    case 'week':
-      return itemDayAmount * 7 * window.interval;
-    case 'day':
-      return itemDayAmount * window.interval;
-    case 'year':
-      return itemDayAmount * 365 * window.interval;
-    default:
-      throw new Error(`Unknown cadence type: ${window.type}`);
-  }
+  // Get the conversion ratio from item's cadence type to window type
+  const ratio = getConversionRatio(itemCadence.type, window.type);
+  
+  // Apply the ratio and adjust for intervals
+  // Formula: amount * ratio * (window.interval / itemCadence.interval)
+  return (amount * ratio * window.interval) / itemCadence.interval;
 }
