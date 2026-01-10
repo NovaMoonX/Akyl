@@ -16,6 +16,9 @@ export default function ExpenseForm() {
   const expenseItemId = searchParams.get(URL_PARAM_ID);
   const { expensesMap, expenseCategories } = useBudget(); // expenseSubCategoriesMap
   const { addExpense, updateExpense } = useSpace();
+  const lastUsedExpenseCategory = useSpace(
+    useShallow((state) => state.lastUsedExpenseCategory),
+  );
   const [activeSheet, configTimeWindow, sheets] = useSpace(
     useShallow((state) => [
       state.space?.config?.activeSheet || 'all',
@@ -52,7 +55,7 @@ export default function ExpenseForm() {
       label: '',
       description: '',
       amount: 0,
-      category: 'Housing',
+      category: lastUsedExpenseCategory || 'Housing',
       subCategory: '',
       cadence: defaultCadence,
       notes: '',
@@ -71,7 +74,7 @@ export default function ExpenseForm() {
     if (expense?.subCategory) {
       setShowSubcategory(true);
     }
-  }, [expenseItemId, expensesMap, activeSheet, configTimeWindow, sheets]);
+  }, [expenseItemId, expensesMap, activeSheet, configTimeWindow, sheets, lastUsedExpenseCategory]);
 
   const handleFieldChange = (field: keyof Expense, val: unknown) => {
     setFormData((prev) => {

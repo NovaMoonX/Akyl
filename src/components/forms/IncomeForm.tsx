@@ -15,6 +15,9 @@ export default function IncomeForm() {
   const incomeItemId = searchParams.get(URL_PARAM_ID);
   const { incomesMap, incomeSources } = useBudget(); // incomeTypes
   const { addIncome, updateIncome } = useSpace();
+  const lastUsedIncomeSource = useSpace(
+    useShallow((state) => state.lastUsedIncomeSource),
+  );
   const [activeSheet, configTimeWindow, sheets] = useSpace(
     useShallow((state) => [
       state.space?.config?.activeSheet || 'all',
@@ -53,7 +56,7 @@ export default function IncomeForm() {
       label: '',
       description: '',
       amount: 0,
-      source: '',
+      source: lastUsedIncomeSource || '',
       type: 'Salary',
       cadence: defaultCadence,
       notes: '',
@@ -68,7 +71,7 @@ export default function IncomeForm() {
       amount: existingIncome.originalAmount || 0,
     };
     setFormData(income);
-  }, [incomeItemId, incomesMap, activeSheet, configTimeWindow, sheets]);
+  }, [incomeItemId, incomesMap, activeSheet, configTimeWindow, sheets, lastUsedIncomeSource]);
 
   const handleFieldChange = (field: keyof Income, val: unknown) => {
     setFormData((prev) => {

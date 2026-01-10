@@ -30,6 +30,9 @@ interface SpaceStore {
   // View mode state
   viewMode: 'flowchart' | 'table';
   setViewMode: (mode: 'flowchart' | 'table') => void;
+  // Last used source/category for new budget items
+  lastUsedIncomeSource: string;
+  lastUsedExpenseCategory: string;
 }
 
 const initialSpace = {} as Space;
@@ -41,6 +44,8 @@ const useSpaceStore = create<SpaceStore>()(
     selectedBudgetItems: [],
     isBulkEditMode: false,
     viewMode: 'flowchart',
+    lastUsedIncomeSource: '',
+    lastUsedExpenseCategory: '',
     setSpace: (space) => set({ space }),
     updateSpace: (partial) =>
       set((state) => ({
@@ -88,6 +93,7 @@ const useSpaceStore = create<SpaceStore>()(
               metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }
           : initialSpace,
+        lastUsedIncomeSource: income.source,
       })),
     updateIncome: (id: string, updates: Partial<Income>) =>
       set((state) => ({
@@ -120,6 +126,7 @@ const useSpaceStore = create<SpaceStore>()(
               metadata: { ...state.space.metadata, updatedAt: Date.now() },
             }
           : initialSpace,
+        lastUsedExpenseCategory: expense.category,
       })),
     updateExpense: (id: string, updates: Partial<Expense>) =>
       set((state) => ({
