@@ -98,7 +98,7 @@ export default function BudgetItemForm({
   return (
     <>
       <form
-        className='flex max-h-[calc(100svh-4rem)] flex-col'
+        className='flex max-h-[calc(100svh-2rem)] flex-col'
         onSubmit={(e) => {
           e.preventDefault();
           handleSave();
