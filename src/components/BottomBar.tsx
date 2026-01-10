@@ -7,6 +7,9 @@ import {
   TableIcon,
   WorkflowIcon,
   PinIcon,
+  GripVerticalIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from 'lucide-react';
 import { useRef, useState, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
@@ -28,6 +31,7 @@ export default function BottomBar() {
     addSheet,
     updateSheet,
     removeSheet,
+    reorderSheets,
     description,
     pinned,
   ] = useSpace(
@@ -38,6 +42,7 @@ export default function BottomBar() {
       state.addSheet,
       state.updateSheet,
       state.removeSheet,
+      state.reorderSheets,
       state.space?.description,
       state.space?.pinned,
     ]),
@@ -76,6 +81,10 @@ export default function BottomBar() {
     name: string;
   } | null>(null);
   const quickTimerRef = useRef<number | null>(null);
+
+  // Drag and drop state for sheet reordering
+  const [draggedSheetId, setDraggedSheetId] = useState<string | null>(null);
+  const [dragOverSheetId, setDragOverSheetId] = useState<string | null>(null);
 
   const isBulkSelecting = selectedBudgetItems.length > 0;
 
@@ -150,6 +159,74 @@ export default function BottomBar() {
       window.clearTimeout(quickTimerRef.current);
       quickTimerRef.current = null;
     }
+  };
+
+  // Drag and drop handlers for sheet reordering
+  const handleDragStart = (sheetId: string) => {
+    setDraggedSheetId(sheetId);
+  };
+
+  const handleDragOver = (e: React.DragEvent, sheetId: string) => {
+    e.preventDefault();
+    if (draggedSheetId && draggedSheetId !== sheetId) {
+      setDragOverSheetId(sheetId);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverSheetId(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetSheetId: string) => {
+    e.preventDefault();
+    if (!draggedSheetId || !sheets || draggedSheetId === targetSheetId) {
+      setDraggedSheetId(null);
+      setDragOverSheetId(null);
+      return;
+    }
+
+    const currentIndex = sheets.findIndex(s => s.id === draggedSheetId);
+    const targetIndex = sheets.findIndex(s => s.id === targetSheetId);
+
+    if (currentIndex === -1 || targetIndex === -1) {
+      setDraggedSheetId(null);
+      setDragOverSheetId(null);
+      return;
+    }
+
+    const newSheets = [...sheets];
+    const [movedSheet] = newSheets.splice(currentIndex, 1);
+    newSheets.splice(targetIndex, 0, movedSheet);
+
+    reorderSheets(newSheets.map(s => s.id));
+    setDraggedSheetId(null);
+    setDragOverSheetId(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedSheetId(null);
+    setDragOverSheetId(null);
+  };
+
+  // Helper functions for mobile reordering with buttons
+  const handleMoveSheetUp = (sheetId: string) => {
+    if (!sheets) return;
+    const index = sheets.findIndex(s => s.id === sheetId);
+    if (index <= 0) return;
+    
+    const newSheets = [...sheets];
+    [newSheets[index - 1], newSheets[index]] = [newSheets[index], newSheets[index - 1]];
+    reorderSheets(newSheets.map(s => s.id));
+  };
+
+  const handleMoveSheetDown = (sheetId: string) => {
+    if (!sheets) return;
+    const index = sheets.findIndex(s => s.id === sheetId);
+    if (index === -1 || index >= sheets.length - 1) return;
+    
+    const newSheets = [...sheets];
+    [newSheets[index], newSheets[index + 1]] = [newSheets[index + 1], newSheets[index]];
+    reorderSheets(newSheets.map(s => s.id));
   };
 
   if (isBulkSelecting) {
@@ -304,7 +381,19 @@ export default function BottomBar() {
                         sheets.map((sheet) => (
                           <div
                             key={sheet.id}
-                            className='flex items-center gap-2'
+                            draggable={editingSheetId !== sheet.id}
+                            onDragStart={() => handleDragStart(sheet.id)}
+                            onDragOver={(e) => handleDragOver(e, sheet.id)}
+                            onDragLeave={handleDragLeave}
+                            onDrop={(e) => handleDrop(e, sheet.id)}
+                            onDragEnd={handleDragEnd}
+                            className={`flex items-center gap-2 rounded px-2 py-1 transition-colors ${
+                              dragOverSheetId === sheet.id
+                                ? 'bg-emerald-100 dark:bg-emerald-900/20'
+                                : draggedSheetId === sheet.id
+                                  ? 'opacity-50'
+                                  : ''
+                            } ${editingSheetId === sheet.id ? '' : 'cursor-grab active:cursor-grabbing'}`}
                           >
                             {editingSheetId === sheet.id ? (
                               <>
@@ -334,6 +423,7 @@ export default function BottomBar() {
                               </>
                             ) : (
                               <>
+                                <GripVerticalIcon className='size-4 shrink-0 text-gray-400' />
                                 {activeSheet === 'all' && (
                                   <input
                                     type='checkbox'
@@ -488,7 +578,22 @@ export default function BottomBar() {
             <div className='flex flex-col gap-2'>
               {sheets &&
                 sheets.map((sheet) => (
-                  <div key={sheet.id} className='flex items-center gap-2'>
+                  <div
+                    key={sheet.id}
+                    draggable={editingSheetId !== sheet.id}
+                    onDragStart={() => handleDragStart(sheet.id)}
+                    onDragOver={(e) => handleDragOver(e, sheet.id)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, sheet.id)}
+                    onDragEnd={handleDragEnd}
+                    className={`flex items-center gap-2 rounded px-2 py-1 transition-colors ${
+                      dragOverSheetId === sheet.id
+                        ? 'bg-emerald-100 dark:bg-emerald-900/20'
+                        : draggedSheetId === sheet.id
+                          ? 'opacity-50'
+                          : ''
+                    } ${editingSheetId === sheet.id ? '' : 'active:cursor-grabbing'}`}
+                  >
                     {editingSheetId === sheet.id ? (
                       <>
                         <input
@@ -514,6 +619,24 @@ export default function BottomBar() {
                       </>
                     ) : (
                       <>
+                        <div className='flex shrink-0 flex-col gap-0.5'>
+                          <button
+                            onClick={() => handleMoveSheetUp(sheet.id)}
+                            disabled={sheets.indexOf(sheet) === 0}
+                            className='rounded p-0.5 hover:bg-gray-200 disabled:opacity-30 dark:hover:bg-gray-700'
+                            aria-label='Move sheet up'
+                          >
+                            <ChevronUpIcon className='size-3.5 text-gray-600 dark:text-gray-400' />
+                          </button>
+                          <button
+                            onClick={() => handleMoveSheetDown(sheet.id)}
+                            disabled={sheets.indexOf(sheet) === sheets.length - 1}
+                            className='rounded p-0.5 hover:bg-gray-200 disabled:opacity-30 dark:hover:bg-gray-700'
+                            aria-label='Move sheet down'
+                          >
+                            <ChevronDownIcon className='size-3.5 text-gray-600 dark:text-gray-400' />
+                          </button>
+                        </div>
                         {activeSheet === 'all' && (
                           <input
                             type='checkbox'
