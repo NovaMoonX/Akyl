@@ -16,8 +16,15 @@ export default function ExpenseForm() {
   const expenseItemId = searchParams.get(URL_PARAM_ID);
   const { expensesMap, expenseCategories } = useBudget(); // expenseSubCategoriesMap
   const { addExpense, updateExpense } = useSpace();
-  const activeSheet = useSpace(
-    useShallow((state) => state.space?.config?.activeSheet || 'all'),
+  const lastUsedExpenseCategory = useSpace(
+    useShallow((state) => state.lastUsedExpenseCategory),
+  );
+  const [activeSheet, configTimeWindow, sheets] = useSpace(
+    useShallow((state) => [
+      state.space?.config?.activeSheet || 'all',
+      state.space?.config?.timeWindow,
+      state.space?.sheets,
+    ]),
   );
 
   // Category options: only add custom category if not already present
@@ -34,17 +41,23 @@ export default function ExpenseForm() {
   // }, [formData, expenseSubCategoriesMap]);
 
   useEffect(() => {
+    // Get the current sheet's timeWindow, or fall back to config timeWindow
+    const activeSheetObj = activeSheet !== 'all' && sheets
+      ? sheets.find((s) => s.id === activeSheet)
+      : null;
+    const defaultCadence = activeSheetObj?.timeWindow ?? configTimeWindow ?? {
+      type: 'month',
+      interval: 1,
+    };
+
     const defaultExpense: Expense = {
       id: generateId('budget'),
       label: '',
       description: '',
       amount: 0,
-      category: 'Housing',
+      category: lastUsedExpenseCategory || 'Housing',
       subCategory: '',
-      cadence: {
-        type: 'month',
-        interval: 1,
-      },
+      cadence: defaultCadence,
       notes: '',
       // Pre-select active sheet if creating new item and not on 'all' view
       sheets: !expenseItemId && activeSheet !== 'all' ? [activeSheet] : undefined,
@@ -61,7 +74,7 @@ export default function ExpenseForm() {
     if (expense?.subCategory) {
       setShowSubcategory(true);
     }
-  }, [expenseItemId, expensesMap, activeSheet]);
+  }, [expenseItemId, expensesMap, activeSheet, configTimeWindow, sheets, lastUsedExpenseCategory]);
 
   const handleFieldChange = (field: keyof Expense, val: unknown) => {
     setFormData((prev) => {

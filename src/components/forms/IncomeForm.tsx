@@ -15,8 +15,15 @@ export default function IncomeForm() {
   const incomeItemId = searchParams.get(URL_PARAM_ID);
   const { incomesMap, incomeSources } = useBudget(); // incomeTypes
   const { addIncome, updateIncome } = useSpace();
-  const activeSheet = useSpace(
-    useShallow((state) => state.space?.config?.activeSheet || 'all'),
+  const lastUsedIncomeSource = useSpace(
+    useShallow((state) => state.lastUsedIncomeSource),
+  );
+  const [activeSheet, configTimeWindow, sheets] = useSpace(
+    useShallow((state) => [
+      state.space?.config?.activeSheet || 'all',
+      state.space?.config?.timeWindow,
+      state.space?.sheets,
+    ]),
   );
 
   const sourceOptions = useMemo(() => {
@@ -35,17 +42,23 @@ export default function IncomeForm() {
   // }, [incomeTypes]);
 
   useEffect(() => {
+    // Get the current sheet's timeWindow, or fall back to config timeWindow
+    const activeSheetObj = activeSheet !== 'all' && sheets
+      ? sheets.find((s) => s.id === activeSheet)
+      : null;
+    const defaultCadence = activeSheetObj?.timeWindow ?? configTimeWindow ?? {
+      type: 'month',
+      interval: 1,
+    };
+
     const defaultIncome: Income = {
       id: generateId('budget'),
       label: '',
       description: '',
       amount: 0,
-      source: '',
+      source: lastUsedIncomeSource || '',
       type: 'Salary',
-      cadence: {
-        type: 'month',
-        interval: 1,
-      },
+      cadence: defaultCadence,
       notes: '',
       // Pre-select active sheet if creating new item and not on 'all' view
       sheets: !incomeItemId && activeSheet !== 'all' ? [activeSheet] : undefined,
@@ -58,7 +71,7 @@ export default function IncomeForm() {
       amount: existingIncome.originalAmount || 0,
     };
     setFormData(income);
-  }, [incomeItemId, incomesMap, activeSheet]);
+  }, [incomeItemId, incomesMap, activeSheet, configTimeWindow, sheets, lastUsedIncomeSource]);
 
   const handleFieldChange = (field: keyof Income, val: unknown) => {
     setFormData((prev) => {
