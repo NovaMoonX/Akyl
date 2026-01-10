@@ -18,6 +18,7 @@ interface SpaceStore {
   addSheet: (sheet: Sheet) => void;
   updateSheet: (id: string, updates: Partial<Sheet>) => void;
   removeSheet: (id: string) => void;
+  reorderSheets: (sheetIds: string[]) => void;
   setActiveSheet: (sheetId: string) => void;
   // Multi-select state for bulk sheet assignment
   selectedBudgetItems: string[];
@@ -207,6 +208,26 @@ const useSpaceStore = create<SpaceStore>()(
             incomes: updatedIncomes,
             expenses: updatedExpenses,
             config: { ...state.space.config, activeSheet: newActiveSheet },
+            metadata: { ...state.space.metadata, updatedAt: Date.now() },
+          },
+        };
+      }),
+    reorderSheets: (sheetIds: string[]) =>
+      set((state) => {
+        if (!state.space) return state;
+        
+        // Create a map of existing sheets for quick lookup
+        const sheetMap = new Map((state.space.sheets || []).map((sheet: Sheet) => [sheet.id, sheet]));
+        
+        // Reorder sheets based on the provided IDs
+        const reorderedSheets = sheetIds
+          .map((id) => sheetMap.get(id))
+          .filter((sheet): sheet is Sheet => sheet !== undefined);
+        
+        return {
+          space: {
+            ...state.space,
+            sheets: reorderedSheets,
             metadata: { ...state.space.metadata, updatedAt: Date.now() },
           },
         };
