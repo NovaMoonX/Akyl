@@ -10,11 +10,7 @@ import IncomeForm from '../forms/IncomeForm';
 import Dropdown from '../ui/Dropdown';
 
 export default function HeaderBarMobile() {
-  const [title] = useSpace(
-    useShallow((state) => [
-      state.space.title,
-    ]),
-  );
+  const [title] = useSpace(useShallow((state) => [state.space.title]));
   const { updateSpace } = useSpace();
   const { totalBudgetItemsInSpace } = useBudget();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -42,7 +38,7 @@ export default function HeaderBarMobile() {
           placeholder='Space Title'
           className='text-surface-hover-dark dark:text-surface-hover-light min-w-10 flex-1 font-bold text-ellipsis placeholder:text-gray-500 focus:text-teal-600 focus:outline-none focus:placeholder:text-teal-600/50'
         />
-        <div className='flex items-center gap-1 text-sm ml-2'>
+        <div className='ml-2 flex items-center gap-1 text-sm'>
           <button
             onClick={() => handleOpenForm('income')}
             className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-2 py-1 transition'
@@ -70,11 +66,13 @@ export default function HeaderBarMobile() {
       <Dropdown
         isOpen={Boolean(searchParams.get(URL_PARAM_FORM))}
         onClose={() => handleCloseForm()}
-        className='right-1 left-1 w-fit max-w-screen !p-6'
+        className='right-1 left-1 h-[calc(100svh-4rem)] w-[calc(100dvw-0.5rem)] max-w-screen overflow-auto !p-6'
         closeOnOverlayClick={false}
       >
-        {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}
-        {searchParams.get(URL_PARAM_FORM) === 'expense' && <ExpenseForm />}
+        <div className='overflow-hidden'>
+          {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}
+          {searchParams.get(URL_PARAM_FORM) === 'expense' && <ExpenseForm />}
+        </div>
       </Dropdown>
     </>
   );
