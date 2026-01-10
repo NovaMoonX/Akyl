@@ -83,13 +83,48 @@ function getConversionRatio(
   return ratio;
 }
 
+/**
+ * Get the conversion ratio using day-based approximations.
+ * This is the legacy method that uses days as an intermediate step.
+ */
+function getConversionRatioDayBased(
+  fromType: string,
+  toType: string,
+): number {
+  // Same type, no conversion needed
+  if (fromType === toType) {
+    return 1;
+  }
+
+  // Convert from type to days
+  const toDays: Record<string, number> = {
+    day: 1,
+    week: 7,
+    month: 30,
+    year: 365,
+  };
+
+  // Convert to days, then to target type
+  const fromDays = toDays[fromType];
+  const toDaysTarget = toDays[toType];
+  
+  if (fromDays === undefined || toDaysTarget === undefined) {
+    throw new Error(`Unknown conversion from ${fromType} to ${toType}`);
+  }
+
+  return toDaysTarget / fromDays;
+}
+
 export function getBudgetItemWindowAmount(
   amount: number,
   itemCadence: BudgetItemCadence,
   window: BudgetItemCadence,
+  conversionMethod: 'exact' | 'day-based' = 'exact',
 ): number {
-  // Get the conversion ratio from item's cadence type to window type
-  const ratio = getConversionRatio(itemCadence.type, window.type);
+  // Get the conversion ratio based on the selected method
+  const ratio = conversionMethod === 'exact' 
+    ? getConversionRatio(itemCadence.type, window.type)
+    : getConversionRatioDayBased(itemCadence.type, window.type);
   
   // Apply the ratio and adjust for intervals
   // Formula: amount * ratio * (window.interval / itemCadence.interval)

@@ -30,6 +30,8 @@ export interface Sheet {
   disabled?: boolean; // Whether the sheet is disabled (only in "All" view)
 }
 
+export type PeriodConversionMethod = 'exact' | 'day-based';
+
 export interface Config {
   theme: Theme;
   backgroundPattern:
@@ -41,6 +43,7 @@ export interface Config {
   currency: Currency;
   cashFlowVerbiage: CashFlowVerbiage;
   timeWindow: BudgetItemCadence;
+  periodConversionMethod?: PeriodConversionMethod; // How to convert between time periods
   hideSources?: boolean;
   hideCategories?: boolean;
   listExpenses?: boolean;

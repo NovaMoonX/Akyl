@@ -70,6 +70,7 @@ export function createNewSpace({
       currency: 'USD',
       cashFlowVerbiage: 'default',
       timeWindow: DEFAULT_TIME_WINDOW,
+      periodConversionMethod: 'exact', // Default to exact ratios
       activeSheet: 'all',
     },
   };
