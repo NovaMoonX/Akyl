@@ -98,13 +98,13 @@ export default function BudgetItemForm({
   return (
     <>
       <form
-        className='flex max-h-[calc(100svh-3rem)] flex-col'
+        className='max-h-svh'
         onSubmit={(e) => {
           e.preventDefault();
           handleSave();
         }}
       >
-        <div className='flex flex-1 flex-col gap-4 overflow-y-auto'>
+        <div className='flex flex-col gap-4 overflow-y-auto'>
           <h2 className='text-lg font-bold capitalize sm:text-xl'>
             {itemId ? 'edit' : 'add'}{' '}
             {type === 'income'
