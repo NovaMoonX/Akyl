@@ -57,8 +57,8 @@ export default function TableView() {
   } | null>(null);
   const [editValue, setEditValue] = useState<string>('');
 
-  // Handle double click to start editing
-  const handleDoubleClick = (
+  // Handle click to start editing
+  const handleClick = (
     id: string,
     type: 'income' | 'expense',
     field: 'label' | 'amount',
@@ -233,7 +233,7 @@ export default function TableView() {
         <div className='mx-auto max-w-4xl pb-4'>
           {/* Info note about editing */}
           <div className='mb-2 sm:mb-3 rounded-lg bg-blue-50 px-4 pt-3.5 pb-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 text-center'>
-            💡 <strong>Tip:</strong> Double-tap any budget item's name or value
+            💡 <strong>Tip:</strong> Click any budget item's name or value
             to edit it
           </div>
 
@@ -336,8 +336,8 @@ export default function TableView() {
                                     />
                                   ) : (
                                     <span
-                                      onDoubleClick={() =>
-                                        handleDoubleClick(
+                                      onClick={() =>
+                                        handleClick(
                                           income.id,
                                           'income',
                                           'label',
@@ -372,8 +372,8 @@ export default function TableView() {
                                   />
                                 ) : (
                                   <span
-                                    onDoubleClick={() =>
-                                      handleDoubleClick(
+                                    onClick={() =>
+                                      handleClick(
                                         income.id,
                                         'income',
                                         'amount',
@@ -531,8 +531,8 @@ export default function TableView() {
                                     />
                                   ) : (
                                     <span
-                                      onDoubleClick={() =>
-                                        handleDoubleClick(
+                                      onClick={() =>
+                                        handleClick(
                                           expense.id,
                                           'expense',
                                           'label',
@@ -567,8 +567,8 @@ export default function TableView() {
                                   />
                                 ) : (
                                   <span
-                                    onDoubleClick={() =>
-                                      handleDoubleClick(
+                                    onClick={() =>
+                                      handleClick(
                                         expense.id,
                                         'expense',
                                         'amount',
