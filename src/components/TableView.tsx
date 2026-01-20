@@ -9,6 +9,7 @@ import { useShallow } from 'zustand/shallow';
 import { CashFlowVerbiagePairs, formatCurrency } from '../lib';
 import { useSpace } from '../store';
 import useBudget from '../hooks/useBudget';
+import HeaderBarTimeWindow from './header/HeaderBarTimeWindow';
 
 export default function TableView() {
   const [currency, cashFlowVerbiage, activeSheet] = useSpace(
@@ -231,6 +232,18 @@ export default function TableView() {
     <div className='bg-background-light dark:bg-background-dark absolute inset-x-0 top-0 bottom-0 z-20 overflow-auto pt-20 pb-8'>
       <div className='p-4 sm:p-6'>
         <div className='mx-auto max-w-4xl pb-4'>
+          {/* Time Window Selector Header */}
+          <div className='mb-4 flex justify-center'>
+            <div className='bg-surface-light dark:bg-surface-dark rounded-lg border border-gray-300 px-4 py-3 shadow-sm dark:border-gray-700'>
+              <div className='flex flex-col items-center gap-2 sm:flex-row sm:gap-3'>
+                <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
+                  Budget Time Window:
+                </span>
+                <HeaderBarTimeWindow />
+              </div>
+            </div>
+          </div>
+
           {/* Info note about editing */}
           <div className='mb-2 sm:mb-3 rounded-lg bg-blue-50 px-4 pt-3.5 pb-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 text-center'>
             💡 <strong>Tip:</strong> Double-tap any budget item's name or value
