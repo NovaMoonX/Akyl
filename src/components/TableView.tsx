@@ -233,14 +233,12 @@ export default function TableView() {
       <div className='p-4 sm:p-6'>
         <div className='mx-auto max-w-4xl pb-4'>
           {/* Time Window Selector Header */}
-          <div className='mb-4 flex justify-center'>
-            <div className='bg-surface-light dark:bg-surface-dark rounded-lg border border-gray-300 px-4 py-3 shadow-sm dark:border-gray-700'>
-              <div className='flex flex-col items-center gap-2 sm:flex-row sm:gap-3'>
-                <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
-                  Budget Time Window:
-                </span>
-                <HeaderBarTimeWindow />
-              </div>
+          <div className='mb-4 mt-2 flex justify-center'>
+            <div className='bg-surface-light dark:bg-surface-dark flex items-center gap-3 rounded-lg border border-gray-300 px-4 py-2 shadow-sm dark:border-gray-700'>
+              <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
+                Budget Time Window:
+              </span>
+              <HeaderBarTimeWindow />
             </div>
           </div>
 
