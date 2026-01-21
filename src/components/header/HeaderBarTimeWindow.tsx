@@ -38,7 +38,7 @@ export default function HeaderBarWindowSelector() {
   };
 
   return (
-    <div className='flex items-center gap-2'>
+    <div className='flex items-center gap-2 text-sm sm:text-base'>
       <CalendarClockIcon className='size-6 stroke-1 text-gray-500' />
       <input
         type='number'
