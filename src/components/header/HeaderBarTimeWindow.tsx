@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import {
   DEFAULT_TIME_WINDOW,
@@ -23,6 +24,9 @@ export default function HeaderBarWindowSelector() {
     : null;
 
   const currentTimeWindow = activeSheetObj?.timeWindow ?? timeWindow;
+  
+  // Local state for input value to allow clearing
+  const [inputValue, setInputValue] = useState<string>('');
 
   const handleChange = (field: keyof BudgetItemCadence, value: unknown) => {
     const newTimeWindow = {
@@ -37,6 +41,27 @@ export default function HeaderBarWindowSelector() {
     }
   };
 
+  const handleIntervalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    
+    // Only update if value is a valid positive number
+    const numValue = Number(value);
+    if (value !== '' && !isNaN(numValue) && numValue >= 1) {
+      handleChange('interval', numValue);
+    }
+  };
+
+  const handleIntervalBlur = () => {
+    // Reset input value and ensure valid interval on blur
+    setInputValue('');
+    const numValue = Number(inputValue);
+    if (inputValue === '' || isNaN(numValue) || numValue < 1) {
+      // Reset to current or default value if invalid
+      handleChange('interval', currentTimeWindow?.interval ?? DEFAULT_TIME_WINDOW.interval);
+    }
+  };
+
   return (
     <div className='flex items-center gap-2 text-sm sm:text-base'>
       <CalendarClockIcon className='size-6 stroke-1 text-gray-500' />
@@ -45,8 +70,9 @@ export default function HeaderBarWindowSelector() {
         min={1}
         className='w-12 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
         aria-description='Enter the time window interval'
-        value={currentTimeWindow?.interval ?? DEFAULT_TIME_WINDOW.interval}
-        onChange={(e) => handleChange('interval', Number(e.target.value))}
+        value={inputValue || (currentTimeWindow?.interval ?? DEFAULT_TIME_WINDOW.interval)}
+        onChange={handleIntervalChange}
+        onBlur={handleIntervalBlur}
       />
       <select
         className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
