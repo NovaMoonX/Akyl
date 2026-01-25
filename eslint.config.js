@@ -23,6 +23,14 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // Enforce using join() utility for combining Tailwind CSS classes
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'JSXAttribute[name.name="className"] TemplateLiteral',
+          message: 'Use the join() utility function instead of template literals for className. Import it from "../../utils" or the appropriate path.',
+        },
+      ],
     },
   },
 )

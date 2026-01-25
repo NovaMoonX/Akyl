@@ -143,9 +143,10 @@ export function Combobox({
   return (
     <div ref={containerRef} className={join('relative w-full text-sm sm:text-base', className)}>
       <div
-        className={`dark:bg-surface-dark dark:text-surface-light flex items-center rounded border border-gray-300 bg-white px-3 py-2 dark:border-gray-700 ${
+        className={join(
+          'dark:bg-surface-dark dark:text-surface-light flex items-center rounded border border-gray-300 bg-white px-3 py-2 dark:border-gray-700',
           accentColor === 'red' ? 'focus-within:border-red-500' : 'focus-within:border-emerald-500'
-        }`}
+        )}
         onClick={() => {
           setIsOpen(true);
           inputRef.current?.focus();
