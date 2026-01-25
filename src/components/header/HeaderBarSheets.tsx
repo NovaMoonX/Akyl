@@ -26,10 +26,10 @@ export default function HeaderBarSheets({
   // Calculate sheet counts for "All" label
   const allLabel = useMemo(() => {
     if (!sheets || sheets.length === 0) return 'All';
-    
+
     const totalSheets = sheets.length;
-    const enabledSheets = sheets.filter(sheet => !sheet.disabled).length;
-    
+    const enabledSheets = sheets.filter((sheet) => !sheet.disabled).length;
+
     if (enabledSheets === totalSheets) {
       return `All (${totalSheets})`;
     } else {
@@ -83,28 +83,35 @@ export default function HeaderBarSheets({
           )}
         </div>
       )}
-      <div className={join('flex items-center gap-2 overflow-x-auto scrollbar-hide', showAddSheet ? 'max-w-24 sm:max-w-28' : 'max-w-sm sm:max-w-md lg:max-w-lg')}>
+      <div
+        className={join(
+          'scrollbar-hide flex items-center gap-2 overflow-x-auto py-1 pr-1',
+          showAddSheet
+            ? 'max-w-40 sm:max-w-56 lg:max-w-72'
+            : 'max-w-sm sm:max-w-md lg:max-w-lg',
+        )}
+      >
         <button
           onClick={() => setActiveSheet('all')}
           className={join(
             'shrink-0 rounded px-3 py-1 text-sm transition-colors',
             activeSheet === 'all'
               ? 'bg-emerald-500 text-white'
-              : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
+              : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700',
           )}
         >
           {allLabel}
         </button>
         {sheets &&
           sheets.map((sheet) => (
-            <div key={sheet.id} className='group relative shrink-0 pr-2'>
+            <div key={sheet.id} className='group relative shrink-0'>
               <button
                 onClick={() => setActiveSheet(sheet.id)}
                 className={join(
-                  'rounded px-3 py-1 text-sm transition-colors max-w-32 truncate block',
+                  'block max-w-32 truncate rounded px-3 py-1 text-sm transition-colors',
                   activeSheet === sheet.id
                     ? 'bg-emerald-500 text-white'
-                    : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
+                    : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700',
                 )}
                 title={sheet.name}
               >
