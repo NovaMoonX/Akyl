@@ -3,7 +3,6 @@ import {
   BackgroundVariant,
   Controls,
   ReactFlow,
-  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useCallback } from 'react';
@@ -20,6 +19,7 @@ import LoadScreen from './LoadScreen';
 import BudgetNode from './nodes/BudgetNode';
 import CoreNode from './nodes/CoreNode';
 import L1Node from './nodes/L1Node';
+import FlowKeyboardShortcuts from './FlowKeyboardShortcuts';
 
 const nodeTypes = {
   core: CoreNode,
@@ -74,7 +74,6 @@ export default function Flow() {
   );
   const { nodes, edges, onNodesChange, onEdgesChange } = useSpaceFlow();
   const [, setSearchParams] = useSearchParams();
-  const reactFlowInstance = useReactFlow();
 
   // Get current sheet's settings or fall back to global
   const activeSheetObj = activeSheet !== 'all' && sheets
@@ -172,26 +171,7 @@ export default function Flow() {
     }
   }, [sheets, activeSheet]);
 
-  // View control handlers
-  const handleFitView = useCallback(() => {
-    if (viewMode === 'flowchart') {
-      reactFlowInstance.fitView({ padding: 2, duration: 300 });
-    }
-  }, [viewMode, reactFlowInstance]);
-
-  const handleZoomIn = useCallback(() => {
-    if (viewMode === 'flowchart') {
-      reactFlowInstance.zoomIn({ duration: 300 });
-    }
-  }, [viewMode, reactFlowInstance]);
-
-  const handleZoomOut = useCallback(() => {
-    if (viewMode === 'flowchart') {
-      reactFlowInstance.zoomOut({ duration: 300 });
-    }
-  }, [viewMode, reactFlowInstance]);
-
-  // Define keyboard shortcuts
+  // Define keyboard shortcuts (non-view control shortcuts)
   useKeyboardShortcuts([
     {
       key: 's',
@@ -247,24 +227,6 @@ export default function Flow() {
       handler: handlePreviousSheet,
       description: 'Previous sheet',
     },
-    {
-      key: '0',
-      ctrl: true,
-      handler: handleFitView,
-      description: 'Fit view',
-    },
-    {
-      key: '+',
-      ctrl: true,
-      handler: handleZoomIn,
-      description: 'Zoom in',
-    },
-    {
-      key: '-',
-      ctrl: true,
-      handler: handleZoomOut,
-      description: 'Zoom out',
-    },
   ], !showLoadScreen);
 
   return (
@@ -287,6 +249,9 @@ export default function Flow() {
         maxZoom={1.5} // default is 2
         minZoom={0.15} // default is 0.5
       >
+        {/* Keyboard shortcuts that require ReactFlow instance */}
+        <FlowKeyboardShortcuts enabled={!showLoadScreen} />
+        
         {showLoadScreen && <LoadScreen />}
         {!showLoadScreen && (
           <>
