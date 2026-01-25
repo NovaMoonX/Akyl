@@ -135,12 +135,7 @@ export default function HeaderMenu() {
         });
         break;
       case 'New Space':
-        setConfirmation({
-          title: 'Create New Space',
-          message:
-            'Any unsaved changes will be lost. Are you sure you want to create a new space?',
-          onConfirm: () => createNewSpace({ userId: currentUser?.uid }),
-        });
+        createNewSpace({ userId: currentUser?.uid, openInNewTab: true });
         break;
       case 'Open':
         importFile();
