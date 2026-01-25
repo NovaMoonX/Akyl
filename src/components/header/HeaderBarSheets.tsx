@@ -83,7 +83,7 @@ export default function HeaderBarSheets({
           )}
         </div>
       )}
-      <div className='flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-md'>
+      <div className='flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-sm sm:max-w-md lg:max-w-lg'>
         <button
           onClick={() => setActiveSheet('all')}
           className={`shrink-0 rounded px-3 py-1 text-sm transition-colors ${
