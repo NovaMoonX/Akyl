@@ -297,7 +297,7 @@ export default function BudgetItemForm({
                   )}
                   value={cadence?.type || 'month'}
                   onChange={(e) =>
-                    onFieldChange('cadence', { ...(cadence || { interval: 1 }), type: e.target.value })
+                    onFieldChange('cadence', { ...(cadence || { interval: 1 }), type: e.target.value as BudgetItemCadenceType })
                   }
                   aria-description='Select the frequency of this budget item'
                 >
