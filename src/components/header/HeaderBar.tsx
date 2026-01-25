@@ -97,12 +97,14 @@ export default function HeaderBar() {
             <button
               onClick={() => handleOpenForm('income')}
               className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-4 py-2.5 whitespace-nowrap transition'
+              title={`Add ${CashFlowVerbiagePairs[cashFlowVerbiage].in} (Ctrl+I)`}
             >
               add {CashFlowVerbiagePairs[cashFlowVerbiage].in}
             </button>
             <button
               onClick={() => handleOpenForm('expense')}
               className='text-surface-light not-dark:bg-outflow not-dark:hover:bg-outflow-darker dark:text-outflow-darker hover:dark:border-outflow-darker rounded border border-transparent px-4 py-2.5 whitespace-nowrap transition'
+              title={`Add ${CashFlowVerbiagePairs[cashFlowVerbiage].out} (Ctrl+E)`}
             >
               add {CashFlowVerbiagePairs[cashFlowVerbiage].out}
             </button>

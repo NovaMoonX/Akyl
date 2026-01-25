@@ -87,7 +87,7 @@ export default function SidebarActions({
               onClick={onCalculatorClick}
               className='rounded-lg p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
               aria-label='Calculator'
-              title='Calculator'
+              title='Calculator (Ctrl+K)'
             >
               <CalculatorIcon className='size-4' />
             </button>

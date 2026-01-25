@@ -73,6 +73,7 @@ export default function BottomActions({
           'bg-surface-hover-light hover:bg-surface-light dark:bg-surface-hover-dark hover:dark:bg-surface-dark px-3 py-1.5 text-xs',
           actionClassName,
         )}
+        title={`${currentHideSources ? 'Show Sources' : 'Hide Sources'} (Ctrl+S)`}
       >
         {currentHideSources ? 'Show Sources' : 'Hide Sources'}
       </button>
@@ -83,6 +84,7 @@ export default function BottomActions({
           'bg-surface-hover-light hover:bg-surface-light dark:bg-surface-hover-dark hover:dark:bg-surface-dark px-3 py-1.5 text-xs',
           actionClassName,
         )}
+        title={`${currentHideCategories ? 'Show Categories' : 'Hide Categories'} (Ctrl+C)`}
       >
         {currentHideCategories ? 'Show Categories' : 'Hide Categories'}
       </button>
@@ -94,6 +96,7 @@ export default function BottomActions({
             'bg-surface-hover-light hover:bg-surface-light dark:bg-surface-hover-dark hover:dark:bg-surface-dark px-3 py-1.5 text-xs',
             actionClassName,
           )}
+          title={`${currentListExpenses ? 'Expand Expenses' : 'List Expenses'} (Ctrl+L)`}
         >
           {currentListExpenses ? 'Expand Expenses' : 'List Expenses'}
         </button>

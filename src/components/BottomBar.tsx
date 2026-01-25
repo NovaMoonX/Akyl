@@ -11,7 +11,7 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
 } from 'lucide-react';
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../store';
 import { generateId, join } from '../utils';
@@ -87,6 +87,13 @@ export default function BottomBar() {
   const [dragOverSheetId, setDragOverSheetId] = useState<string | null>(null);
 
   const isBulkSelecting = selectedBudgetItems.length > 0;
+
+  // Listen for open-calculator event from keyboard shortcut
+  useEffect(() => {
+    const handleOpenCalculator = () => setIsCalculatorOpen(true);
+    window.addEventListener('open-calculator', handleOpenCalculator);
+    return () => window.removeEventListener('open-calculator', handleOpenCalculator);
+  }, []);
 
   // Calculate sheet counts for "All" label
   const allLabel = useMemo(() => {
@@ -306,8 +313,8 @@ export default function BottomBar() {
             }
             title={
               viewMode === 'flowchart'
-                ? 'Switch to Table View'
-                : 'Switch to Flowchart View'
+                ? 'Switch to Table View (Ctrl+T)'
+                : 'Switch to Flowchart View (Ctrl+T)'
             }
           >
             {viewMode === 'flowchart' ? (
@@ -324,7 +331,7 @@ export default function BottomBar() {
             onClick={() => setIsCalculatorOpen(true)}
             className='hidden rounded-full p-1.5 transition-colors hover:bg-gray-100 sm:block dark:hover:bg-gray-700'
             aria-label='Open Calculator'
-            title='Open Calculator'
+            title='Open Calculator (Ctrl+K)'
           >
             <CalculatorIcon className='size-5' />
           </button>
