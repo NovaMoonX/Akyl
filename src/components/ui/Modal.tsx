@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { join } from '../../utils';
 
@@ -11,6 +11,7 @@ interface ModalProps {
   contentOnly?: boolean;
   centerTitle?: boolean;
   hideCloseButton?: boolean;
+  onEnter?: () => void; // Optional handler for Enter key
 }
 
 export default function Modal({
@@ -21,7 +22,26 @@ export default function Modal({
   contentOnly = false,
   centerTitle = false,
   hideCloseButton = false,
+  onEnter,
 }: ModalProps) {
+  // Handle Escape and Enter key presses
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      } else if (event.key === 'Enter' && onEnter) {
+        event.preventDefault();
+        onEnter();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose, onEnter]);
+
   if (!isOpen) return null;
 
   return (

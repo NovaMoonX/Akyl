@@ -50,6 +50,12 @@ export default function FlowKeyboardShortcuts({ enabled }: FlowKeyboardShortcuts
       description: 'Zoom in',
     },
     {
+      key: '=',
+      ctrl: true,
+      handler: handleZoomIn,
+      description: 'Zoom in (alternative)',
+    },
+    {
       key: '-',
       ctrl: true,
       handler: handleZoomOut,

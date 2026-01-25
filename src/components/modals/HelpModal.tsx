@@ -1,11 +1,12 @@
 import { CopyIcon, KeyboardIcon, MailIcon } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { SUPPORT_EMAIL } from '../../lib';
 import Modal from '../ui/Modal';
 
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialTab?: 'support' | 'tips';
 }
 
 // Keyboard shortcut information
@@ -20,13 +21,22 @@ const KEYBOARD_SHORTCUTS = [
   { keys: 'Ctrl+0', description: 'Fit view to screen', category: 'View Controls' },
   { keys: 'Ctrl++', description: 'Zoom in', category: 'View Controls' },
   { keys: 'Ctrl+-', description: 'Zoom out', category: 'View Controls' },
-  { keys: 'Ctrl+←', description: 'Previous sheet/space', category: 'Navigation' },
-  { keys: 'Ctrl+→', description: 'Next sheet/space', category: 'Navigation' },
+  { keys: 'Ctrl+Shift+←', description: 'Previous sheet/space', category: 'Navigation' },
+  { keys: 'Ctrl+Shift+→', description: 'Next sheet/space', category: 'Navigation' },
+  { keys: 'Esc', description: 'Close modal/dialog', category: 'General' },
+  { keys: 'Enter', description: 'Confirm action (in dialogs)', category: 'General' },
 ];
 
-export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
+export default function HelpModal({ isOpen, onClose, initialTab = 'support' }: HelpModalProps) {
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'support' | 'tips'>('support');
+  const [activeTab, setActiveTab] = useState<'support' | 'tips'>(initialTab);
+
+  // Update active tab when initialTab changes
+  React.useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(SUPPORT_EMAIL);
@@ -99,7 +109,7 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
                 Use these keyboard shortcuts to work faster:
               </p>
               {/* Group shortcuts by category */}
-              {['Actions', 'Display', 'View Controls', 'Navigation'].map((category) => {
+              {['Actions', 'Display', 'View Controls', 'Navigation', 'General'].map((category) => {
                 const categoryShortcuts = KEYBOARD_SHORTCUTS.filter(s => s.category === category);
                 if (categoryShortcuts.length === 0) return null;
                 

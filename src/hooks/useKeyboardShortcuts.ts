@@ -16,12 +16,17 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = tr
 
     const handleKeyDown = (event: KeyboardEvent) => {
       // Don't trigger shortcuts when typing in input fields, textareas, or contenteditable elements
+      // UNLESS it's a Ctrl/Cmd shortcut (which are safe to use even in forms)
       const target = event.target as HTMLElement;
-      if (
+      const isTypingInField = 
         target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
-        target.isContentEditable
-      ) {
+        target.isContentEditable;
+      
+      const hasModifier = event.ctrlKey || event.metaKey || event.altKey;
+      
+      // Skip shortcuts when typing in fields, unless the shortcut uses a modifier key
+      if (isTypingInField && !hasModifier) {
         return;
       }
 

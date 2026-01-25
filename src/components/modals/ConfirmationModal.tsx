@@ -24,7 +24,7 @@ export default function ConfirmationModal({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title}>
+    <Modal isOpen={isOpen} onClose={onClose} title={title} onEnter={onConfirm}>
       <p>{message}</p>
       <div className='mt-4 flex justify-end gap-2'>
         <button onClick={onCancel} className='btn btn-secondary'>

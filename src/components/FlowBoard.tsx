@@ -218,12 +218,14 @@ export default function Flow() {
     {
       key: 'ArrowRight',
       ctrl: true,
+      shift: true,
       handler: handleNextSheet,
       description: 'Next sheet',
     },
     {
       key: 'ArrowLeft',
       ctrl: true,
+      shift: true,
       handler: handlePreviousSheet,
       description: 'Previous sheet',
     },
