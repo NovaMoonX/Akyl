@@ -21,11 +21,17 @@ import type { Space } from './space.types';
 function getDefaultSpaceTitle(): string {
   const locale = getUserLocale();
   const now = new Date();
-  return now.toLocaleDateString(locale, {
+  const datePart = now.toLocaleDateString(locale, {
     year: 'numeric',
-    month: 'long',
+    month: 'numeric',
     day: 'numeric',
   });
+  const timePart = now.toLocaleTimeString(locale, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).toLowerCase();
+  return `${datePart} @ ${timePart}`;
 }
 
 export function createNewSpace({
