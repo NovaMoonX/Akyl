@@ -18,6 +18,22 @@ import {
 } from './space.constants';
 import type { Space } from './space.types';
 
+function getDefaultSpaceTitle(): string {
+  const locale = getUserLocale();
+  const now = new Date();
+  const datePart = now.toLocaleDateString(locale, {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  });
+  const timePart = now.toLocaleTimeString(locale, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).toLowerCase();
+  return `${datePart} @ ${timePart}`;
+}
+
 export function createNewSpace({
   userId,
   title,
@@ -55,7 +71,7 @@ export function createNewSpace({
 
   const space: Space = {
     id,
-    title: title || '',
+    title: title || getDefaultSpaceTitle(),
     description: '',
     pinned: false,
     metadata: {
