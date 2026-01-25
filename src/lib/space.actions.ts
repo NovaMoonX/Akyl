@@ -39,7 +39,14 @@ export function createNewSpace({
   title,
   incomes,
   expenses,
-}: { userId?: string; title?: string; incomes?: Income[]; expenses?: Expense[] } = {}) {
+  openInNewTab = false,
+}: {
+  userId?: string;
+  title?: string;
+  incomes?: Income[];
+  expenses?: Expense[];
+  openInNewTab?: boolean;
+} = {}) {
   const id = generateId('space');
   const timestamp = Date.now();
   const theme = getTheme();
@@ -91,7 +98,12 @@ export function createNewSpace({
     },
   };
   localStorage.setItem(id, JSON.stringify(space));
-  window.location.href = `/${space.id}`;
+  
+  if (openInNewTab) {
+    window.open(`/${space.id}`, '_blank');
+  } else {
+    window.location.href = `/${space.id}`;
+  }
 }
 
 export function duplicateSpace(spaceId: string) {
