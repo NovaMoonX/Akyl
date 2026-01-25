@@ -18,6 +18,16 @@ import {
 } from './space.constants';
 import type { Space } from './space.types';
 
+function getDefaultSpaceTitle(): string {
+  const locale = getUserLocale();
+  const now = new Date();
+  return now.toLocaleDateString(locale, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
 export function createNewSpace({
   userId,
   title,
@@ -48,7 +58,7 @@ export function createNewSpace({
 
   const space: Space = {
     id,
-    title: title || '',
+    title: title || getDefaultSpaceTitle(),
     description: '',
     pinned: false,
     metadata: {
