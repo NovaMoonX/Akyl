@@ -14,6 +14,7 @@ export interface ComboboxProps {
   placeholder?: string;
   allowAdd?: boolean;
   className?: string;
+  accentColor?: 'emerald' | 'red';
 }
 
 export function Combobox({
@@ -23,6 +24,7 @@ export function Combobox({
   placeholder = 'Select...',
   allowAdd = false,
   className = '',
+  accentColor = 'emerald',
 }: ComboboxProps) {
   const comboboxId = useId();
   const [inputValue, setInputValue] = useState('');
@@ -141,7 +143,9 @@ export function Combobox({
   return (
     <div ref={containerRef} className={join('relative w-full text-sm sm:text-base', className)}>
       <div
-        className='dark:bg-surface-dark dark:text-surface-light flex items-center rounded border border-gray-300 bg-white px-3 py-2 focus-within:border-emerald-500 dark:border-gray-700'
+        className={`dark:bg-surface-dark dark:text-surface-light flex items-center rounded border border-gray-300 bg-white px-3 py-2 dark:border-gray-700 ${
+          accentColor === 'red' ? 'focus-within:border-red-500' : 'focus-within:border-emerald-500'
+        }`}
         onClick={() => {
           setIsOpen(true);
           inputRef.current?.focus();
@@ -177,10 +181,17 @@ export function Combobox({
                 <li
                   key={opt.value}
                   className={join(
-                    'cursor-pointer px-4 py-2 hover:bg-emerald-100 dark:hover:bg-emerald-900',
-                    value === opt.value && 'bg-emerald-50 dark:bg-emerald-800',
+                    'cursor-pointer px-4 py-2',
+                    accentColor === 'red' 
+                      ? 'hover:bg-red-100 dark:hover:bg-red-900'
+                      : 'hover:bg-emerald-100 dark:hover:bg-emerald-900',
+                    value === opt.value && (accentColor === 'red'
+                      ? 'bg-red-50 dark:bg-red-800'
+                      : 'bg-emerald-50 dark:bg-emerald-800'),
                     highlightedIndex === idx &&
-                      'bg-emerald-100 dark:bg-emerald-900',
+                      (accentColor === 'red'
+                        ? 'bg-red-100 dark:bg-red-900'
+                        : 'bg-emerald-100 dark:bg-emerald-900'),
                   )}
                   onClick={() => handleSelect(opt.value)}
                   role='option'
@@ -195,9 +206,14 @@ export function Combobox({
           {showAdd && (
             <li
               className={join(
-                'cursor-pointer px-4 py-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900',
+                'cursor-pointer px-4 py-2',
+                accentColor === 'red'
+                  ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-900'
+                  : 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900',
                 highlightedIndex === filtered.length &&
-                  'bg-emerald-100 dark:bg-emerald-900',
+                  (accentColor === 'red'
+                    ? 'bg-red-100 dark:bg-red-900'
+                    : 'bg-emerald-100 dark:bg-emerald-900'),
               )}
               onClick={handleAdd}
               role='option'

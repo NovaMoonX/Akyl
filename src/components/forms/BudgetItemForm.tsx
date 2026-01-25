@@ -115,7 +115,9 @@ export default function BudgetItemForm({
             <label className='text-sm font-medium sm:text-base'>Name</label>
             <input
               type='text'
-              className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+              className={`w-full rounded border border-gray-300 px-2 py-1 focus:outline-none dark:border-gray-700 ${
+                type === 'expense' ? 'focus:border-red-500' : 'focus:border-emerald-500'
+              }`}
               value={label}
               onChange={(e) => onFieldChange('label', e.target.value)}
               placeholder={nameInputPlaceholder}
@@ -142,7 +144,9 @@ export default function BudgetItemForm({
               </label>
               <input
                 type='text'
-                className='w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                className={`w-full rounded border border-gray-300 px-2 py-1 focus:outline-none dark:border-gray-700 ${
+                  type === 'expense' ? 'focus:border-red-500' : 'focus:border-emerald-500'
+                }`}
                 value={description}
                 onChange={(e) => onFieldChange('description', e.target.value)}
               />
@@ -157,7 +161,9 @@ export default function BudgetItemForm({
                   type='number'
                   min={0}
                   step='0.01'
-                  className='w-28 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                  className={`w-28 rounded border border-gray-300 px-2 py-1 focus:outline-none dark:border-gray-700 ${
+                    type === 'expense' ? 'focus:border-red-500' : 'focus:border-emerald-500'
+                  }`}
                   value={amount === 0 ? '' : amount}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -191,7 +197,9 @@ export default function BudgetItemForm({
                 <input
                   type='number'
                   min={1}
-                  className='w-16 rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                  className={`w-16 rounded border border-gray-300 px-2 py-1 focus:outline-none dark:border-gray-700 ${
+                    type === 'expense' ? 'focus:border-red-500' : 'focus:border-emerald-500'
+                  }`}
                   aria-description='Enter the frequency interval for this budget item'
                   value={cadence?.interval === 0 ? '' : cadence?.interval}
                   placeholder='1'
@@ -209,7 +217,9 @@ export default function BudgetItemForm({
                 />
               </div>
               <select
-                className='rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700'
+                className={`rounded border border-gray-300 px-2 py-1 focus:outline-none dark:border-gray-700 ${
+                  type === 'expense' ? 'focus:border-red-500' : 'focus:border-emerald-500'
+                }`}
                 value={cadence?.type}
                 onChange={(e) =>
                   onFieldChange('cadence', { ...cadence, type: e.target.value })
@@ -240,8 +250,12 @@ export default function BudgetItemForm({
                       type='button'
                       className={`rounded border px-3 py-1 text-xs transition-colors sm:text-sm ${
                         isSelected
-                          ? 'border-emerald-600 bg-emerald-500 text-white'
-                          : 'border-gray-300 bg-white hover:border-emerald-500 dark:border-gray-700 dark:bg-gray-800'
+                          ? type === 'expense'
+                            ? 'border-red-600 bg-red-500 text-white'
+                            : 'border-emerald-600 bg-emerald-500 text-white'
+                          : type === 'expense'
+                            ? 'border-gray-300 bg-white hover:border-red-500 dark:border-gray-700 dark:bg-gray-800'
+                            : 'border-gray-300 bg-white hover:border-emerald-500 dark:border-gray-700 dark:bg-gray-800'
                       }`}
                       onClick={() => {
                         const newSheets = isSelected
@@ -273,7 +287,9 @@ export default function BudgetItemForm({
             <div>
               <label className='text-sm font-medium sm:text-base'>Notes</label>
               <textarea
-                className='min-h-20 w-full rounded border border-gray-300 px-2 py-1 focus:border-emerald-500 focus:outline-none dark:border-gray-700 text-sm sm:text-base'
+                className={`min-h-20 w-full rounded border border-gray-300 px-2 py-1 focus:outline-none dark:border-gray-700 text-sm sm:text-base ${
+                  type === 'expense' ? 'focus:border-red-500' : 'focus:border-emerald-500'
+                }`}
                 value={notes}
                 onChange={(e) => onFieldChange('notes', e.target.value)}
                 rows={2}

@@ -128,6 +128,7 @@ export default function ExpenseForm() {
           }}
           allowAdd={true}
           placeholder='Select or add category...'
+          accentColor='red'
         />
 
         {/* {!showSubcategory && (
