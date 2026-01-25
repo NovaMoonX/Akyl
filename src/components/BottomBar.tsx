@@ -116,6 +116,7 @@ export default function BottomBar() {
         name: newSheetName.trim(),
       };
       addSheet(newSheet);
+      setActiveSheet(newSheet.id);
       setNewSheetName('');
       setIsAddSheetModalOpen(false);
     }
