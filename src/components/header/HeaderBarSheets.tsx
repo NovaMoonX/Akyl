@@ -17,7 +17,6 @@ export default function HeaderBarSheets({
       state?.space?.config?.activeSheet || 'all',
       state.setActiveSheet,
       state.addSheet,
-      state.removeSheet,
     ]),
   );
   const [showAddSheet, setShowAddSheet] = useState(false);
@@ -45,10 +44,11 @@ export default function HeaderBarSheets({
         name: newSheetName.trim(),
       };
       addSheet(newSheet);
+      setActiveSheet(newSheet.id);
       setNewSheetName('');
       setShowAddSheet(false);
     }
-  }, [newSheetName, addSheet]);
+  }, [newSheetName, addSheet, setActiveSheet]);
 
   const handleKeyPress = useCallback(
     (e: React.KeyboardEvent) => {
