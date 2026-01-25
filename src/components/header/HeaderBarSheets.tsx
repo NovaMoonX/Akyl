@@ -2,7 +2,7 @@ import { PlusIcon, XIcon } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../../store';
-import { generateId } from '../../utils';
+import { generateId, join } from '../../utils';
 
 interface HeaderBarSheetsProps {
   onConfirmSheetDeletion: (sheetId: string) => void;
@@ -83,27 +83,29 @@ export default function HeaderBarSheets({
           )}
         </div>
       )}
-      <div className={`flex items-center gap-2 overflow-x-auto scrollbar-hide ${showAddSheet ? 'max-w-32 sm:max-w-40' : 'max-w-sm sm:max-w-md lg:max-w-lg'}`}>
+      <div className={join('flex items-center gap-2 overflow-x-auto scrollbar-hide', showAddSheet ? 'max-w-24 sm:max-w-28' : 'max-w-sm sm:max-w-md lg:max-w-lg')}>
         <button
           onClick={() => setActiveSheet('all')}
-          className={`shrink-0 rounded px-3 py-1 text-sm transition-colors ${
+          className={join(
+            'shrink-0 rounded px-3 py-1 text-sm transition-colors',
             activeSheet === 'all'
               ? 'bg-emerald-500 text-white'
               : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
-          }`}
+          )}
         >
           {allLabel}
         </button>
         {sheets &&
           sheets.map((sheet) => (
-            <div key={sheet.id} className='group relative shrink-0'>
+            <div key={sheet.id} className='group relative shrink-0 pr-2'>
               <button
                 onClick={() => setActiveSheet(sheet.id)}
-                className={`rounded px-3 py-1 text-sm transition-colors max-w-32 truncate ${
+                className={join(
+                  'rounded px-3 py-1 text-sm transition-colors max-w-32 truncate block',
                   activeSheet === sheet.id
                     ? 'bg-emerald-500 text-white'
                     : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
-                }`}
+                )}
                 title={sheet.name}
               >
                 {sheet.name}
