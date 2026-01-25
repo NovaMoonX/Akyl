@@ -135,7 +135,7 @@ export default function HeaderMenu() {
         });
         break;
       case 'New Space':
-        createNewSpace({ userId: currentUser?.uid });
+        createNewSpace({ userId: currentUser?.uid, openInNewTab: true });
         break;
       case 'Open':
         importFile();
