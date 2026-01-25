@@ -18,12 +18,35 @@ import {
 } from './space.constants';
 import type { Space } from './space.types';
 
+function getDefaultSpaceTitle(): string {
+  const locale = getUserLocale();
+  const now = new Date();
+  const datePart = now.toLocaleDateString(locale, {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  });
+  const timePart = now.toLocaleTimeString(locale, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).toLowerCase();
+  return `${datePart} @ ${timePart}`;
+}
+
 export function createNewSpace({
   userId,
   title,
   incomes,
   expenses,
-}: { userId?: string; title?: string; incomes?: Income[]; expenses?: Expense[] } = {}) {
+  openInNewTab = false,
+}: {
+  userId?: string;
+  title?: string;
+  incomes?: Income[];
+  expenses?: Expense[];
+  openInNewTab?: boolean;
+} = {}) {
   const id = generateId('space');
   const timestamp = Date.now();
   const theme = getTheme();
@@ -48,7 +71,7 @@ export function createNewSpace({
 
   const space: Space = {
     id,
-    title: title || '',
+    title: title || getDefaultSpaceTitle(),
     description: '',
     pinned: false,
     metadata: {
@@ -75,7 +98,12 @@ export function createNewSpace({
     },
   };
   localStorage.setItem(id, JSON.stringify(space));
-  window.location.href = `/${space.id}`;
+  
+  if (openInNewTab) {
+    window.open(`/${space.id}`, '_blank');
+  } else {
+    window.location.href = `/${space.id}`;
+  }
 }
 
 export function duplicateSpace(spaceId: string) {
