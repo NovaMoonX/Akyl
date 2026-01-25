@@ -254,7 +254,7 @@ export default function Flow() {
       description: 'Fit view',
     },
     {
-      key: '=',
+      key: '+',
       ctrl: true,
       handler: handleZoomIn,
       description: 'Zoom in',

@@ -5,7 +5,6 @@ export interface KeyboardShortcut {
   ctrl?: boolean;
   shift?: boolean;
   alt?: boolean;
-  meta?: boolean;
   handler: () => void;
   description: string;
   preventDefault?: boolean;
@@ -28,12 +27,26 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = tr
 
       shortcuts.forEach((shortcut) => {
         const keyMatches = event.key.toLowerCase() === shortcut.key.toLowerCase();
+        
+        // Only check modifiers that are explicitly specified in the shortcut
         // Support both Ctrl on Windows/Linux and Cmd (metaKey) on Mac for ctrl modifier
-        const ctrlMatches = shortcut.ctrl 
-          ? (event.ctrlKey || event.metaKey) 
-          : !(event.ctrlKey || event.metaKey);
-        const shiftMatches = shortcut.shift ? event.shiftKey : !event.shiftKey;
-        const altMatches = shortcut.alt ? event.altKey : !event.altKey;
+        const ctrlMatches = shortcut.ctrl === undefined 
+          ? true 
+          : shortcut.ctrl 
+            ? (event.ctrlKey || event.metaKey) 
+            : !(event.ctrlKey || event.metaKey);
+        
+        const shiftMatches = shortcut.shift === undefined
+          ? true
+          : shortcut.shift
+            ? event.shiftKey
+            : !event.shiftKey;
+        
+        const altMatches = shortcut.alt === undefined
+          ? true
+          : shortcut.alt
+            ? event.altKey
+            : !event.altKey;
 
         if (keyMatches && ctrlMatches && shiftMatches && altMatches) {
           if (shortcut.preventDefault !== false) {
