@@ -1,12 +1,11 @@
 import { CopyIcon, KeyboardIcon, MailIcon } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { SUPPORT_EMAIL } from '../../lib';
 import Modal from '../ui/Modal';
 
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: 'support' | 'tips';
 }
 
 // Keyboard shortcut information
@@ -23,20 +22,11 @@ const KEYBOARD_SHORTCUTS = [
   { keys: 'Ctrl+-', description: 'Zoom out', category: 'View Controls' },
   { keys: 'Ctrl+Shift+←', description: 'Previous sheet/space', category: 'Navigation' },
   { keys: 'Ctrl+Shift+→', description: 'Next sheet/space', category: 'Navigation' },
-  { keys: 'Esc', description: 'Close modal/dialog', category: 'General' },
-  { keys: 'Enter', description: 'Confirm action (in dialogs)', category: 'General' },
 ];
 
-export default function HelpModal({ isOpen, onClose, initialTab = 'support' }: HelpModalProps) {
+export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'support' | 'tips'>(initialTab);
-
-  // Update active tab when initialTab changes
-  React.useEffect(() => {
-    if (isOpen) {
-      setActiveTab(initialTab);
-    }
-  }, [isOpen, initialTab]);
+  const [activeTab, setActiveTab] = useState<'support' | 'tips'>('support');
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(SUPPORT_EMAIL);
@@ -109,7 +99,7 @@ export default function HelpModal({ isOpen, onClose, initialTab = 'support' }: H
                 Use these keyboard shortcuts to work faster:
               </p>
               {/* Group shortcuts by category */}
-              {['Actions', 'Display', 'View Controls', 'Navigation', 'General'].map((category) => {
+              {['Actions', 'Display', 'View Controls', 'Navigation'].map((category) => {
                 const categoryShortcuts = KEYBOARD_SHORTCUTS.filter(s => s.category === category);
                 if (categoryShortcuts.length === 0) return null;
                 
@@ -136,11 +126,6 @@ export default function HelpModal({ isOpen, onClose, initialTab = 'support' }: H
                   </div>
                 );
               })}
-            </div>
-            <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3'>
-              <p className='text-sm text-blue-800 dark:text-blue-200'>
-                💡 <strong>Tip:</strong> On Mac, Ctrl is replaced with ⌘ (Command) key.
-              </p>
             </div>
           </div>
         )}

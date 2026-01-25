@@ -4,7 +4,6 @@ import {
   FileImageIcon,
   FolderOpenIcon,
   HomeIcon,
-  KeyboardIcon,
   LogInIcon,
   LogOutIcon,
   MenuIcon,
@@ -74,10 +73,6 @@ const DEFAULT_ITEMS: MenuItem[] = [
     label: 'Delete',
   },
   {
-    icon: <KeyboardIcon />,
-    label: 'Tips',
-  },
-  {
     icon: <ShieldQuestionIcon />,
     label: 'Help',
   },
@@ -103,7 +98,6 @@ export default function HeaderMenu() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
-  const [helpModalTab, setHelpModalTab] = useState<'support' | 'tips'>('support');
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isImageDownloadModalOpen, setIsImageDownloadModalOpen] = useState(false);
@@ -161,12 +155,7 @@ export default function HeaderMenu() {
       case 'Delete':
         setDeleteSpaceId(spaceId);
         break;
-      case 'Tips':
-        setHelpModalTab('tips');
-        setIsHelpModalOpen(true);
-        break;
       case 'Help':
-        setHelpModalTab('support');
         setIsHelpModalOpen(true);
         break;
       case 'Configurations':
@@ -263,7 +252,6 @@ export default function HeaderMenu() {
       <HelpModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
-        initialTab={helpModalTab}
       />
 
       <ConfigModal
