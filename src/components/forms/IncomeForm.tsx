@@ -96,7 +96,7 @@ export default function IncomeForm() {
     formData?.amount <= 0 ||
     !formData?.source ||
     !formData?.type ||
-    !formData?.cadence?.interval ||
+    (formData?.cadence && !formData?.cadence?.interval) || // Only validate cadence if it exists
     !formData?.sheets ||
     formData?.sheets.length === 0;
 
@@ -107,6 +107,7 @@ export default function IncomeForm() {
       description={formData?.description}
       amount={formData?.amount}
       cadence={formData?.cadence}
+      end={formData?.end}
       notes={formData?.notes}
       sheets={formData?.sheets}
       onFieldChange={(field, val) =>

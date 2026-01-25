@@ -97,7 +97,7 @@ export default function ExpenseForm() {
     !formData?.amount ||
     formData?.amount <= 0 ||
     !formData?.category ||
-    !formData?.cadence?.interval ||
+    (formData?.cadence && !formData?.cadence?.interval) || // Only validate cadence if it exists
     !formData?.sheets ||
     formData?.sheets.length === 0;
 
@@ -108,6 +108,7 @@ export default function ExpenseForm() {
       description={formData?.description}
       amount={formData?.amount}
       cadence={formData?.cadence}
+      end={formData?.end}
       notes={formData?.notes}
       sheets={formData?.sheets}
       onFieldChange={(field, val) =>

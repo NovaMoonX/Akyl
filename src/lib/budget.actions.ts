@@ -117,10 +117,15 @@ function getConversionRatioDayBased(
 
 export function getBudgetItemWindowAmount(
   amount: number,
-  itemCadence: BudgetItemCadence,
+  itemCadence: BudgetItemCadence | undefined,
   window: BudgetItemCadence,
   conversionMethod: 'exact' | 'day-based' = 'exact',
 ): number {
+  // If no cadence is provided, this is a "once" item - return the amount as-is
+  if (!itemCadence) {
+    return amount;
+  }
+  
   // Get the conversion ratio based on the selected method
   const ratio = conversionMethod === 'exact' 
     ? getConversionRatio(itemCadence.type, window.type)
