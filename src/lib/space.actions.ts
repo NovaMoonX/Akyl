@@ -75,7 +75,7 @@ export function createNewSpace({
     },
   };
   localStorage.setItem(id, JSON.stringify(space));
-  window.location.href = `/${space.id}`;
+  window.open(`/${space.id}`, '_blank');
 }
 
 export function duplicateSpace(spaceId: string) {
