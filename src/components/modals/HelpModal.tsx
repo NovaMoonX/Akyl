@@ -10,15 +10,18 @@ interface HelpModalProps {
 
 // Keyboard shortcut information
 const KEYBOARD_SHORTCUTS = [
-  { keys: 'Ctrl+I', description: 'Add new income' },
-  { keys: 'Ctrl+E', description: 'Add new expense' },
-  { keys: 'Ctrl+S', description: 'Toggle sources visibility' },
-  { keys: 'Ctrl+C', description: 'Toggle categories visibility' },
-  { keys: 'Ctrl+L', description: 'Toggle list expenses' },
-  { keys: 'Ctrl+T', description: 'Toggle table/grid view' },
-  { keys: 'Ctrl+K', description: 'Open calculator' },
-  { keys: 'Ctrl+←', description: 'Previous sheet/space' },
-  { keys: 'Ctrl+→', description: 'Next sheet/space' },
+  { keys: 'Ctrl+I', description: 'Add new income', category: 'Actions' },
+  { keys: 'Ctrl+E', description: 'Add new expense', category: 'Actions' },
+  { keys: 'Ctrl+K', description: 'Open calculator', category: 'Actions' },
+  { keys: 'Ctrl+S', description: 'Toggle sources visibility', category: 'Display' },
+  { keys: 'Ctrl+C', description: 'Toggle categories visibility', category: 'Display' },
+  { keys: 'Ctrl+L', description: 'Toggle list expenses', category: 'Display' },
+  { keys: 'Ctrl+T', description: 'Toggle table/grid view', category: 'Display' },
+  { keys: 'Ctrl+0', description: 'Fit view to screen', category: 'View Controls' },
+  { keys: 'Ctrl++', description: 'Zoom in', category: 'View Controls' },
+  { keys: 'Ctrl+-', description: 'Zoom out', category: 'View Controls' },
+  { keys: 'Ctrl+←', description: 'Previous sheet/space', category: 'Navigation' },
+  { keys: 'Ctrl+→', description: 'Next sheet/space', category: 'Navigation' },
 ];
 
 export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
@@ -95,21 +98,34 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
               <p className='text-sm text-gray-600 dark:text-gray-400 mb-3'>
                 Use these keyboard shortcuts to work faster:
               </p>
-              <div className='space-y-2'>
-                {KEYBOARD_SHORTCUTS.map((shortcut, index) => (
-                  <div
-                    key={index}
-                    className='flex items-center justify-between py-1.5 px-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                  >
-                    <span className='text-sm text-gray-700 dark:text-gray-300'>
-                      {shortcut.description}
-                    </span>
-                    <kbd className='bg-surface-hover-light dark:bg-surface-hover-dark px-2 py-1 rounded text-xs font-mono border border-gray-300 dark:border-gray-600'>
-                      {shortcut.keys}
-                    </kbd>
+              {/* Group shortcuts by category */}
+              {['Actions', 'Display', 'View Controls', 'Navigation'].map((category) => {
+                const categoryShortcuts = KEYBOARD_SHORTCUTS.filter(s => s.category === category);
+                if (categoryShortcuts.length === 0) return null;
+                
+                return (
+                  <div key={category} className='mb-4'>
+                    <h4 className='text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2'>
+                      {category}
+                    </h4>
+                    <div className='space-y-2'>
+                      {categoryShortcuts.map((shortcut, index) => (
+                        <div
+                          key={index}
+                          className='flex items-center justify-between py-1.5 px-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                        >
+                          <span className='text-sm text-gray-700 dark:text-gray-300'>
+                            {shortcut.description}
+                          </span>
+                          <kbd className='bg-surface-hover-light dark:bg-surface-hover-dark px-2 py-1 rounded text-xs font-mono border border-gray-300 dark:border-gray-600'>
+                            {shortcut.keys}
+                          </kbd>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
             <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3'>
               <p className='text-sm text-blue-800 dark:text-blue-200'>

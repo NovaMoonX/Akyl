@@ -3,6 +3,7 @@ import {
   BackgroundVariant,
   Controls,
   ReactFlow,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import { useCallback } from 'react';
@@ -73,6 +74,7 @@ export default function Flow() {
   );
   const { nodes, edges, onNodesChange, onEdgesChange } = useSpaceFlow();
   const [, setSearchParams] = useSearchParams();
+  const reactFlowInstance = useReactFlow();
 
   // Get current sheet's settings or fall back to global
   const activeSheetObj = activeSheet !== 'all' && sheets
@@ -85,7 +87,7 @@ export default function Flow() {
 
   // Keyboard shortcut handlers
   const handleToggleSources = useCallback(() => {
-    const nowHidden = currentHideSources ? false : true;
+    const nowHidden = !currentHideSources;
     if (activeSheet === 'all') {
       updateConfig({ hideSources: nowHidden });
     } else {
@@ -94,7 +96,7 @@ export default function Flow() {
   }, [currentHideSources, activeSheet, updateConfig, updateSheet]);
 
   const handleToggleCategories = useCallback(() => {
-    const nowHidden = currentHideCategories ? false : true;
+    const nowHidden = !currentHideCategories;
     if (activeSheet === 'all') {
       updateConfig({ hideCategories: nowHidden });
       if (nowHidden) {
@@ -110,7 +112,7 @@ export default function Flow() {
 
   const handleToggleListExpenses = useCallback(() => {
     if (currentHideCategories) return; // Can't toggle when categories are hidden
-    const nowList = currentListExpenses ? false : true;
+    const nowList = !currentListExpenses;
     if (activeSheet === 'all') {
       updateConfig({ listExpenses: nowList });
     } else {
@@ -170,6 +172,25 @@ export default function Flow() {
     }
   }, [sheets, activeSheet]);
 
+  // View control handlers
+  const handleFitView = useCallback(() => {
+    if (viewMode === 'flowchart') {
+      reactFlowInstance.fitView({ padding: 2, duration: 300 });
+    }
+  }, [viewMode, reactFlowInstance]);
+
+  const handleZoomIn = useCallback(() => {
+    if (viewMode === 'flowchart') {
+      reactFlowInstance.zoomIn({ duration: 300 });
+    }
+  }, [viewMode, reactFlowInstance]);
+
+  const handleZoomOut = useCallback(() => {
+    if (viewMode === 'flowchart') {
+      reactFlowInstance.zoomOut({ duration: 300 });
+    }
+  }, [viewMode, reactFlowInstance]);
+
   // Define keyboard shortcuts
   useKeyboardShortcuts([
     {
@@ -225,6 +246,24 @@ export default function Flow() {
       ctrl: true,
       handler: handlePreviousSheet,
       description: 'Previous sheet',
+    },
+    {
+      key: '0',
+      ctrl: true,
+      handler: handleFitView,
+      description: 'Fit view',
+    },
+    {
+      key: '=',
+      ctrl: true,
+      handler: handleZoomIn,
+      description: 'Zoom in',
+    },
+    {
+      key: '-',
+      ctrl: true,
+      handler: handleZoomOut,
+      description: 'Zoom out',
     },
   ], !showLoadScreen);
 

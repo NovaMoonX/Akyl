@@ -28,7 +28,10 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = tr
 
       shortcuts.forEach((shortcut) => {
         const keyMatches = event.key.toLowerCase() === shortcut.key.toLowerCase();
-        const ctrlMatches = shortcut.ctrl ? event.ctrlKey || event.metaKey : !event.ctrlKey && !event.metaKey;
+        // Support both Ctrl on Windows/Linux and Cmd (metaKey) on Mac for ctrl modifier
+        const ctrlMatches = shortcut.ctrl 
+          ? (event.ctrlKey || event.metaKey) 
+          : !(event.ctrlKey || event.metaKey);
         const shiftMatches = shortcut.shift ? event.shiftKey : !event.shiftKey;
         const altMatches = shortcut.alt ? event.altKey : !event.altKey;
 
@@ -58,9 +61,6 @@ export function getShortcutLabel(shortcut: Omit<KeyboardShortcut, 'handler'>): s
   }
   if (shortcut.alt) {
     parts.push(isMac ? '⌥' : 'Alt');
-  }
-  if (shortcut.meta && !shortcut.ctrl) {
-    parts.push('⌘');
   }
   
   parts.push(shortcut.key.toUpperCase());
