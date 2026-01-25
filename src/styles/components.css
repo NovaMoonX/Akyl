@@ -14,4 +14,13 @@
   .btn-danger {
     @apply border border-red-600 text-red-600 bg-transparent enabled:hover:bg-red-50 dark:border-red-500 dark:text-red-500 enabled:hover:dark:bg-red-900 disabled:border-gray-500 disabled:text-gray-500;
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

@@ -2,7 +2,7 @@ import { PlusIcon, XIcon } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../../store';
-import { generateId } from '../../utils';
+import { generateId, join } from '../../utils';
 
 interface HeaderBarSheetsProps {
   onConfirmSheetDeletion: (sheetId: string) => void;
@@ -26,10 +26,10 @@ export default function HeaderBarSheets({
   // Calculate sheet counts for "All" label
   const allLabel = useMemo(() => {
     if (!sheets || sheets.length === 0) return 'All';
-    
+
     const totalSheets = sheets.length;
-    const enabledSheets = sheets.filter(sheet => !sheet.disabled).length;
-    
+    const enabledSheets = sheets.filter((sheet) => !sheet.disabled).length;
+
     if (enabledSheets === totalSheets) {
       return `All (${totalSheets})`;
     } else {
@@ -83,41 +83,53 @@ export default function HeaderBarSheets({
           )}
         </div>
       )}
-      <button
-        onClick={() => setActiveSheet('all')}
-        className={`rounded px-3 py-1 text-sm transition-colors ${
-          activeSheet === 'all'
-            ? 'bg-emerald-500 text-white'
-            : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
-        }`}
+      <div
+        className={join(
+          'scrollbar-hide flex items-center gap-2 overflow-x-auto py-1 pr-1',
+          showAddSheet
+            ? 'max-w-40 sm:max-w-56 lg:max-w-72'
+            : 'max-w-sm sm:max-w-md lg:max-w-lg',
+        )}
       >
-        {allLabel}
-      </button>
-      {sheets &&
-        sheets.map((sheet) => (
-          <div key={sheet.id} className='group relative'>
-            <button
-              onClick={() => setActiveSheet(sheet.id)}
-              className={`rounded px-3 py-1 text-sm transition-colors ${
-                activeSheet === sheet.id
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
-              }`}
-            >
-              {sheet.name}
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onConfirmSheetDeletion(sheet.id);
-              }}
-              className='absolute -top-1 -right-1 rounded-full bg-red-500 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100'
-              aria-label={`Delete ${sheet.name}`}
-            >
-              <XIcon className='size-3' />
-            </button>
-          </div>
-        ))}
+        <button
+          onClick={() => setActiveSheet('all')}
+          className={join(
+            'shrink-0 rounded px-3 py-1 text-sm transition-colors',
+            activeSheet === 'all'
+              ? 'bg-emerald-500 text-white'
+              : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700',
+          )}
+        >
+          {allLabel}
+        </button>
+        {sheets &&
+          sheets.map((sheet) => (
+            <div key={sheet.id} className='group relative shrink-0'>
+              <button
+                onClick={() => setActiveSheet(sheet.id)}
+                className={join(
+                  'block max-w-32 truncate rounded px-3 py-1 text-sm transition-colors',
+                  activeSheet === sheet.id
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700',
+                )}
+                title={sheet.name}
+              >
+                {sheet.name}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onConfirmSheetDeletion(sheet.id);
+                }}
+                className='absolute -top-1 -right-1 rounded-full bg-red-500 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100'
+                aria-label={`Delete ${sheet.name}`}
+              >
+                <XIcon className='size-3' />
+              </button>
+            </div>
+          ))}
+      </div>
       {showAddSheet ? (
         <div className='flex items-center gap-1'>
           <input
