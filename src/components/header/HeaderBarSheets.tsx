@@ -83,41 +83,44 @@ export default function HeaderBarSheets({
           )}
         </div>
       )}
-      <button
-        onClick={() => setActiveSheet('all')}
-        className={`rounded px-3 py-1 text-sm transition-colors ${
-          activeSheet === 'all'
-            ? 'bg-emerald-500 text-white'
-            : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
-        }`}
-      >
-        {allLabel}
-      </button>
-      {sheets &&
-        sheets.map((sheet) => (
-          <div key={sheet.id} className='group relative'>
-            <button
-              onClick={() => setActiveSheet(sheet.id)}
-              className={`rounded px-3 py-1 text-sm transition-colors ${
-                activeSheet === sheet.id
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
-              }`}
-            >
-              {sheet.name}
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onConfirmSheetDeletion(sheet.id);
-              }}
-              className='absolute -top-1 -right-1 rounded-full bg-red-500 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100'
-              aria-label={`Delete ${sheet.name}`}
-            >
-              <XIcon className='size-3' />
-            </button>
-          </div>
-        ))}
+      <div className='flex items-center gap-2 overflow-x-auto scrollbar-hide max-w-md'>
+        <button
+          onClick={() => setActiveSheet('all')}
+          className={`shrink-0 rounded px-3 py-1 text-sm transition-colors ${
+            activeSheet === 'all'
+              ? 'bg-emerald-500 text-white'
+              : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
+          }`}
+        >
+          {allLabel}
+        </button>
+        {sheets &&
+          sheets.map((sheet) => (
+            <div key={sheet.id} className='group relative shrink-0'>
+              <button
+                onClick={() => setActiveSheet(sheet.id)}
+                className={`rounded px-3 py-1 text-sm transition-colors max-w-32 truncate ${
+                  activeSheet === sheet.id
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700'
+                }`}
+                title={sheet.name}
+              >
+                {sheet.name}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onConfirmSheetDeletion(sheet.id);
+                }}
+                className='absolute -top-1 -right-1 rounded-full bg-red-500 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100'
+                aria-label={`Delete ${sheet.name}`}
+              >
+                <XIcon className='size-3' />
+              </button>
+            </div>
+          ))}
+      </div>
       {showAddSheet ? (
         <div className='flex items-center gap-1'>
           <input
