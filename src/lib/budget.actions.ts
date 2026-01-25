@@ -152,8 +152,8 @@ export function getBudgetItemWindowAmount(
         // Calculate how many occurrences fit within the end period
         if (end.period) {
           const endPeriodRatio = conversionMethod === 'exact'
-            ? getConversionRatio(end.period.cadence, itemCadence.type)
-            : getConversionRatioDayBased(end.period.cadence, itemCadence.type);
+            ? getConversionRatio(itemCadence.type, end.period.cadence)
+            : getConversionRatioDayBased(itemCadence.type, end.period.cadence);
           const maxOccurrencesInPeriod = (endPeriodRatio * end.period.value) / itemCadence.interval;
           effectiveOccurrences = Math.min(occurrencesInWindow, maxOccurrencesInPeriod);
         }
@@ -162,11 +162,9 @@ export function getBudgetItemWindowAmount(
       case 'amount':
         // Cap the total amount
         if (end.amount) {
-          const totalAmount = amount * occurrencesInWindow;
-          if (totalAmount > end.amount) {
-            // Calculate how many occurrences would give us the cap amount
-            effectiveOccurrences = end.amount / amount;
-          }
+          // Calculate how many occurrences we can afford within the cap
+          const maxOccurrences = end.amount / amount;
+          effectiveOccurrences = Math.min(occurrencesInWindow, maxOccurrences);
         }
         break;
     }
