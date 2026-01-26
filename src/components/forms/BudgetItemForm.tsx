@@ -130,7 +130,7 @@ export default function BudgetItemForm({
       onFieldChange('cadence', cadenceToUse);
     } else {
       // Switch to once - remove cadence and end
-      // Keep the current cadence in previousCadence state (already tracked by useEffect)
+      // The current cadence is already preserved in previousCadence state via useEffect
       onFieldChange('cadence', undefined);
       onFieldChange('end', undefined);
       setShowEndCondition(false);
