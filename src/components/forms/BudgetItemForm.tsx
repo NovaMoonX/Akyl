@@ -170,7 +170,10 @@ export default function BudgetItemForm({
               : CashFlowVerbiagePairs[cashFlowVerbiage].out}{' '}
           </h2>
           <div>
-            <label className='text-sm font-medium sm:text-base'>Name</label>
+            <label className='text-sm font-medium sm:text-base'>
+              Name
+              <span className={type === 'expense' ? 'text-red-500' : 'text-emerald-500'}> *</span>
+            </label>
             <input
               type='text'
               className={join(
@@ -214,7 +217,10 @@ export default function BudgetItemForm({
           )}
 
           <div>
-            <label className='text-sm font-medium sm:text-base'>Amount</label>
+            <label className='text-sm font-medium sm:text-base'>
+              Amount
+              <span className={type === 'expense' ? 'text-red-500' : 'text-emerald-500'}> *</span>
+            </label>
             <div className='mt-1 flex flex-wrap items-center gap-2'>
               <div className='flex items-center gap-1'>
                 <input
@@ -516,7 +522,10 @@ export default function BudgetItemForm({
           {/* Sheets */}
           {availableSheets.length > 0 && (
             <div>
-              <label className='text-sm font-medium sm:text-base'>Sheets</label>
+              <label className='text-sm font-medium sm:text-base'>
+                Sheets
+                <span className={type === 'expense' ? 'text-red-500' : 'text-emerald-500'}> *</span>
+              </label>
               <div className='mt-2 flex flex-wrap gap-2'>
                 {availableSheets.map((sheet) => {
                   const isSelected = sheets?.includes(sheet.id) ?? false;
