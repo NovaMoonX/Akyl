@@ -79,7 +79,7 @@ export function createDemoSpace(userId?: string): Space {
       label: 'Tax Refund',
       description: 'Annual tax return',
       amount: 2500,
-      source: 'Freelance',
+      source: 'Government',
       type: 'Other',
       // No cadence - this is a "once" item
       notes: 'One-time payment received this year',
@@ -87,10 +87,9 @@ export function createDemoSpace(userId?: string): Space {
     },
   ];
 
-  // Calculate total monthly income
-  // Monthly: 7500 + 2000 + 500 = 10,000
-  // Annual bonus amortized: 15000 / 12 = 1,250
-  // Total monthly: 11,250
+  // Calculate total monthly income (in monthly view, with end conditions applied)
+  // This demo showcases various end conditions and cadence types
+  // Exact totals depend on time window and end condition enforcement
 
   // Create expenses with 3+ categories (10+ total expenses)
   // Includes examples of different end conditions
