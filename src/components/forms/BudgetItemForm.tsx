@@ -57,6 +57,12 @@ export default function BudgetItemForm({
   const availableSheets = useSpace(
     useShallow((state) => state?.space?.sheets || []),
   );
+  const configTimeWindow = useSpace(
+    useShallow((state) => state?.space?.config?.timeWindow),
+  );
+  const activeSheet = useSpace(
+    useShallow((state) => state?.space?.config?.activeSheet || 'all'),
+  );
   const { removeExpense, removeIncome } = useSpace();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showDescription, setShowDescription] = useState(false);
@@ -64,10 +70,18 @@ export default function BudgetItemForm({
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
   const [showEndCondition, setShowEndCondition] = useState(!!end);
+  const [previousCadence, setPreviousCadence] = useState<BudgetItemCadence | undefined>(cadence);
   const itemId = searchParams.get(URL_PARAM_ID);
 
   // Determine if this is a "once" item (no cadence)
   const isOnce = !cadence;
+
+  // Update previousCadence when cadence prop changes and is defined
+  useEffect(() => {
+    if (cadence) {
+      setPreviousCadence(cadence);
+    }
+  }, [cadence]);
 
   useEffect(() => {
     if (description.length > 0) {
@@ -102,10 +116,21 @@ export default function BudgetItemForm({
 
   const handleToggleOnce = () => {
     if (isOnce) {
-      // Switch to recurring - set default cadence
-      onFieldChange('cadence', { type: 'month', interval: 1 });
+      // Switch to recurring - restore previous cadence or use default
+      const activeSheetObj = activeSheet !== 'all' && availableSheets
+        ? availableSheets.find((s) => s.id === activeSheet)
+        : null;
+      const defaultCadence = activeSheetObj?.timeWindow ?? configTimeWindow ?? {
+        type: 'month' as BudgetItemCadenceType,
+        interval: 1,
+      };
+      
+      // Use previous cadence if available, otherwise use default
+      const cadenceToUse = previousCadence || defaultCadence;
+      onFieldChange('cadence', cadenceToUse);
     } else {
       // Switch to once - remove cadence and end
+      // Keep the current cadence in previousCadence state (already tracked by useEffect)
       onFieldChange('cadence', undefined);
       onFieldChange('end', undefined);
       setShowEndCondition(false);
