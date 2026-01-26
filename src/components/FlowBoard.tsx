@@ -129,6 +129,12 @@ export default function Flow() {
     window.dispatchEvent(event);
   }, []);
 
+  const handleOpenHelpTips = useCallback(() => {
+    // This will be handled in HeaderMenu, just trigger the event
+    const event = new CustomEvent('open-help-tips');
+    window.dispatchEvent(event);
+  }, []);
+
   const handleAddIncome = useCallback(() => {
     setSearchParams({ [URL_PARAM_FORM]: 'income' });
   }, [setSearchParams]);
@@ -214,6 +220,13 @@ export default function Flow() {
       ctrl: true,
       handler: handleOpenCalculator,
       description: 'Open calculator',
+    },
+    {
+      key: 's',
+      ctrl: true,
+      shift: true,
+      handler: handleOpenHelpTips,
+      description: 'Open help shortcuts',
     },
     {
       key: 'ArrowRight',

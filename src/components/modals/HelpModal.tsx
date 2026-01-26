@@ -1,11 +1,12 @@
 import { CopyIcon, KeyboardIcon, MailIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SUPPORT_EMAIL } from '../../lib';
 import Modal from '../ui/Modal';
 
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialTab?: 'support' | 'tips';
 }
 
 // Keyboard shortcut information
@@ -13,6 +14,7 @@ const KEYBOARD_SHORTCUTS = [
   { keys: 'Ctrl+I', description: 'Add new income', category: 'Actions' },
   { keys: 'Ctrl+E', description: 'Add new expense', category: 'Actions' },
   { keys: 'Ctrl+K', description: 'Open calculator', category: 'Actions' },
+  { keys: 'Ctrl+Shift+S', description: 'Open keyboard shortcuts', category: 'Actions' },
   { keys: 'Ctrl+S', description: 'Toggle sources visibility', category: 'Display' },
   { keys: 'Ctrl+C', description: 'Toggle categories visibility', category: 'Display' },
   { keys: 'Ctrl+L', description: 'Toggle list expenses', category: 'Display' },
@@ -24,9 +26,16 @@ const KEYBOARD_SHORTCUTS = [
   { keys: 'Ctrl+Shift+→', description: 'Next sheet/space', category: 'Navigation' },
 ];
 
-export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
+export default function HelpModal({ isOpen, onClose, initialTab = 'support' }: HelpModalProps) {
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'support' | 'tips'>('support');
+  const [activeTab, setActiveTab] = useState<'support' | 'tips'>(initialTab);
+
+  // Update active tab when initialTab changes and modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(SUPPORT_EMAIL);
