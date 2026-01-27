@@ -92,6 +92,12 @@ export default function BudgetItemForm({
     }
   }, [description, notes]);
 
+  useEffect(() => {
+    if (end) {
+      setShowEndCondition(true);
+    }
+  }, [end]);
+
   const handleDelete = () => {
     if (!itemId) return;
 
@@ -217,79 +223,81 @@ export default function BudgetItemForm({
           )}
 
           <div>
-            <label className='text-sm font-medium sm:text-base'>
-              Amount
-              <span className={type === 'expense' ? 'text-red-500' : 'text-emerald-500'}> *</span>
-            </label>
-            <div className='mt-1 flex flex-wrap items-center gap-2'>
-              <div className='flex items-center gap-1'>
-                <input
-                  type='number'
-                  min={0}
-                  step='0.01'
-                  className={join(
-                    'w-28 rounded border border-gray-300 px-2 py-1 focus:outline-none dark:border-gray-700',
-                    type === 'expense' ? 'focus:border-red-500' : 'focus:border-emerald-500'
-                  )}
-                  value={amount === 0 ? '' : amount}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '') {
-                      onFieldChange('amount', 0);
-                    } else {
-                      onFieldChange('amount', Number(val));
-                    }
-                  }}
-                  placeholder='0.00'
-                />
-                <button
-                  type='button'
-                  onClick={() => setShowCalculator(true)}
-                  className='rounded p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
-                  aria-label='Open calculator'
-                  title='Open calculator'
-                >
-                  <CalculatorIcon className='size-4' />
-                </button>
+            <div className='flex items-start justify-between gap-4'>
+              <div className='flex-1'>
+                <label className='text-sm font-medium sm:text-base'>
+                  Amount
+                  <span className={type === 'expense' ? 'text-red-500' : 'text-emerald-500'}> *</span>
+                </label>
+                <div className='mt-1 flex items-center gap-1'>
+                  <span className='text-gray-700 dark:text-gray-200'>
+                    {getCurrencySymbol(currency)}
+                  </span>
+                  <input
+                    type='number'
+                    min={0}
+                    step='0.01'
+                    className={join(
+                      'w-28 rounded border border-gray-300 px-2 py-1 focus:outline-none dark:border-gray-700',
+                      type === 'expense' ? 'focus:border-red-500' : 'focus:border-emerald-500'
+                    )}
+                    value={amount === 0 ? '' : amount}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        onFieldChange('amount', 0);
+                      } else {
+                        onFieldChange('amount', Number(val));
+                      }
+                    }}
+                    placeholder='0.00'
+                  />
+                  <button
+                    type='button'
+                    onClick={() => setShowCalculator(true)}
+                    className='rounded p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700'
+                    aria-label='Open calculator'
+                    title='Open calculator'
+                  >
+                    <CalculatorIcon className='size-4' />
+                  </button>
+                </div>
               </div>
-              <span className='text-gray-700 dark:text-gray-200'>
-                {getCurrencySymbol(currency)}
-              </span>
-            </div>
-          </div>
 
-          {/* Frequency toggle: Once vs Recurring */}
-          <div>
-            <label className='text-sm font-medium sm:text-base'>Frequency</label>
-            <div className='mt-2 flex gap-2'>
-              <button
-                type='button'
-                className={join(
-                  'rounded border px-4 py-2 text-sm transition-colors',
-                  isOnce
-                    ? type === 'expense'
-                      ? 'border-red-600 bg-red-500 text-white'
-                      : 'border-emerald-600 bg-emerald-500 text-white'
-                    : 'border-gray-300 bg-white hover:border-gray-400 dark:border-gray-700 dark:bg-gray-800'
-                )}
-                onClick={handleToggleOnce}
-              >
-                Once
-              </button>
-              <button
-                type='button'
-                className={join(
-                  'rounded border px-4 py-2 text-sm transition-colors',
-                  !isOnce
-                    ? type === 'expense'
-                      ? 'border-red-600 bg-red-500 text-white'
-                      : 'border-emerald-600 bg-emerald-500 text-white'
-                    : 'border-gray-300 bg-white hover:border-gray-400 dark:border-gray-700 dark:bg-gray-800'
-                )}
-                onClick={handleToggleOnce}
-              >
-                Recurring
-              </button>
+              {/* Frequency toggle: Once vs Recurring */}
+              <div className='flex-1'>
+                <label className='text-sm font-medium sm:text-base'>Frequency</label>
+                <div className='mt-1 flex gap-2'>
+                  <button
+                    type='button'
+                    className={join(
+                      'rounded border px-4 py-2 text-sm transition-colors',
+                      isOnce
+                        ? type === 'expense'
+                          ? 'border-red-600 bg-red-500 text-white'
+                          : 'border-emerald-600 bg-emerald-500 text-white'
+                        : 'border-gray-300 bg-white hover:border-gray-400 dark:border-gray-700 dark:bg-gray-800'
+                    )}
+                    onClick={handleToggleOnce}
+                  >
+                    Once
+                  </button>
+                  <button
+                    type='button'
+                    className={join(
+                      'rounded border px-4 py-2 text-sm transition-colors',
+                      !isOnce
+                        ? type === 'expense'
+                          ? 'border-red-600 bg-red-500 text-white'
+                          : 'border-emerald-600 bg-emerald-500 text-white'
+                        : 'border-gray-300 bg-white hover:border-gray-400 dark:border-gray-700 dark:bg-gray-800'
+                    )}
+                    onClick={handleToggleOnce}
+                  >
+                    Recurring
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
