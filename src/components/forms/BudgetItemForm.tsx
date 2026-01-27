@@ -93,9 +93,7 @@ export default function BudgetItemForm({
   }, [description, notes]);
 
   useEffect(() => {
-    if (end) {
-      setShowEndCondition(true);
-    }
+    setShowEndCondition(!!end);
   }, [end]);
 
   const handleDelete = () => {
