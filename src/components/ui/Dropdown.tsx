@@ -18,6 +18,21 @@ export default function Dropdown({
 }: DropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Handle Escape key to close dropdown
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   useEffect(() => {
     if (!isOpen || !closeOnOverlayClick) return;
     const handleMouseAction = (event: MouseEvent) => {

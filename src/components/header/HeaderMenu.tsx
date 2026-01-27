@@ -13,7 +13,7 @@ import {
   TrashIcon,
   UploadIcon,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../../contexts/AuthContext';
 import { signOutUser } from '../../firebase';
@@ -98,12 +98,23 @@ export default function HeaderMenu() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [helpModalTab, setHelpModalTab] = useState<'support' | 'tips'>('support');
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isImageDownloadModalOpen, setIsImageDownloadModalOpen] = useState(false);
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
   const spaceId = useSpaceStore(useShallow((state) => state?.space?.id));
   const { limitMet } = useBrowserSpaces();
+
+  // Listen for open-help-tips event from keyboard shortcut
+  useEffect(() => {
+    const handleOpenHelpTips = () => {
+      setHelpModalTab('tips');
+      setIsHelpModalOpen(true);
+    };
+    window.addEventListener('open-help-tips', handleOpenHelpTips);
+    return () => window.removeEventListener('open-help-tips', handleOpenHelpTips);
+  }, []);
 
   const items = useMemo(() => {
     if (currentUser) {
@@ -156,6 +167,7 @@ export default function HeaderMenu() {
         setDeleteSpaceId(spaceId);
         break;
       case 'Help':
+        setHelpModalTab('support');
         setIsHelpModalOpen(true);
         break;
       case 'Configurations':
@@ -252,6 +264,7 @@ export default function HeaderMenu() {
       <HelpModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
+        initialTab={helpModalTab}
       />
 
       <ConfigModal
