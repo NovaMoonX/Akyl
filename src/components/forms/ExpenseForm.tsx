@@ -64,11 +64,20 @@ export default function ExpenseForm() {
     };
 
     const existingExpense = expensesMap[expenseItemId || ''] ?? {};
-    const expense: Expense = {
-      ...defaultExpense,
-      ...existingExpense,
-      amount: existingExpense.originalAmount || 0,
-    };
+    
+    // For existing items, preserve their exact structure including undefined cadence
+    // For new items, use defaults
+    const expense: Expense = expenseItemId
+      ? {
+          ...existingExpense,
+          amount: existingExpense.originalAmount || 0,
+        }
+      : {
+          ...defaultExpense,
+          ...existingExpense,
+          amount: existingExpense.originalAmount || 0,
+        };
+    
     setFormData(expense);
 
     if (expense?.subCategory) {

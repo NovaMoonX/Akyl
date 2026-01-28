@@ -65,11 +65,20 @@ export default function IncomeForm() {
     };
 
     const existingIncome = incomesMap[incomeItemId || ''] ?? {};
-    const income: Income = {
-      ...defaultIncome,
-      ...existingIncome,
-      amount: existingIncome.originalAmount || 0,
-    };
+    
+    // For existing items, preserve their exact structure including undefined cadence
+    // For new items, use defaults
+    const income: Income = incomeItemId
+      ? {
+          ...existingIncome,
+          amount: existingIncome.originalAmount || 0,
+        }
+      : {
+          ...defaultIncome,
+          ...existingIncome,
+          amount: existingIncome.originalAmount || 0,
+        };
+    
     setFormData(income);
   }, [incomeItemId, incomesMap, activeSheet, configTimeWindow, sheets, lastUsedIncomeSource]);
 
