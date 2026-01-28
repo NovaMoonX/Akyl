@@ -68,6 +68,7 @@ export default function useBudget() {
         income.cadence,
         timeWindow,
         periodConversionMethod || 'exact',
+        income.end,
       );
       return { ...income, amount: adjustedAmount, originalAmount: income.amount };
     });
@@ -104,6 +105,7 @@ export default function useBudget() {
         expense.cadence,
         timeWindow,
         periodConversionMethod || 'exact',
+        expense.end,
       );
       return { ...expense, amount: adjustedAmount, originalAmount: expense.amount };
     });

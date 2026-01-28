@@ -64,11 +64,19 @@ export default function ExpenseForm() {
     };
 
     const existingExpense = expensesMap[expenseItemId || ''] ?? {};
-    const expense: Expense = {
-      ...defaultExpense,
-      ...existingExpense,
-      amount: existingExpense.originalAmount || 0,
-    };
+    
+    // For existing items, preserve their exact structure including undefined cadence
+    // For new items, use defaults
+    const expense: Expense = expenseItemId
+      ? {
+          ...existingExpense,
+          amount: existingExpense.originalAmount || 0,
+        }
+      : {
+          ...defaultExpense,
+          amount: 0,
+        };
+    
     setFormData(expense);
 
     if (expense?.subCategory) {
@@ -97,7 +105,7 @@ export default function ExpenseForm() {
     !formData?.amount ||
     formData?.amount <= 0 ||
     !formData?.category ||
-    !formData?.cadence?.interval ||
+    (formData?.cadence && !formData?.cadence?.interval) || // Only validate cadence if it exists
     !formData?.sheets ||
     formData?.sheets.length === 0;
 
@@ -108,6 +116,7 @@ export default function ExpenseForm() {
       description={formData?.description}
       amount={formData?.amount}
       cadence={formData?.cadence}
+      end={formData?.end}
       notes={formData?.notes}
       sheets={formData?.sheets}
       onFieldChange={(field, val) =>
@@ -119,7 +128,10 @@ export default function ExpenseForm() {
     >
       {/* Category */}
       <div>
-        <label className='font-medium text-sm sm:text-base'>Category</label>
+        <label className='font-medium text-sm sm:text-base'>
+          Category
+          <span className='text-red-500'> *</span>
+        </label>
         <Combobox
           value={formData?.category ?? ''}
           options={categoryOptions}

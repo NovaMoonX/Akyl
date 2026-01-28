@@ -1,5 +1,5 @@
 import { getUserLocale } from '../utils';
-import type { BudgetItemCadence } from './budget.types';
+import type { BudgetItemCadence, BudgetItemEnd } from './budget.types';
 
 export function formatCurrency(amount: number, currency: string): string {
   const locale = getUserLocale();
@@ -117,16 +117,59 @@ function getConversionRatioDayBased(
 
 export function getBudgetItemWindowAmount(
   amount: number,
-  itemCadence: BudgetItemCadence,
+  itemCadence: BudgetItemCadence | undefined,
   window: BudgetItemCadence,
   conversionMethod: 'exact' | 'day-based' = 'exact',
+  end?: BudgetItemEnd,
 ): number {
+  // If no cadence is provided, this is a "once" item - return the amount as-is
+  if (!itemCadence) {
+    return amount;
+  }
+  
   // Get the conversion ratio based on the selected method
   const ratio = conversionMethod === 'exact' 
     ? getConversionRatio(itemCadence.type, window.type)
     : getConversionRatioDayBased(itemCadence.type, window.type);
   
-  // Apply the ratio and adjust for intervals
-  // Formula: amount * ratio * (window.interval / itemCadence.interval)
-  return (amount * ratio * window.interval) / itemCadence.interval;
+  // Calculate how many times the item occurs in the window
+  // Formula: (window duration) / (item interval)
+  const occurrencesInWindow = (ratio * window.interval) / itemCadence.interval;
+  
+  // Apply end conditions if present
+  let effectiveOccurrences = occurrencesInWindow;
+  
+  if (end) {
+    switch (end.type) {
+      case 'occurrences':
+        // Cap the number of occurrences
+        if (end.occurrences) {
+          effectiveOccurrences = Math.min(occurrencesInWindow, end.occurrences);
+        }
+        break;
+        
+      case 'period':
+        // Calculate how many occurrences fit within the end period
+        if (end.period) {
+          const endPeriodRatio = conversionMethod === 'exact'
+            ? getConversionRatio(itemCadence.type, end.period.cadence)
+            : getConversionRatioDayBased(itemCadence.type, end.period.cadence);
+          const maxOccurrencesInPeriod = (endPeriodRatio * end.period.value) / itemCadence.interval;
+          effectiveOccurrences = Math.min(occurrencesInWindow, maxOccurrencesInPeriod);
+        }
+        break;
+        
+      case 'amount':
+        // Cap the total amount
+        if (end.amount) {
+          // Calculate how many occurrences we can afford within the cap
+          const maxOccurrences = end.amount / amount;
+          effectiveOccurrences = Math.min(occurrencesInWindow, maxOccurrences);
+        }
+        break;
+    }
+  }
+  
+  // Return the amount multiplied by effective occurrences
+  return amount * effectiveOccurrences;
 }

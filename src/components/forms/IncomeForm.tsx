@@ -65,11 +65,19 @@ export default function IncomeForm() {
     };
 
     const existingIncome = incomesMap[incomeItemId || ''] ?? {};
-    const income: Income = {
-      ...defaultIncome,
-      ...existingIncome,
-      amount: existingIncome.originalAmount || 0,
-    };
+    
+    // For existing items, preserve their exact structure including undefined cadence
+    // For new items, use defaults
+    const income: Income = incomeItemId
+      ? {
+          ...existingIncome,
+          amount: existingIncome.originalAmount || 0,
+        }
+      : {
+          ...defaultIncome,
+          amount: 0,
+        };
+    
     setFormData(income);
   }, [incomeItemId, incomesMap, activeSheet, configTimeWindow, sheets, lastUsedIncomeSource]);
 
@@ -96,7 +104,7 @@ export default function IncomeForm() {
     formData?.amount <= 0 ||
     !formData?.source ||
     !formData?.type ||
-    !formData?.cadence?.interval ||
+    (formData?.cadence && !formData?.cadence?.interval) || // Only validate cadence if it exists
     !formData?.sheets ||
     formData?.sheets.length === 0;
 
@@ -107,6 +115,7 @@ export default function IncomeForm() {
       description={formData?.description}
       amount={formData?.amount}
       cadence={formData?.cadence}
+      end={formData?.end}
       notes={formData?.notes}
       sheets={formData?.sheets}
       onFieldChange={(field, val) =>
@@ -118,7 +127,10 @@ export default function IncomeForm() {
     >
       {/* Source */}
       <div>
-        <label className='font-medium text-sm sm:text-base'>Source</label>
+        <label className='font-medium text-sm sm:text-base'>
+          Source
+          <span className='text-emerald-500'> *</span>
+        </label>
         <Combobox
           value={formData?.source ?? ''}
           options={sourceOptions}

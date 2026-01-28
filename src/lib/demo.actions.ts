@@ -34,7 +34,8 @@ export function createDemoSpace(userId?: string): Space {
     },
   ];
 
-  // Create incomes with 2 sources (4 total incomes)
+  // Create incomes with 2 sources (4+ total incomes)
+  // Includes examples of different end conditions
   const incomes: Income[] = [
     {
       id: generateId('budget'),
@@ -60,34 +61,38 @@ export function createDemoSpace(userId?: string): Space {
     },
     {
       id: generateId('budget'),
-      label: 'Web Development Projects',
-      description: 'Client work',
-      amount: 2000,
+      label: '6-Month Contract Work',
+      description: 'Fixed-term consulting project',
+      amount: 3000,
       source: 'Freelance',
       type: 'Freelance',
       cadence: { type: 'month', interval: 1 },
-      notes: 'Average monthly income from side projects',
+      end: {
+        type: 'period',
+        period: { value: 6, cadence: 'month' },
+      },
+      notes: 'Contract ends after 6 months',
       sheets: [sheets[0].id],
     },
     {
       id: generateId('budget'),
-      label: 'Dividend Income',
-      description: 'Stock portfolio dividends',
-      amount: 500,
-      source: 'Freelance',
-      type: 'Investment',
-      cadence: { type: 'month', interval: 1 },
-      notes: 'Reinvest half, use half for expenses',
-      sheets: [sheets[0].id],
+      label: 'Tax Refund',
+      description: 'Annual tax return',
+      amount: 2500,
+      source: 'Government',
+      type: 'Other',
+      // No cadence - this is a "once" item
+      notes: 'One-time payment received this year',
+      sheets: [sheets[1].id],
     },
   ];
 
-  // Calculate total monthly income
-  // Monthly: 7500 + 2000 + 500 = 10,000
-  // Annual bonus amortized: 15000 / 12 = 1,250
-  // Total monthly: 11,250
+  // Calculate total monthly income (in monthly view, with end conditions applied)
+  // This demo showcases various end conditions and cadence types
+  // Exact totals depend on time window and end condition enforcement
 
   // Create expenses with 3+ categories (10+ total expenses)
+  // Includes examples of different end conditions
   const expenses: Expense[] = [
     {
       id: generateId('budget'),
@@ -125,13 +130,17 @@ export function createDemoSpace(userId?: string): Space {
 
     {
       id: generateId('budget'),
-      label: 'Car Payment',
-      description: '2022 sedan',
+      label: 'Car Loan Payment',
+      description: '2022 sedan - 24 payments remaining',
       amount: 450,
       category: 'Transportation',
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
-      notes: '24 months remaining',
+      end: {
+        type: 'occurrences',
+        occurrences: 24,
+      },
+      notes: 'Loan ends after 24 more monthly payments',
       sheets: [sheets[0].id],
     },
     {
@@ -184,7 +193,7 @@ export function createDemoSpace(userId?: string): Space {
       id: generateId('budget'),
       label: 'Dining Out & Activities',
       description: 'Restaurants, movies, events',
-      amount: 455,
+      amount: 400,
       category: 'Entertainment',
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
@@ -217,6 +226,21 @@ export function createDemoSpace(userId?: string): Space {
 
     {
       id: generateId('budget'),
+      label: 'Gym Membership (12-month commitment)',
+      description: 'Local fitness center - prepaid annual plan',
+      amount: 50,
+      category: 'Personal Spending',
+      subCategory: '',
+      cadence: { type: 'month', interval: 1 },
+      end: {
+        type: 'period',
+        period: { value: 12, cadence: 'month' },
+      },
+      notes: 'Annual membership ends in 12 months',
+      sheets: [sheets[0].id],
+    },
+    {
+      id: generateId('budget'),
       label: 'Clothing & Personal Care',
       description: 'Clothes, haircuts, toiletries',
       amount: 250,
@@ -228,13 +252,29 @@ export function createDemoSpace(userId?: string): Space {
     },
     {
       id: generateId('budget'),
-      label: 'Gym Membership',
-      description: 'Local fitness center',
-      amount: 150,
+      label: 'New Laptop Purchase',
+      description: 'MacBook Pro for development',
+      amount: 2500,
       category: 'Personal Spending',
       subCategory: '',
+      // No cadence - this is a "once" expense
+      notes: 'One-time purchase this quarter',
+      sheets: [sheets[0].id],
+    },
+
+    {
+      id: generateId('budget'),
+      label: 'Student Loan Payment',
+      description: 'Remaining balance being paid off',
+      amount: 300,
+      category: 'Debt',
+      subCategory: '',
       cadence: { type: 'month', interval: 1 },
-      notes: '24/7 access',
+      end: {
+        type: 'amount',
+        amount: 5000,
+      },
+      notes: 'Paying down $5,000 remaining balance',
       sheets: [sheets[0].id],
     },
 
@@ -242,7 +282,7 @@ export function createDemoSpace(userId?: string): Space {
       id: generateId('budget'),
       label: 'Emergency Fund',
       description: 'Building 6-month cushion',
-      amount: 2000,
+      amount: 1500,
       category: 'Savings',
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
@@ -253,57 +293,36 @@ export function createDemoSpace(userId?: string): Space {
       id: generateId('budget'),
       label: 'Retirement (401k)',
       description: 'Employer match up to 6%',
-      amount: 2000,
+      amount: 1500,
       category: 'Savings',
       subCategory: '',
       cadence: { type: 'month', interval: 1 },
       notes: 'Contributing 10% of salary',
       sheets: [sheets[0].id],
     },
-    {
-      id: generateId('budget'),
-      label: 'Investment Account',
-      description: 'Index funds and ETFs',
-      amount: 1349.02,
-      category: 'Savings',
-      subCategory: '',
-      cadence: { type: 'month', interval: 1 },
-      notes: 'Long-term growth strategy',
-      sheets: [sheets[0].id],
-    },
   ];
 
-  // Budget breakdown using app's calculation method (monthly view):
-  // The app converts all amounts to daily first, then to monthly for display
-  // Daily = amount / cadence_days, Monthly = daily * 30
+  // Budget breakdown - Demo showcases various end conditions:
   // 
-  // INCOME (monthly view):
-  // - Salary: $7,500 (month) = 7500
-  // - Bonus: $15,000 (year) = 15000 / 365 * 30 = 1232.88
-  // - Freelance: $2,000 (month) = 2000
-  // - Dividends: $500 (month) = 500
-  // Total Income: $11,232.88
+  // INCOME examples:
+  // - Regular salary: Monthly recurring (no end)
+  // - Year-end bonus: Annual recurring (no end)
+  // - Contract work: Monthly with period end (6 months)
+  // - Tax refund: One-time "once" item (no cadence)
   // 
-  // EXPENSES (monthly view):
-  // - Rent: $2,500 (month) = 2500
-  // - Utilities: $350 (month) = 350
-  // - Renters Insurance: $350 (year) = 350 / 365 * 30 = 28.77
-  // - Car Payment: $450 (month) = 450
-  // - Gas & Maintenance: $300 (month) = 300
-  // - Auto Insurance: $1,800 (year) = 1800 / 365 * 30 = 147.95
-  // - Weekly Groceries: $200 (week) = 200 / 7 * 30 = 857.14
-  // - Streaming: $45 (month) = 45
-  // - Dining Out: $455 (month) = 455
-  // - Health Insurance: $200 (month) = 200
-  // - Medical Expenses: $150 (month) = 150
-  // - Clothing: $250 (month) = 250
-  // - Gym: $150 (month) = 150
-  // - Emergency Fund: $2,000 (month) = 2000
-  // - Retirement: $2,000 (month) = 2000
-  // - Investment: $1,349.02 (month) = 1349.02 (calculated to balance budget)
-  // Total Expenses: $11,232.88
+  // EXPENSE examples:
+  // - Car loan: Monthly with occurrence end (24 payments)
+  // - Gym membership: Monthly with period end (12 months)
+  // - Student loan: Monthly with amount end ($5,000 total)
+  // - New laptop: One-time "once" item (no cadence)
+  // - Regular expenses: Monthly/weekly/annual recurring (no end)
   //
-  // Net: $11,232.88 - $11,232.88 = $0.00 (balanced budget)
+  // This demo showcases all budget item types:
+  // 1. Recurring with no end (traditional)
+  // 2. Recurring with occurrence cap
+  // 3. Recurring with period cap
+  // 4. Recurring with amount cap
+  // 5. One-time "once" items
 
   const space: Space = {
     id,
