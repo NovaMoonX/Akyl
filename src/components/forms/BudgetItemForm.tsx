@@ -269,7 +269,7 @@ export default function BudgetItemForm({
                   <button
                     type='button'
                     className={join(
-                      'rounded border px-4 py-2 text-sm transition-colors',
+                      'rounded border px-3 py-1.5 text-xs transition-colors sm:text-sm',
                       isOnce
                         ? type === 'expense'
                           ? 'border-red-600 bg-red-500 text-white'
@@ -283,7 +283,7 @@ export default function BudgetItemForm({
                   <button
                     type='button'
                     className={join(
-                      'rounded border px-4 py-2 text-sm transition-colors',
+                      'rounded border px-3 py-1.5 text-xs transition-colors sm:text-sm',
                       !isOnce
                         ? type === 'expense'
                           ? 'border-red-600 bg-red-500 text-white'
