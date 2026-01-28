@@ -45,20 +45,22 @@ export default function BudgetFormModal({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   return (
     <div
       ref={modalRef}
+      role='dialog'
+      aria-modal='true'
+      aria-labelledby={title ? 'modal-title' : undefined}
+      aria-label={!title ? 'Budget form' : undefined}
       className={join(
         'fixed inset-0 z-50 flex flex-col transform transition-transform duration-300 ease-in-out',
         'bg-surface-light dark:bg-surface-dark',
-        isOpen ? 'translate-y-0' : 'translate-y-full'
+        isOpen ? 'translate-y-0' : 'translate-y-full pointer-events-none'
       )}
     >
       {/* Header */}
       <div className='flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700'>
-        {title && <h2 className='text-lg font-semibold'>{title}</h2>}
+        {title && <h2 id='modal-title' className='text-lg font-semibold'>{title}</h2>}
         {!title && <div />}
         <button
           onClick={onClose}

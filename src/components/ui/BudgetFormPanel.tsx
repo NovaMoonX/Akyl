@@ -45,13 +45,14 @@ export default function BudgetFormPanel({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   return (
     <>
       {/* Backdrop overlay */}
       <div
-        className='fixed inset-0 z-40 bg-black/30 transition-opacity duration-300'
+        className={join(
+          'fixed inset-0 z-40 bg-black/30 transition-opacity duration-300',
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        )}
         onClick={onClose}
         aria-hidden='true'
       />
@@ -59,16 +60,20 @@ export default function BudgetFormPanel({
       {/* Side panel */}
       <div
         ref={panelRef}
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby={title ? 'panel-title' : undefined}
+        aria-label={!title ? 'Budget form' : undefined}
         className={join(
           'fixed right-0 top-0 z-50 h-full w-full max-w-lg transform transition-transform duration-300 ease-in-out',
           'bg-surface-light dark:bg-surface-dark shadow-2xl',
           'flex flex-col',
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+          isOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'
         )}
       >
         {/* Header */}
         <div className='flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700'>
-          {title && <h2 className='text-xl font-semibold'>{title}</h2>}
+          {title && <h2 id='panel-title' className='text-xl font-semibold'>{title}</h2>}
           {!title && <div />}
           <button
             onClick={onClose}
