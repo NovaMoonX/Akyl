@@ -141,7 +141,7 @@ export default function HeaderBar() {
       </div>
 
       <BudgetFormPanel
-        isOpen={Boolean(searchParams.get(URL_PARAM_FORM))}
+        isOpen={searchParams.get(URL_PARAM_FORM) === 'income' || searchParams.get(URL_PARAM_FORM) === 'expense'}
         onClose={() => handleCloseForm()}
       >
         {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}

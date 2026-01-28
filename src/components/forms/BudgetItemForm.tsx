@@ -186,7 +186,6 @@ export default function BudgetItemForm({
               value={label}
               onChange={(e) => onFieldChange('label', e.target.value)}
               placeholder={nameInputPlaceholder}
-              autoFocus={true}
             />
 
             {!showDescription && (

@@ -45,6 +45,20 @@ export default function BudgetFormPanel({
     };
   }, [isOpen]);
 
+  // Focus first input after animation completes
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const timer = setTimeout(() => {
+      const firstInput = panelRef.current?.querySelector('input[type="text"]') as HTMLInputElement;
+      if (firstInput) {
+        firstInput.focus();
+      }
+    }, 300); // Wait for animation to complete
+
+    return () => clearTimeout(timer);
+  }, [isOpen]);
+
   return (
     <>
       {/* Backdrop overlay */}

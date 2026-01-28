@@ -45,6 +45,20 @@ export default function BudgetFormModal({
     };
   }, [isOpen]);
 
+  // Focus first input after animation completes
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const timer = setTimeout(() => {
+      const firstInput = modalRef.current?.querySelector('input[type="text"]') as HTMLInputElement;
+      if (firstInput) {
+        firstInput.focus();
+      }
+    }, 300); // Wait for animation to complete
+
+    return () => clearTimeout(timer);
+  }, [isOpen]);
+
   return (
     <div
       ref={modalRef}
@@ -59,7 +73,7 @@ export default function BudgetFormModal({
       )}
     >
       {/* Header */}
-      <div className='flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700'>
+      <div className='flex items-center justify-between border-b border-gray-200 px-4 py-2 dark:border-gray-700'>
         {title && <h2 id='modal-title' className='text-lg font-semibold'>{title}</h2>}
         {!title && <div />}
         <button
@@ -72,7 +86,7 @@ export default function BudgetFormModal({
       </div>
 
       {/* Content - scrollable */}
-      <div className='flex-1 overflow-y-auto px-4 py-4'>
+      <div className='flex-1 overflow-y-auto px-4 py-4 pb-8'>
         {children}
       </div>
     </div>

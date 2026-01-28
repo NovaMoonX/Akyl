@@ -64,7 +64,7 @@ export default function HeaderBarMobile() {
       </div>
 
       <BudgetFormModal
-        isOpen={Boolean(searchParams.get(URL_PARAM_FORM))}
+        isOpen={searchParams.get(URL_PARAM_FORM) === 'income' || searchParams.get(URL_PARAM_FORM) === 'expense'}
         onClose={() => handleCloseForm()}
       >
         {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}
