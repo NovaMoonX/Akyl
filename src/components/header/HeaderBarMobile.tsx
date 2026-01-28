@@ -7,7 +7,7 @@ import { useSpace } from '../../store';
 import { setTabTitle } from '../../utils';
 import ExpenseForm from '../forms/ExpenseForm';
 import IncomeForm from '../forms/IncomeForm';
-import Dropdown from '../ui/Dropdown';
+import BudgetFormModal from '../ui/BudgetFormModal';
 
 export default function HeaderBarMobile() {
   const [title] = useSpace(useShallow((state) => [state.space.title]));
@@ -63,17 +63,13 @@ export default function HeaderBarMobile() {
         )}
       </div>
 
-      <Dropdown
+      <BudgetFormModal
         isOpen={Boolean(searchParams.get(URL_PARAM_FORM))}
         onClose={() => handleCloseForm()}
-        className='right-1 left-1 h-[calc(100svh-4rem)] w-[calc(100dvw-0.5rem)] max-w-screen overflow-auto !p-6'
-        closeOnOverlayClick={false}
       >
-        <div className='overflow-hidden'>
-          {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}
-          {searchParams.get(URL_PARAM_FORM) === 'expense' && <ExpenseForm />}
-        </div>
-      </Dropdown>
+        {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}
+        {searchParams.get(URL_PARAM_FORM) === 'expense' && <ExpenseForm />}
+      </BudgetFormModal>
     </>
   );
 }
