@@ -74,8 +74,7 @@ export default function ExpenseForm() {
         }
       : {
           ...defaultExpense,
-          ...existingExpense,
-          amount: existingExpense.originalAmount || 0,
+          amount: 0,
         };
     
     setFormData(expense);

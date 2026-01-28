@@ -75,8 +75,7 @@ export default function IncomeForm() {
         }
       : {
           ...defaultIncome,
-          ...existingIncome,
-          amount: existingIncome.originalAmount || 0,
+          amount: 0,
         };
     
     setFormData(income);
