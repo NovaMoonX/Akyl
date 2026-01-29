@@ -12,7 +12,7 @@ import { useSpace } from '../../store';
 import { join, setTabTitle } from '../../utils';
 import ExpenseForm from '../forms/ExpenseForm';
 import IncomeForm from '../forms/IncomeForm';
-import Dropdown from '../ui/Dropdown';
+import BudgetFormPanel from '../ui/BudgetFormPanel';
 
 export default function HeaderBar() {
   const [title, description, pinned, cashFlowVerbiage] = useSpace(
@@ -140,15 +140,13 @@ export default function HeaderBar() {
         )}
       </div>
 
-      <Dropdown
-        isOpen={Boolean(searchParams.get(URL_PARAM_FORM))}
+      <BudgetFormPanel
+        isOpen={searchParams.get(URL_PARAM_FORM) === 'income' || searchParams.get(URL_PARAM_FORM) === 'expense'}
         onClose={() => handleCloseForm()}
-        className='right-1 w-fit max-w-md !p-6 -translate-y-14'
-        closeOnOverlayClick={false}
       >
         {searchParams.get(URL_PARAM_FORM) === 'income' && <IncomeForm />}
         {searchParams.get(URL_PARAM_FORM) === 'expense' && <ExpenseForm />}
-      </Dropdown>
+      </BudgetFormPanel>
     </>
   );
 }

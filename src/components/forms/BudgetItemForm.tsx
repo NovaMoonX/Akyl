@@ -160,7 +160,6 @@ export default function BudgetItemForm({
   return (
     <>
       <form
-        className='max-h-svh'
         onSubmit={(e) => {
           e.preventDefault();
           handleSave();
@@ -187,7 +186,6 @@ export default function BudgetItemForm({
               value={label}
               onChange={(e) => onFieldChange('label', e.target.value)}
               placeholder={nameInputPlaceholder}
-              autoFocus={true}
             />
 
             {!showDescription && (
