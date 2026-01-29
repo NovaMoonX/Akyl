@@ -54,7 +54,7 @@ export default function BudgetFormModal({
       if (firstInput) {
         firstInput.focus();
       }
-    }, 400); // Wait for animation to complete
+    }, 350); // Wait for animation to complete
 
     return () => clearTimeout(timer);
   }, [isOpen]);
