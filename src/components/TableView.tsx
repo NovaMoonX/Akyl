@@ -3,10 +3,12 @@ import {
   ChevronRightIcon,
   EyeIcon,
   EyeClosedIcon,
+  PencilIcon,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
-import { CashFlowVerbiagePairs, formatCurrency } from '../lib';
+import { CashFlowVerbiagePairs, formatCurrency, URL_PARAM_FORM, URL_PARAM_ID } from '../lib';
 import { useSpace } from '../store';
 import useBudget from '../hooks/useBudget';
 import HeaderBarTimeWindow from './header/HeaderBarTimeWindow';
@@ -39,6 +41,8 @@ export default function TableView() {
     getBudgetItem,
   } = useBudget();
 
+  const [, setSearchParams] = useSearchParams();
+
   const netIncome = incomesTotal - expensesTotal;
   const netEnabledIncome = incomesEnabledTotal - expensesEnabledTotal;
 
@@ -57,6 +61,11 @@ export default function TableView() {
     field: 'label' | 'amount';
   } | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+
+  // Open full edit form for a budget item
+  const handleEditItem = (id: string, type: 'income' | 'expense') => {
+    setSearchParams({ [URL_PARAM_FORM]: type, [URL_PARAM_ID]: id });
+  };
 
   // Handle double click to start editing
   const handleDoubleClick = (
@@ -244,8 +253,7 @@ export default function TableView() {
 
           {/* Info note about editing */}
           <div className='mb-2 sm:mb-3 rounded-lg bg-blue-50 px-4 pt-3.5 pb-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 text-center'>
-            💡 <strong>Tip:</strong> Double-tap any budget item's name or value
-            to edit it
+            💡 <strong>Tip:</strong> Tap <PencilIcon className='inline size-3.5' aria-hidden='true' /> to fully edit a budget item, or double-tap a name or value to quickly update it
           </div>
 
           <div className='bg-surface-light dark:bg-surface-dark mb-6 overflow-hidden rounded-lg shadow-lg'>
@@ -418,6 +426,17 @@ export default function TableView() {
                                   ) : (
                                     <EyeIcon className='size-3.5 text-gray-500 dark:text-gray-400' />
                                   )}
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditItem(income.id, 'income');
+                                  }}
+                                  className='rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                  aria-label='Edit income item'
+                                  title='Edit income item'
+                                >
+                                  <PencilIcon className='size-3.5 text-gray-500 dark:text-gray-400' />
                                 </button>
                               </div>
                             );
@@ -613,6 +632,17 @@ export default function TableView() {
                                   ) : (
                                     <EyeIcon className='size-3.5 text-gray-500 dark:text-gray-400' />
                                   )}
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditItem(expense.id, 'expense');
+                                  }}
+                                  className='rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                  aria-label='Edit expense item'
+                                  title='Edit expense item'
+                                >
+                                  <PencilIcon className='size-3.5 text-gray-500 dark:text-gray-400' />
                                 </button>
                               </div>
                             );

@@ -5,7 +5,7 @@ import {
   ReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { Header, TableView } from '../components';
@@ -83,6 +83,14 @@ export default function Flow() {
   const currentHideSources = activeSheetObj?.hideSources ?? hideSources;
   const currentHideCategories = activeSheetObj?.hideCategories ?? hideCategories;
   const currentListExpenses = activeSheetObj?.listExpenses ?? listExpenses;
+
+  // Auto-switch to table view on mobile devices
+  useEffect(() => {
+    if (window.innerWidth < 640) {
+      setViewMode('table');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Keyboard shortcut handlers
   const handleToggleSources = useCallback(() => {
