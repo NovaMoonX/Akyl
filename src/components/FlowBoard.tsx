@@ -20,6 +20,7 @@ import BudgetNode from './nodes/BudgetNode';
 import CoreNode from './nodes/CoreNode';
 import L1Node from './nodes/L1Node';
 import FlowKeyboardShortcuts from './FlowKeyboardShortcuts';
+import FlowCaptureThumbnail from './FlowCaptureThumbnail';
 
 const nodeTypes = {
   core: CoreNode,
@@ -254,6 +255,7 @@ export default function Flow() {
 
   return (
     <div id='app' className='relative h-dvh w-dvw'>
+      {showLoadScreen && <LoadScreen />}
       {/* all viewport props: https://reactflow.dev/api-reference/react-flow#viewport-props */}
       <ReactFlow
         nodes={nodes}
@@ -274,8 +276,8 @@ export default function Flow() {
       >
         {/* Keyboard shortcuts that require ReactFlow instance */}
         <FlowKeyboardShortcuts enabled={!showLoadScreen} />
+        <FlowCaptureThumbnail />
         
-        {showLoadScreen && <LoadScreen />}
         {!showLoadScreen && (
           <>
             <Header />
