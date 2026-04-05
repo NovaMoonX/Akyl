@@ -64,9 +64,6 @@ export default function useCaptureThumbnail() {
           userId: currentUser.uid,
           spaceId,
           dataUrl,
-        }).then((downloadUrl) => {
-          // Cache the remote URL so we can detect freshness later
-          localStorage.setItem(`${THUMBNAIL_KEY(spaceId)}_url`, downloadUrl);
         }).catch((err) => {
           // Non-fatal: thumbnail still available from localStorage
           console.warn('Failed to upload thumbnail:', err);

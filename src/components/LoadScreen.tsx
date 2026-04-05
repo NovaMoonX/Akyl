@@ -118,7 +118,7 @@ function SpaceCard({ space, onPin, onDelete }: SpaceCardProps) {
       </div>
 
       {/* Action buttons */}
-      <div className='absolute top-2 right-2 flex gap-1 opacity-0 sm:group-hover:opacity-100 opacity-100 sm:opacity-0 transition-opacity'>
+      <div className='absolute top-2 right-2 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity'>
         <button
           type='button'
           aria-label={space.pinned ? 'Unpin Space' : 'Pin Space'}
@@ -424,7 +424,7 @@ export default function LoadScreen() {
                     No spaces yet
                   </h3>
                   <p className='text-gray-400 dark:text-gray-500 text-sm mb-6 max-w-xs'>
-                    Create your first space to start visualising your finances.
+                    Create your first space to start visualizing your finances.
                   </p>
                   <button
                     type='button'
