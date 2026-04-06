@@ -16,7 +16,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { signOutUser } from '../firebase';
-import { THUMBNAIL_KEY, THUMBNAIL_KEY_DARK, THUMBNAIL_KEY_LIGHT } from '../hooks/useCaptureThumbnail';
+import {
+  THUMBNAIL_KEY,
+  THUMBNAIL_KEY_DARK,
+  THUMBNAIL_KEY_LIGHT,
+} from '../hooks/useCaptureThumbnail';
 import useBrowserSpaces from '../hooks/useBrowserSpaces';
 import useSyncAllSpaces from '../hooks/useSyncAllSpaces';
 import {
