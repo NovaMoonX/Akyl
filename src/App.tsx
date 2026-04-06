@@ -1,12 +1,13 @@
-import '@xyflow/react/dist/base.css';
 import './App.css';
+import { Route, Routes } from 'react-router';
 import { FlowBoard } from './components';
-import { useInitSpace, usePersistCloud, usePersistLocally } from './hooks';
+import LoadScreen from './components/LoadScreen';
 
 export default function App() {
-  useInitSpace();
-  usePersistLocally();
-  usePersistCloud();
-
-  return <FlowBoard />;
+  return (
+    <Routes>
+      <Route path='/' element={<LoadScreen />} />
+      <Route path='/:spaceId' element={<FlowBoard />} />
+    </Routes>
+  );
 }

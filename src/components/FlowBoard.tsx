@@ -9,13 +9,12 @@ import { useCallback, useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { Header, TableView } from '../components';
-import { useInitSpace, useKeyboardShortcuts, useSpaceFlow } from '../hooks';
+import { useInitSpace, useKeyboardShortcuts, usePersistCloud, usePersistLocally, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT, URL_PARAM_FORM } from '../lib';
 import { useSpace } from '../store';
 import BottomBar from './BottomBar';
 import { AnimatedInflowEdge, AnimatedOutflowEdge } from './edges';
 import { HiddenNodeEdge } from './edges/HiddenNodeEdge';
-import LoadScreen from './LoadScreen';
 import BudgetNode from './nodes/BudgetNode';
 import CoreNode from './nodes/CoreNode';
 import L1Node from './nodes/L1Node';
@@ -52,7 +51,10 @@ const BackgroundVariantClasses = {
 };
 
 export default function Flow() {
-  const { showLoadScreen } = useInitSpace();
+  useInitSpace();
+  usePersistLocally();
+  usePersistCloud();
+
   const backgroundPattern = useSpace(
     useShallow((state) => state?.space?.config?.backgroundPattern),
   );
@@ -251,11 +253,10 @@ export default function Flow() {
       handler: handlePreviousSheet,
       description: 'Previous sheet',
     },
-  ], !showLoadScreen);
+  ], true);
 
   return (
     <div id='app' className='relative h-dvh w-dvw'>
-      {showLoadScreen && <LoadScreen />}
       {/* all viewport props: https://reactflow.dev/api-reference/react-flow#viewport-props */}
       <ReactFlow
         nodes={nodes}
@@ -275,22 +276,18 @@ export default function Flow() {
         minZoom={0.15} // default is 0.5
       >
         {/* Keyboard shortcuts that require ReactFlow instance */}
-        <FlowKeyboardShortcuts enabled={!showLoadScreen} />
+        <FlowKeyboardShortcuts enabled={true} />
         <FlowCaptureThumbnail />
-        
-        {!showLoadScreen && (
-          <>
-            <Header />
-            <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 text-xl font-black sm:p-3 sm:text-4xl'>
-              Akyl
-            </h1>
 
-            <BottomBar />
-            {viewMode === 'table' && <TableView />}
-            {viewMode === 'flowchart' && (
-              <Controls position='bottom-right' showInteractive={false} />
-            )}
-          </>
+        <Header />
+        <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 text-xl font-black sm:p-3 sm:text-4xl'>
+          Akyl
+        </h1>
+
+        <BottomBar />
+        {viewMode === 'table' && <TableView />}
+        {viewMode === 'flowchart' && (
+          <Controls position='bottom-right' showInteractive={false} />
         )}
         {backgroundPattern !== NO_BACKGROUND_VARIANT && (
           <Background
