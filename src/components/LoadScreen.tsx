@@ -81,7 +81,7 @@ function SpaceCard({ space, viewMode, onPin, onDelete }: SpaceCardProps) {
   if (viewMode === 'list') {
     return (
       <div className='group relative flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-sm hover:border-gray-300 dark:hover:border-gray-600 transition-all bg-white dark:bg-gray-900 px-4 py-3'>
-        <a href={`/${space.id}`} className='flex items-center justify-center shrink-0'>
+        <a href={`/${space.id}`} className='flex items-center justify-center shrink-0' aria-label={`Open ${space.title || 'Untitled Space'}`}>
           <LayoutDashboardIcon className='size-5 text-gray-400 dark:text-gray-500' />
         </a>
 
@@ -142,7 +142,7 @@ function SpaceCard({ space, viewMode, onPin, onDelete }: SpaceCardProps) {
   return (
     <div className='group relative rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all bg-white dark:bg-gray-900'>
       {/* Card icon area */}
-      <a href={`/${space.id}`} className='flex items-center justify-center py-6 bg-gray-50 dark:bg-gray-800/50'>
+      <a href={`/${space.id}`} className='flex items-center justify-center py-6 bg-gray-50 dark:bg-gray-800/50' aria-label={`Open ${space.title || 'Untitled Space'}`}>
         <LayoutDashboardIcon className='size-12 text-gray-300 dark:text-gray-600' />
       </a>
 
@@ -300,6 +300,10 @@ export default function LoadScreen() {
 
   const hasSpaces = spaces.length > 0;
   const hasResults = pinnedSpaces.length > 0 || unpinnedSpaces.length > 0;
+  const spacesContainerClass =
+    viewMode === 'grid'
+      ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
+      : 'flex flex-col gap-2';
 
   return (
     <>
@@ -457,7 +461,7 @@ export default function LoadScreen() {
                   <h2 className='text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3'>
                     Pinned
                   </h2>
-                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4' : 'flex flex-col gap-2'}>
+                  <div className={spacesContainerClass}>
                     {pinnedSpaces.map((space) => (
                       <SpaceCard
                         key={space.id}
@@ -477,7 +481,7 @@ export default function LoadScreen() {
                   <h2 className='text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3'>
                     {pinnedSpaces.length > 0 ? 'Other Spaces' : 'Recent'}
                   </h2>
-                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4' : 'flex flex-col gap-2'}>
+                  <div className={spacesContainerClass}>
                     {unpinnedSpaces.map((space) => (
                       <SpaceCard
                         key={space.id}
