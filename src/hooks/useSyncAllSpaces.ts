@@ -12,10 +12,12 @@ export default function useSyncAllSpaces() {
   const { currentUser, cryptoKey } = useAuth();
   const { spaceId: urlSpaceId } = useURL();
   const [spaces, setSpaces] = useState<Space[]>();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!currentUser?.uid) {
       setSpaces([]);
+      setLoading(false);
       return;
     }
 
@@ -25,11 +27,14 @@ export default function useSyncAllSpaces() {
       return;
     }
 
+    setLoading(true);
+
     const handleFetchAllSpaces = async (lastSync: number) => {
       const localLastSyncItem = localStorage.getItem(ALL_SPACES_LAST_SYNC_KEY);
       const localLastSync = localLastSyncItem ? Number(localLastSyncItem) : 0;
 
       if (localLastSync >= lastSync) {
+        setLoading(false);
         return;
       }
 
@@ -38,6 +43,7 @@ export default function useSyncAllSpaces() {
         cryptoKey,
       });
       setSpaces(fetchedSpaces);
+      setLoading(false);
     };
 
     const unsubscribe = listenForChanges({
@@ -60,5 +66,5 @@ export default function useSyncAllSpaces() {
     }, {});
   }, [spaces]);
 
-  return { spaces: spaces ?? [], spacesMap };
+  return { spaces: spaces ?? [], spacesMap, loading };
 }

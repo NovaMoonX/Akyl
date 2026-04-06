@@ -1,4 +1,5 @@
 export { default as useBudget } from './useBudget';
+export { default as useCaptureThumbnail } from './useCaptureThumbnail';
 export { default as useEdgeAnimation } from './useEdgeAnimation';
 export { default as useInitSpace } from './useInitSpace';
 export { default as usePersistCloud } from './usePersistCloud';
