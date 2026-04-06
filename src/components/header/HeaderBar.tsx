@@ -17,10 +17,10 @@ import BudgetFormPanel from '../ui/BudgetFormPanel';
 export default function HeaderBar() {
   const [title, description, pinned, cashFlowVerbiage] = useSpace(
     useShallow((state) => [
-      state.space.title,
-      state.space.description,
-      state.space.pinned,
-      state.space.config.cashFlowVerbiage,
+      state?.space?.title,
+      state?.space?.description,
+      state?.space?.pinned,
+      state?.space?.config?.cashFlowVerbiage,
     ]),
   );
   const { updateSpace } = useSpace();
@@ -28,6 +28,10 @@ export default function HeaderBar() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const verbiage = cashFlowVerbiage
+    ? CashFlowVerbiagePairs[cashFlowVerbiage]
+    : CashFlowVerbiagePairs['default'];
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
@@ -97,16 +101,16 @@ export default function HeaderBar() {
             <button
               onClick={() => handleOpenForm('income')}
               className='text-surface-light not-dark:bg-inflow not-dark:hover:bg-inflow-darker dark:text-inflow-darker hover:dark:border-inflow-darker rounded border border-transparent px-4 py-2.5 whitespace-nowrap transition'
-              title={`Add ${CashFlowVerbiagePairs[cashFlowVerbiage].in} (Ctrl+I)`}
+              title={`Add ${verbiage.in} (Ctrl+I)`}
             >
-              add {CashFlowVerbiagePairs[cashFlowVerbiage].in}
+              add {verbiage.in}
             </button>
             <button
               onClick={() => handleOpenForm('expense')}
               className='text-surface-light not-dark:bg-outflow not-dark:hover:bg-outflow-darker dark:text-outflow-darker hover:dark:border-outflow-darker rounded border border-transparent px-4 py-2.5 whitespace-nowrap transition'
-              title={`Add ${CashFlowVerbiagePairs[cashFlowVerbiage].out} (Ctrl+E)`}
+              title={`Add ${verbiage.out} (Ctrl+E)`}
             >
-              add {CashFlowVerbiagePairs[cashFlowVerbiage].out}
+              add {verbiage.out}
             </button>
           </div>
         </div>

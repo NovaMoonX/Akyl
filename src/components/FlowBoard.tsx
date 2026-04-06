@@ -19,7 +19,6 @@ import BudgetNode from './nodes/BudgetNode';
 import CoreNode from './nodes/CoreNode';
 import L1Node from './nodes/L1Node';
 import FlowKeyboardShortcuts from './FlowKeyboardShortcuts';
-import FlowCaptureThumbnail from './FlowCaptureThumbnail';
 
 const nodeTypes = {
   core: CoreNode,
@@ -277,7 +276,6 @@ export default function Flow() {
       >
         {/* Keyboard shortcuts that require ReactFlow instance */}
         <FlowKeyboardShortcuts enabled={true} />
-        <FlowCaptureThumbnail />
 
         <Header />
         <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 text-xl font-black sm:p-3 sm:text-4xl'>

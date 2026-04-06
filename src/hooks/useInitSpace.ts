@@ -69,6 +69,16 @@ export default function useInitSpace() {
       setSpace(space);
       setShowLoadScreen(false);
 
+      // Sync the space's saved theme to localStorage and document so the
+      // flow board renders with the correct theme (light/dark).
+      if (space.config?.theme) {
+        localStorage.setItem('theme', space.config.theme);
+        document.documentElement.classList.toggle(
+          'dark',
+          space.config.theme === 'dark',
+        );
+      }
+
       if (space.title) {
         setTabTitle(space.title);
       }
