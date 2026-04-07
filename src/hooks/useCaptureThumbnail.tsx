@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../contexts/AuthContext';
 import { uploadThumbnail } from '../firebase';
+import type { Theme } from '../lib';
 import { useSpace } from '../store';
 
 const THUMBNAIL_WIDTH = 480;
@@ -14,7 +15,10 @@ const MAX_ZOOM = 2;
 // Delay after space changes before capturing (ms)
 const CAPTURE_DELAY = 2500;
 
-export const THUMBNAIL_KEY = (spaceId: string) => `${spaceId}_thumbnail`;
+export const THUMBNAIL_KEY_LIGHT = (spaceId: string) =>
+  `${spaceId}_thumbnail_light`;
+export const THUMBNAIL_KEY_DARK = (spaceId: string) =>
+  `${spaceId}_thumbnail_dark`;
 
 export default function useCaptureThumbnail() {
   const { getNodes } = useReactFlow();
@@ -23,28 +27,18 @@ export default function useCaptureThumbnail() {
     useShallow((state) => [state?.space?.id, state?.space?.metadata?.updatedAt]),
   );
 
-  // Track the last updatedAt for which we captured the thumbnail so we only
+  // Track the last updatedAt for which we captured thumbnails so we only
   // capture once per save, not on every re-render.
   const lastCapturedAt = useRef<number | undefined>(undefined);
 
-  /**
-   * Capture a single transparent-background thumbnail.
-   * Because the background is transparent the same image works on both
-   * light and dark homepage cards without any theme toggling.
-   */
-  const captureThumbnail = useCallback(async () => {
-    if (!spaceId) return;
+  const captureSingleThumbnail = useCallback(
+    async (
+      viewportEl: HTMLElement,
+      nodesBounds: ReturnType<typeof getNodesBounds>,
+      targetTheme: Theme,
+    ) => {
+      if (!spaceId) return;
 
-    const nodes = getNodes();
-    if (!nodes.length) return;
-
-    const viewportEl = document.querySelector(
-      '.react-flow__viewport',
-    ) as HTMLElement;
-    if (!viewportEl) return;
-
-    try {
-      const nodesBounds = getNodesBounds(nodes);
       const viewport = getViewportForBounds(
         nodesBounds,
         THUMBNAIL_WIDTH,
@@ -55,7 +49,7 @@ export default function useCaptureThumbnail() {
       );
 
       const dataUrl = await toPng(viewportEl, {
-        backgroundColor: 'transparent',
+        backgroundColor: targetTheme === 'dark' ? '#1f2937' : '#f0fdfa',
         width: THUMBNAIL_WIDTH,
         height: THUMBNAIL_HEIGHT,
         style: {
@@ -65,8 +59,13 @@ export default function useCaptureThumbnail() {
         },
       });
 
+      const storageKey =
+        targetTheme === 'dark'
+          ? THUMBNAIL_KEY_DARK(spaceId)
+          : THUMBNAIL_KEY_LIGHT(spaceId);
+
       // Store in localStorage for instant access on the homepage.
-      localStorage.setItem(THUMBNAIL_KEY(spaceId), dataUrl);
+      localStorage.setItem(storageKey, dataUrl);
 
       // Upload to Firebase Storage for authenticated users.
       if (currentUser?.uid && cryptoKey) {
@@ -74,15 +73,47 @@ export default function useCaptureThumbnail() {
           userId: currentUser.uid,
           spaceId,
           dataUrl,
+          theme: targetTheme,
         }).catch((err) => {
           // Non-fatal: thumbnail still available from localStorage.
           console.warn('Failed to upload thumbnail:', err);
         });
       }
-    } catch (err) {
-      console.warn('Failed to capture thumbnail:', err);
+    },
+    [spaceId, currentUser?.uid, cryptoKey],
+  );
+
+  /**
+   * Capture both light and dark thumbnails from the dedicated hidden off-screen
+   * ReactFlow instances rendered by FlowHiddenCapture.  Each hidden instance has
+   * the correct theme class applied to its wrapper so CSS dark: utilities compute
+   * the right colours — no document-level theme toggling, no flash.
+   */
+  const captureBothThumbnails = useCallback(async () => {
+    if (!spaceId) return;
+
+    const nodes = getNodes();
+    if (!nodes.length) return;
+
+    const nodesBounds = getNodesBounds(nodes);
+
+    for (const targetTheme of ['light', 'dark'] as Theme[]) {
+      try {
+        const viewportEl = document.querySelector(
+          `#hidden-flow-${targetTheme} .react-flow__viewport`,
+        ) as HTMLElement | null;
+
+        if (!viewportEl) {
+          console.warn(`Hidden flow viewport for "${targetTheme}" not found — skipping`);
+          continue;
+        }
+
+        await captureSingleThumbnail(viewportEl, nodesBounds, targetTheme);
+      } catch (err) {
+        console.warn(`Failed to capture ${targetTheme} thumbnail:`, err);
+      }
     }
-  }, [getNodes, spaceId, currentUser?.uid, cryptoKey]);
+  }, [getNodes, spaceId, captureSingleThumbnail]);
 
   // Schedule a capture whenever the space data changes (updatedAt bumps).
   useEffect(() => {
@@ -91,9 +122,9 @@ export default function useCaptureThumbnail() {
 
     const timer = setTimeout(() => {
       lastCapturedAt.current = updatedAt;
-      captureThumbnail();
+      captureBothThumbnails();
     }, CAPTURE_DELAY);
 
     return () => clearTimeout(timer);
-  }, [spaceId, updatedAt, captureThumbnail]);
+  }, [spaceId, updatedAt, captureBothThumbnails]);
 }

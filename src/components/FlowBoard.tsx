@@ -20,6 +20,7 @@ import CoreNode from './nodes/CoreNode';
 import L1Node from './nodes/L1Node';
 import FlowKeyboardShortcuts from './FlowKeyboardShortcuts';
 import FlowCaptureThumbnail from './FlowCaptureThumbnail';
+import FlowHiddenCapture from './FlowHiddenCapture';
 
 const nodeTypes = {
   core: CoreNode,
@@ -257,6 +258,9 @@ export default function Flow() {
 
   return (
     <div id='app' className='relative h-dvh w-dvw bg-background-light dark:bg-background-dark'>
+      {/* Hidden off-screen ReactFlow instances for dual-theme thumbnail capture */}
+      <FlowHiddenCapture nodes={nodes} edges={edges} />
+
       {/* all viewport props: https://reactflow.dev/api-reference/react-flow#viewport-props */}
       <ReactFlow
         nodes={nodes}
