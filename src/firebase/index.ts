@@ -8,6 +8,9 @@ export { default as updateDatabase } from './db/updateDatabase';
 export { default as pullEncryptionKey } from './firestore/pullEncryptionKey';
 export { default as pushEncryptionKey } from './firestore/pushEncryptionKey';
 
+// Storage
+export { default as uploadThumbnail } from './storage/uploadThumbnail';
+
 // Auth
 export { default as authWithGoogle } from './auth/authWithGoogle';
 export { default as logIn } from './auth/logIn';

@@ -18,6 +18,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { signOutUser } from '../firebase';
+import {
+  THUMBNAIL_KEY_DARK,
+  THUMBNAIL_KEY_LIGHT,
+} from '../hooks/useCaptureThumbnail';
 import useBrowserSpaces from '../hooks/useBrowserSpaces';
 import useSyncAllSpaces from '../hooks/useSyncAllSpaces';
 import {
@@ -54,6 +58,7 @@ function formatRelativeTime(timestamp: number): string {
 function SpaceCardSkeleton() {
   return (
     <div className='animate-pulse rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden'>
+      <div className='aspect-video bg-gray-200 dark:bg-gray-700' />
       <div className='p-3 space-y-2'>
         <div className='h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4' />
         <div className='h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/2' />
@@ -78,6 +83,27 @@ interface SpaceCardProps {
 }
 
 function SpaceCard({ space, viewMode, onPin, onDelete }: SpaceCardProps) {
+  const { theme } = useTheme();
+  const [thumbnail, setThumbnail] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Prefer the key that matches the active theme; fall back to the other variant.
+    const preferred =
+      theme === 'dark'
+        ? THUMBNAIL_KEY_DARK(space.id)
+        : THUMBNAIL_KEY_LIGHT(space.id);
+    const fallback =
+      theme === 'dark'
+        ? THUMBNAIL_KEY_LIGHT(space.id)
+        : THUMBNAIL_KEY_DARK(space.id);
+
+    const stored =
+      localStorage.getItem(preferred) ??
+      localStorage.getItem(fallback);
+
+    setThumbnail(stored);
+  }, [space.id, theme]);
+
   if (viewMode === 'list') {
     return (
       <div className='group relative flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-sm hover:border-gray-300 dark:hover:border-gray-600 transition-all bg-white dark:bg-gray-900 px-4 py-3'>
@@ -141,9 +167,20 @@ function SpaceCard({ space, viewMode, onPin, onDelete }: SpaceCardProps) {
 
   return (
     <div className='group relative rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all bg-white dark:bg-gray-900'>
-      {/* Card icon area */}
-      <a href={`/${space.id}`} className='flex items-center justify-center py-6 bg-gray-50 dark:bg-gray-800/50' aria-label={`Open ${space.title || 'Untitled Space'}`}>
-        <LayoutDashboardIcon className='size-12 text-gray-300 dark:text-gray-600' />
+      {/* Thumbnail */}
+      <a href={`/${space.id}`} className='block aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden' aria-label={`Open ${space.title || 'Untitled Space'}`}>
+        {thumbnail ? (
+          <img
+            src={thumbnail}
+            alt={space.title || 'Untitled Space'}
+            className='w-full h-full object-cover'
+            loading='lazy'
+          />
+        ) : (
+          <div className='flex items-center justify-center h-full'>
+            <LayoutDashboardIcon className='size-12 text-gray-300 dark:text-gray-600' />
+          </div>
+        )}
       </a>
 
       {/* Card footer */}
