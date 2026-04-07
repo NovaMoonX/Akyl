@@ -85,9 +85,9 @@ export default function useCaptureThumbnail() {
 
   /**
    * Capture both light and dark thumbnails from the dedicated hidden off-screen
-   * ReactFlow instances rendered by FlowHiddenCapture.  Each hidden instance has
+   * ReactFlow instances rendered by FlowHiddenCapture. Each hidden instance has
    * the correct theme class applied to its wrapper so CSS dark: utilities compute
-   * the right colours — no document-level theme toggling, no flash.
+   * the right colours - no document-level theme toggling, no flash.
    */
   const captureBothThumbnails = useCallback(async () => {
     if (!spaceId) return;

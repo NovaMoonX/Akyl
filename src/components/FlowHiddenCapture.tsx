@@ -33,7 +33,7 @@ function HiddenFlow({ nodes, edges, theme }: Props & { theme: Theme }) {
   return (
     <div
       id={`hidden-flow-${theme}`}
-      aria-hidden='true'
+      aria-hidden={true}
       className={theme === 'dark' ? 'dark' : 'force-light'}
       style={{
         position: 'fixed',
