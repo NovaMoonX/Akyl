@@ -256,7 +256,7 @@ export default function Flow() {
   ], true);
 
   return (
-    <div id='app' className='relative h-dvh w-dvw'>
+    <div id='app' className='bg-background-light dark:bg-background-dark relative h-dvh w-dvw'>
       {/* all viewport props: https://reactflow.dev/api-reference/react-flow#viewport-props */}
       <ReactFlow
         nodes={nodes}

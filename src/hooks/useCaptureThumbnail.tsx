@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useAuth } from '../contexts/AuthContext';
 import { uploadThumbnail } from '../firebase';
-import type { Theme } from '../lib';
 import { useSpace } from '../store';
 
 const THUMBNAIL_WIDTH = 480;
@@ -15,10 +14,7 @@ const MAX_ZOOM = 2;
 // Delay after space changes before capturing (ms)
 const CAPTURE_DELAY = 2500;
 
-export const THUMBNAIL_KEY_LIGHT = (spaceId: string) =>
-  `${spaceId}_thumbnail_light`;
-export const THUMBNAIL_KEY_DARK = (spaceId: string) =>
-  `${spaceId}_thumbnail_dark`;
+export const THUMBNAIL_KEY = (spaceId: string) => `${spaceId}_thumbnail`;
 
 export default function useCaptureThumbnail() {
   const { getNodes } = useReactFlow();
@@ -27,68 +23,16 @@ export default function useCaptureThumbnail() {
     useShallow((state) => [state?.space?.id, state?.space?.metadata?.updatedAt]),
   );
 
-  // Track the last updatedAt for which we captured thumbnails so we only
+  // Track the last updatedAt for which we captured the thumbnail so we only
   // capture once per save, not on every re-render.
   const lastCapturedAt = useRef<number | undefined>(undefined);
 
-  const captureSingleThumbnail = useCallback(
-    async (
-      viewportEl: HTMLElement,
-      nodesBounds: ReturnType<typeof getNodesBounds>,
-      targetTheme: Theme,
-    ) => {
-      if (!spaceId) return;
-
-      const viewport = getViewportForBounds(
-        nodesBounds,
-        THUMBNAIL_WIDTH,
-        THUMBNAIL_HEIGHT,
-        MIN_ZOOM,
-        MAX_ZOOM,
-        THUMBNAIL_PADDING,
-      );
-
-      const dataUrl = await toPng(viewportEl, {
-        backgroundColor: targetTheme === 'dark' ? '#1f2937' : '#f0fdfa',
-        width: THUMBNAIL_WIDTH,
-        height: THUMBNAIL_HEIGHT,
-        style: {
-          width: `${THUMBNAIL_WIDTH}px`,
-          height: `${THUMBNAIL_HEIGHT}px`,
-          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
-        },
-      });
-
-      const storageKey =
-        targetTheme === 'dark'
-          ? THUMBNAIL_KEY_DARK(spaceId)
-          : THUMBNAIL_KEY_LIGHT(spaceId);
-
-      // Store in localStorage for instant access on the homepage.
-      localStorage.setItem(storageKey, dataUrl);
-
-      // Upload to Firebase Storage for authenticated users.
-      if (currentUser?.uid && cryptoKey) {
-        uploadThumbnail({
-          userId: currentUser.uid,
-          spaceId,
-          dataUrl,
-          theme: targetTheme,
-        }).catch((err) => {
-          // Non-fatal: thumbnail still available from localStorage.
-          console.warn('Failed to upload thumbnail:', err);
-        });
-      }
-    },
-    [spaceId, currentUser?.uid, cryptoKey],
-  );
-
   /**
-   * Capture both light and dark thumbnails in sequence.
-   * Temporarily toggles the document theme for each capture so the CSS
-   * dark-mode variants are applied correctly, then restores the original.
+   * Capture a single transparent-background thumbnail.
+   * Because the background is transparent the same image works on both
+   * light and dark homepage cards without any theme toggling.
    */
-  const captureBothThumbnails = useCallback(async () => {
+  const captureThumbnail = useCallback(async () => {
     if (!spaceId) return;
 
     const nodes = getNodes();
@@ -99,31 +43,46 @@ export default function useCaptureThumbnail() {
     ) as HTMLElement;
     if (!viewportEl) return;
 
-    const nodesBounds = getNodesBounds(nodes);
-    const wasDark = document.documentElement.classList.contains('dark');
+    try {
+      const nodesBounds = getNodesBounds(nodes);
+      const viewport = getViewportForBounds(
+        nodesBounds,
+        THUMBNAIL_WIDTH,
+        THUMBNAIL_HEIGHT,
+        MIN_ZOOM,
+        MAX_ZOOM,
+        THUMBNAIL_PADDING,
+      );
 
-    for (const targetTheme of ['light', 'dark'] as Theme[]) {
-      try {
-        // Temporarily switch to the target theme so CSS dark: variants apply.
-        document.documentElement.classList.toggle(
-          'dark',
-          targetTheme === 'dark',
-        );
+      const dataUrl = await toPng(viewportEl, {
+        backgroundColor: 'transparent',
+        width: THUMBNAIL_WIDTH,
+        height: THUMBNAIL_HEIGHT,
+        style: {
+          width: `${THUMBNAIL_WIDTH}px`,
+          height: `${THUMBNAIL_HEIGHT}px`,
+          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+        },
+      });
 
-        // Wait for the browser to repaint with the new theme.
-        await new Promise<void>((resolve) =>
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-        );
+      // Store in localStorage for instant access on the homepage.
+      localStorage.setItem(THUMBNAIL_KEY(spaceId), dataUrl);
 
-        await captureSingleThumbnail(viewportEl, nodesBounds, targetTheme);
-      } catch (err) {
-        console.warn(`Failed to capture ${targetTheme} thumbnail:`, err);
+      // Upload to Firebase Storage for authenticated users.
+      if (currentUser?.uid && cryptoKey) {
+        uploadThumbnail({
+          userId: currentUser.uid,
+          spaceId,
+          dataUrl,
+        }).catch((err) => {
+          // Non-fatal: thumbnail still available from localStorage.
+          console.warn('Failed to upload thumbnail:', err);
+        });
       }
+    } catch (err) {
+      console.warn('Failed to capture thumbnail:', err);
     }
-
-    // Restore the original theme.
-    document.documentElement.classList.toggle('dark', wasDark);
-  }, [getNodes, spaceId, captureSingleThumbnail]);
+  }, [getNodes, spaceId, currentUser?.uid, cryptoKey]);
 
   // Schedule a capture whenever the space data changes (updatedAt bumps).
   useEffect(() => {
@@ -132,9 +91,9 @@ export default function useCaptureThumbnail() {
 
     const timer = setTimeout(() => {
       lastCapturedAt.current = updatedAt;
-      captureBothThumbnails();
+      captureThumbnail();
     }, CAPTURE_DELAY);
 
     return () => clearTimeout(timer);
-  }, [spaceId, updatedAt, captureBothThumbnails]);
+  }, [spaceId, updatedAt, captureThumbnail]);
 }

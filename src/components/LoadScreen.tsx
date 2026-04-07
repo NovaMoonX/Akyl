@@ -19,8 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { signOutUser } from '../firebase';
 import {
-  THUMBNAIL_KEY_DARK,
-  THUMBNAIL_KEY_LIGHT,
+  THUMBNAIL_KEY,
 } from '../hooks/useCaptureThumbnail';
 import useBrowserSpaces from '../hooks/useBrowserSpaces';
 import useSyncAllSpaces from '../hooks/useSyncAllSpaces';
@@ -83,26 +82,12 @@ interface SpaceCardProps {
 }
 
 function SpaceCard({ space, viewMode, onPin, onDelete }: SpaceCardProps) {
-  const { theme } = useTheme();
   const [thumbnail, setThumbnail] = useState<string | null>(null);
 
   useEffect(() => {
-    // Prefer the key that matches the active theme; fall back to the other variant.
-    const preferred =
-      theme === 'dark'
-        ? THUMBNAIL_KEY_DARK(space.id)
-        : THUMBNAIL_KEY_LIGHT(space.id);
-    const fallback =
-      theme === 'dark'
-        ? THUMBNAIL_KEY_LIGHT(space.id)
-        : THUMBNAIL_KEY_DARK(space.id);
-
-    const stored =
-      localStorage.getItem(preferred) ??
-      localStorage.getItem(fallback);
-
+    const stored = localStorage.getItem(THUMBNAIL_KEY(space.id));
     setThumbnail(stored);
-  }, [space.id, theme]);
+  }, [space.id]);
 
   if (viewMode === 'list') {
     return (
