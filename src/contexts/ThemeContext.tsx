@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { Theme } from '../lib';
-import { useSpace } from '../store';
 import { getTheme } from '../utils';
 
 interface ThemeContextType {
@@ -12,12 +11,6 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(getTheme());
-  const { updateConfig } = useSpace();
-
-  const handleSetTheme = (newTheme: Theme) => {
-    setTheme(newTheme);
-    updateConfig({ theme: newTheme });
-  };
 
   useEffect(() => {
     localStorage.setItem('theme', theme);
@@ -25,7 +18,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme: handleSetTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

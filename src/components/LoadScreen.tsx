@@ -1,7 +1,9 @@
 import {
   FolderOpenIcon,
+  GridIcon,
   HelpCircleIcon,
   LayoutDashboardIcon,
+  ListIcon,
   LogInIcon,
   LogOutIcon,
   MoonIcon,
@@ -17,7 +19,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { signOutUser } from '../firebase';
 import {
-  THUMBNAIL_KEY,
   THUMBNAIL_KEY_DARK,
   THUMBNAIL_KEY_LIGHT,
 } from '../hooks/useCaptureThumbnail';
@@ -66,19 +67,27 @@ function SpaceCardSkeleton() {
   );
 }
 
+type ViewMode = 'grid' | 'list';
+const VIEW_MODE_KEY = 'akyl-home-view-mode';
+
+function getStoredViewMode(): ViewMode {
+  const stored = localStorage.getItem(VIEW_MODE_KEY);
+  return stored === 'list' ? 'list' : 'grid';
+}
+
 interface SpaceCardProps {
   space: Space;
+  viewMode: ViewMode;
   onPin: (id: string, currentPinned: boolean) => void;
   onDelete: (id: string) => void;
 }
 
-function SpaceCard({ space, onPin, onDelete }: SpaceCardProps) {
+function SpaceCard({ space, viewMode, onPin, onDelete }: SpaceCardProps) {
   const { theme } = useTheme();
   const [thumbnail, setThumbnail] = useState<string | null>(null);
 
   useEffect(() => {
-    // Prefer the key that matches the active theme; fall back to the other
-    // variant, then to the legacy single-theme key for backward compat.
+    // Prefer the key that matches the active theme; fall back to the other variant.
     const preferred =
       theme === 'dark'
         ? THUMBNAIL_KEY_DARK(space.id)
@@ -90,16 +99,76 @@ function SpaceCard({ space, onPin, onDelete }: SpaceCardProps) {
 
     const stored =
       localStorage.getItem(preferred) ??
-      localStorage.getItem(fallback) ??
-      localStorage.getItem(THUMBNAIL_KEY(space.id));
+      localStorage.getItem(fallback);
 
     setThumbnail(stored);
   }, [space.id, theme]);
 
+  if (viewMode === 'list') {
+    return (
+      <div className='group relative flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-sm hover:border-gray-300 dark:hover:border-gray-600 transition-all bg-white dark:bg-gray-900 px-4 py-3'>
+        <a href={`/${space.id}`} className='flex items-center justify-center shrink-0' aria-label={`Open ${space.title || 'Untitled Space'}`}>
+          <LayoutDashboardIcon className='size-5 text-gray-400 dark:text-gray-500' />
+        </a>
+
+        <a
+          href={`/${space.id}`}
+          className='flex-1 min-w-0'
+          title={space.title || 'Untitled Space'}
+        >
+          <h3
+            className={join(
+              'font-medium text-sm text-gray-900 dark:text-gray-100 truncate',
+              !space.title && 'opacity-60 italic',
+            )}
+          >
+            {space.title || 'Untitled Space'}
+          </h3>
+        </a>
+
+        {space.pinned && (
+          <PinIcon className='size-3.5 shrink-0 fill-yellow-400 text-yellow-400' />
+        )}
+
+        {space.metadata?.updatedAt ? (
+          <span className='text-xs text-gray-400 dark:text-gray-500 shrink-0 hidden sm:block'>
+            {formatRelativeTime(space.metadata.updatedAt)}
+          </span>
+        ) : null}
+
+        <div className='flex gap-1 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity'>
+          <button
+            type='button'
+            aria-label={space.pinned ? 'Unpin Space' : 'Pin Space'}
+            onClick={() => onPin(space.id, Boolean(space.pinned))}
+            className='flex items-center justify-center size-7 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'
+          >
+            <PinIcon
+              className={join(
+                'size-3.5',
+                space.pinned
+                  ? 'fill-yellow-400 text-yellow-400'
+                  : 'text-gray-500 dark:text-gray-400',
+              )}
+            />
+          </button>
+          <button
+            type='button'
+            aria-label='Delete Space'
+            onClick={() => onDelete(space.id)}
+            className='flex items-center justify-center size-7 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-500 transition-colors text-gray-500 dark:text-gray-400'
+          >
+            <TrashIcon className='size-3.5' />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='group relative rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all bg-white dark:bg-gray-900'>
       {/* Thumbnail */}
-      <a href={`/${space.id}`} className='block aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden'>
+      <a href={`/${space.id}`} className='block aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden' aria-label={`Open ${space.title || 'Untitled Space'}`}>
         {thumbnail ? (
           <img
             src={thumbnail}
@@ -184,9 +253,15 @@ export default function LoadScreen() {
   const [deleteSpaceId, setDeleteSpaceId] = useState<string>();
   const [search, setSearch] = useState('');
   const [spaces, setSpaces] = useState<Space[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>(getStoredViewMode);
   const { spaces: localSpaces, limitMet } = useBrowserSpaces();
   const { spaces: syncedSpaces, spacesMap: syncedSpacesMap, loading: syncLoading } =
     useSyncAllSpaces();
+
+  const handleSetViewMode = (mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem(VIEW_MODE_KEY, mode);
+  };
 
   const isSyncing = currentUser?.uid ? syncLoading : false;
 
@@ -262,6 +337,10 @@ export default function LoadScreen() {
 
   const hasSpaces = spaces.length > 0;
   const hasResults = pinnedSpaces.length > 0 || unpinnedSpaces.length > 0;
+  const spacesContainerClass =
+    viewMode === 'grid'
+      ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
+      : 'flex flex-col gap-2';
 
   return (
     <>
@@ -312,7 +391,7 @@ export default function LoadScreen() {
         </header>
 
         {/* Main content */}
-        <main className='flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full'>
+        <main className='flex-1 px-4 sm:px-6 lg:px-8 py-6 pb-16 max-w-7xl mx-auto w-full'>
           {/* Actions row */}
           <div className='flex flex-wrap items-center gap-2 mb-6'>
             <Tooltip title={APP_SPACE_LIMIT_REACHED} disabled={!limitMet}>
@@ -367,6 +446,38 @@ export default function LoadScreen() {
                 />
               </div>
             )}
+
+            {/* View mode toggle */}
+            {hasSpaces && (
+              <div className='flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden'>
+                <button
+                  type='button'
+                  aria-label='Grid view'
+                  onClick={() => handleSetViewMode('grid')}
+                  className={join(
+                    'flex items-center justify-center p-2 transition-colors',
+                    viewMode === 'grid'
+                      ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
+                  )}
+                >
+                  <GridIcon size={15} />
+                </button>
+                <button
+                  type='button'
+                  aria-label='List view'
+                  onClick={() => handleSetViewMode('list')}
+                  className={join(
+                    'flex items-center justify-center p-2 transition-colors',
+                    viewMode === 'list'
+                      ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
+                  )}
+                >
+                  <ListIcon size={15} />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Loading state */}
@@ -387,11 +498,12 @@ export default function LoadScreen() {
                   <h2 className='text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3'>
                     Pinned
                   </h2>
-                  <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+                  <div className={spacesContainerClass}>
                     {pinnedSpaces.map((space) => (
                       <SpaceCard
                         key={space.id}
                         space={space}
+                        viewMode={viewMode}
                         onPin={handleTogglePin}
                         onDelete={setDeleteSpaceId}
                       />
@@ -406,11 +518,12 @@ export default function LoadScreen() {
                   <h2 className='text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3'>
                     {pinnedSpaces.length > 0 ? 'Other Spaces' : 'Recent'}
                   </h2>
-                  <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+                  <div className={spacesContainerClass}>
                     {unpinnedSpaces.map((space) => (
                       <SpaceCard
                         key={space.id}
                         space={space}
+                        viewMode={viewMode}
                         onPin={handleTogglePin}
                         onDelete={setDeleteSpaceId}
                       />

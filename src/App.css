@@ -21,3 +21,17 @@
 .react-flow__controls-button:focus {
   @apply outline-2 outline-teal-700;
 }
+
+/**
+ * Force-light theme isolation for off-screen thumbnail capture.
+ * Overrides dark CSS custom properties so that dark: Tailwind utilities
+ * that reference our theme tokens resolve to light-mode values, even when
+ * the document root carries the .dark class.
+ */
+.force-light {
+  --color-surface-dark: var(--color-surface-light);
+  --color-surface-hover-dark: var(--color-surface-hover-light);
+  --color-background-dark: var(--color-background-light);
+  --color-inflow-darker: var(--color-inflow);
+  --color-outflow-darker: var(--color-outflow);
+}
