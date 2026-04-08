@@ -69,9 +69,6 @@ export default function useInitSpace() {
       setSpace(space);
       setShowLoadScreen(false);
 
-      // Theme sync is handled by ThemeProvider which subscribes to
-      // space.config.theme in the store.
-
       if (space.title) {
         setTabTitle(space.title);
       }
