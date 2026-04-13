@@ -168,7 +168,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
         )}
 
         {/* Super Text */}
-        <small className='absolute top-0 right-0 left-0 -translate-y-full text-center opacity-80 line-clamp-2 px-1'>
+        <small className='absolute top-0 right-0 left-0 -translate-y-full px-1 text-center opacity-80 line-clamp-2'>
           {getBudgetSuperText()}
         </small>
 

@@ -121,12 +121,13 @@ export default function HeaderBarSheets({
                 <span
                   className={join(
                     'size-1.5 shrink-0 rounded-full',
-                    sheetBalances[sheet.id] === 'surplus' && 'bg-emerald-500',
-                    sheetBalances[sheet.id] === 'burden' && 'bg-rose-400',
-                    sheetBalances[sheet.id] === 'even' && 'bg-gray-400',
-                    activeSheet === sheet.id && sheetBalances[sheet.id] === 'surplus' && 'bg-white/80',
-                    activeSheet === sheet.id && sheetBalances[sheet.id] === 'burden' && 'bg-rose-200',
-                    activeSheet === sheet.id && sheetBalances[sheet.id] === 'even' && 'bg-white/60',
+                    (() => {
+                      const balance = sheetBalances[sheet.id];
+                      const isActive = activeSheet === sheet.id;
+                      if (balance === 'surplus') return isActive ? 'bg-white/80' : 'bg-emerald-500';
+                      if (balance === 'burden') return isActive ? 'bg-rose-200' : 'bg-rose-400';
+                      return isActive ? 'bg-white/60' : 'bg-gray-400';
+                    })(),
                   )}
                 />
                 <span className='truncate'>{sheet.name}</span>

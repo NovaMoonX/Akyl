@@ -22,7 +22,7 @@ export default function FlowKeyboardShortcuts({ enabled }: FlowKeyboardShortcuts
       // Account for header (~80px) and bottom bar (~60px) overlaying the canvas.
       // Compute padding so the visible safe-area comfortably contains all nodes.
       const viewportH = window.innerHeight || 600;
-      const chromeH = Math.max(80, 60) + 16; // header/bottom + buffer
+      const chromeH = 80 + 60 + 16; // header + bottom bar + buffer
       const padding = Math.max(0.1, (chromeH * 2) / (viewportH - chromeH * 2));
       reactFlowInstance.fitView({ padding, duration: 300 });
     }
