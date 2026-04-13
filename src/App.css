@@ -8,7 +8,7 @@
 }
 
 .react-flow__attribution {
-  @apply bg-background-light dark:bg-background-dark dark:text-surface-light;
+  @apply bg-background-light/70 dark:bg-background-dark/70 text-gray-400 dark:text-gray-600 text-xs rounded-tl;
 }
 
 /* Controls */

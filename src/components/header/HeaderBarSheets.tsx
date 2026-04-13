@@ -1,6 +1,7 @@
 import { PlusIcon, XIcon } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
+import { useSheetBalances } from '../../hooks';
 import { useSpace } from '../../store';
 import { generateId, join } from '../../utils';
 
@@ -22,6 +23,8 @@ export default function HeaderBarSheets({
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [newSheetName, setNewSheetName] = useState('');
   const [showHint, setShowHint] = useState(false);
+
+  const sheetBalances = useSheetBalances();
 
   // Calculate sheet counts for "All" label
   const allLabel = useMemo(() => {
@@ -108,14 +111,25 @@ export default function HeaderBarSheets({
               <button
                 onClick={() => setActiveSheet(sheet.id)}
                 className={join(
-                  'block max-w-32 truncate rounded px-3 py-1 text-sm transition-colors',
+                  'flex items-center gap-1.5 max-w-32 truncate rounded px-3 py-1 text-sm transition-colors',
                   activeSheet === sheet.id
                     ? 'bg-emerald-500 text-white'
                     : 'bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700',
                 )}
                 title={sheet.name}
               >
-                {sheet.name}
+                <span
+                  className={join(
+                    'size-1.5 shrink-0 rounded-full',
+                    sheetBalances[sheet.id] === 'surplus' && 'bg-emerald-500',
+                    sheetBalances[sheet.id] === 'burden' && 'bg-rose-400',
+                    sheetBalances[sheet.id] === 'even' && 'bg-gray-400',
+                    activeSheet === sheet.id && sheetBalances[sheet.id] === 'surplus' && 'bg-white/80',
+                    activeSheet === sheet.id && sheetBalances[sheet.id] === 'burden' && 'bg-rose-200',
+                    activeSheet === sheet.id && sheetBalances[sheet.id] === 'even' && 'bg-white/60',
+                  )}
+                />
+                <span className='truncate'>{sheet.name}</span>
               </button>
               <button
                 onClick={(e) => {

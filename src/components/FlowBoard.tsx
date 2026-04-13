@@ -291,7 +291,11 @@ export default function Flow() {
         <BottomBar />
         {viewMode === 'table' && <TableView />}
         {viewMode === 'flowchart' && (
-          <Controls position='bottom-right' showInteractive={false} />
+          <Controls
+            position='bottom-right'
+            showInteractive={false}
+            fitViewOptions={{ padding: 0.2, duration: 300 }}
+          />
         )}
         {backgroundPattern !== NO_BACKGROUND_VARIANT && (
           <Background

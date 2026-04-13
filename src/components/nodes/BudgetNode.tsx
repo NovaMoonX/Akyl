@@ -1,6 +1,6 @@
 import { Handle, Position } from '@xyflow/react';
-import { CheckIcon, EyeClosedIcon, EyeIcon, PencilIcon } from 'lucide-react';
-import { memo, useMemo } from 'react';
+import { CheckIcon, CopyIcon, EyeClosedIcon, EyeIcon, PencilIcon } from 'lucide-react';
+import { memo, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
@@ -46,6 +46,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
   const { getBudgetItem } = useBudget();
   const { item: budgetItem, type } = getBudgetItem(budgetItemId);
   const [, setSearchParams] = useSearchParams();
+  const [copiedAmount, setCopiedAmount] = useState(false);
 
   const isSelected = selectedBudgetItems.includes(budgetItemId);
 
@@ -167,7 +168,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
         )}
 
         {/* Super Text */}
-        <small className='absolute top-0 left-0 line-clamp-2 max-w-full -translate-y-full opacity-80'>
+        <small className='absolute top-0 right-0 left-0 -translate-y-full text-center opacity-80 line-clamp-2 px-1'>
           {getBudgetSuperText()}
         </small>
 
@@ -202,7 +203,7 @@ function BudgetNode({ data }: BudgetNodeProps) {
           </button>
         </div>
         {/* Amount */}
-        <div className='flex flex-col items-center px-4 py-3'>
+        <div className='relative flex flex-col items-center px-4 py-3'>
           <span
             className={join(
               'text-center text-lg font-bold',
@@ -212,6 +213,23 @@ function BudgetNode({ data }: BudgetNodeProps) {
           >
             {formatCurrency(budgetItem.amount, currency)}
           </span>
+          <button
+            type='button'
+            aria-label='Copy amount'
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(formatCurrency(budgetItem.amount, currency));
+              setCopiedAmount(true);
+              setTimeout(() => setCopiedAmount(false), 1500);
+            }}
+            className='absolute right-1 top-1/2 -translate-y-1/2 rounded p-1 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-60'
+          >
+            {copiedAmount ? (
+              <CheckIcon className='size-3 text-emerald-500' />
+            ) : (
+              <CopyIcon className='size-3' />
+            )}
+          </button>
         </div>
 
         {/* Sheet names - only shown in All view */}

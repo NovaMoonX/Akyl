@@ -101,7 +101,6 @@ export default function ExpenseForm() {
   };
 
   const isSaveDisabled =
-    !formData?.label ||
     !formData?.amount ||
     formData?.amount <= 0 ||
     !formData?.category ||
