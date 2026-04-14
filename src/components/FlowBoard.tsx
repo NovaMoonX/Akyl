@@ -3,22 +3,25 @@ import {
   BackgroundVariant,
   Controls,
   ReactFlow,
+  useReactFlow,
+  type Viewport,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { Header, TableView } from '../components';
 import { useInitSpace, useKeyboardShortcuts, usePersistCloud, usePersistLocally, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT, URL_PARAM_FORM } from '../lib';
 import { useSpace } from '../store';
+import { useURL } from '../hooks';
 import BottomBar from './BottomBar';
 import { AnimatedInflowEdge, AnimatedOutflowEdge } from './edges';
 import { HiddenNodeEdge } from './edges/HiddenNodeEdge';
 import BudgetNode from './nodes/BudgetNode';
 import CoreNode from './nodes/CoreNode';
 import L1Node from './nodes/L1Node';
-import FlowKeyboardShortcuts from './FlowKeyboardShortcuts';
+import FlowKeyboardShortcuts, { applyFitViewToChrome } from './FlowKeyboardShortcuts';
 import FlowCaptureThumbnail from './FlowCaptureThumbnail';
 import FlowHiddenCapture from './FlowHiddenCapture';
 
@@ -51,10 +54,62 @@ const BackgroundVariantClasses = {
   [BackgroundVariant.Lines]: 'opacity-40 dark:opacity-30',
 };
 
+const VIEWPORT_KEY_PREFIX = 'akyl_vp_';
+
+function readSavedViewport(spaceId: string): Viewport | null {
+  try {
+    const raw = localStorage.getItem(`${VIEWPORT_KEY_PREFIX}${spaceId}`);
+    if (!raw) return null;
+    const vp = JSON.parse(raw) as Viewport;
+    if (typeof vp?.x === 'number' && typeof vp?.y === 'number' && typeof vp?.zoom === 'number') {
+      return vp;
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
+/** Inner component (inside ReactFlow) that owns the Controls + its fit-to-chrome handler. */
+function FlowControls() {
+  const rf = useReactFlow();
+  const viewMode = useSpace(useShallow((s) => s.viewMode));
+
+  const handleFitView = useCallback(() => {
+    applyFitViewToChrome(rf);
+  }, [rf]);
+
+  if (viewMode !== 'flowchart') return null;
+
+  return (
+    <Controls
+      position='bottom-right'
+      showInteractive={false}
+      onFitView={handleFitView}
+    />
+  );
+}
+
 export default function Flow() {
   useInitSpace();
   usePersistLocally();
   usePersistCloud();
+
+  const { spaceId } = useURL();
+
+  // Per-space viewport persistence
+  const [savedViewport] = useState<Viewport | null>(() =>
+    spaceId ? readSavedViewport(spaceId) : null,
+  );
+  const vpSaveTimerRef = useRef<number | null>(null);
+  const handleViewportChange = useCallback(
+    (viewport: Viewport) => {
+      if (!spaceId) return;
+      if (vpSaveTimerRef.current !== null) clearTimeout(vpSaveTimerRef.current);
+      vpSaveTimerRef.current = window.setTimeout(() => {
+        localStorage.setItem(`${VIEWPORT_KEY_PREFIX}${spaceId}`, JSON.stringify(viewport));
+      }, 500);
+    },
+    [spaceId],
+  );
 
   const backgroundPattern = useSpace(
     useShallow((state) => state?.space?.config?.backgroundPattern),
@@ -269,13 +324,13 @@ export default function Flow() {
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        fitView={true}
+        fitView={savedViewport === null}
+        defaultViewport={savedViewport ?? { x: 0, y: 0, zoom: 1 }}
+        fitViewOptions={{ padding: 2 }}
+        onViewportChange={handleViewportChange}
         panOnScroll={true}
         selectionOnDrag={true}
         panOnScrollSpeed={1}
-        fitViewOptions={{
-          padding: 2,
-        }}
         maxZoom={1.5} // default is 2
         minZoom={0.15} // default is 0.5
       >
@@ -290,13 +345,7 @@ export default function Flow() {
 
         <BottomBar />
         {viewMode === 'table' && <TableView />}
-        {viewMode === 'flowchart' && (
-          <Controls
-            position='bottom-right'
-            showInteractive={false}
-            fitViewOptions={{ padding: 0.2, duration: 300 }}
-          />
-        )}
+        <FlowControls />
         {backgroundPattern !== NO_BACKGROUND_VARIANT && (
           <Background
             color='#047857'

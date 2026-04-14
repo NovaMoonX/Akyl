@@ -203,7 +203,7 @@ function L1Node({ data }: L1NodeProps) {
             className='absolute right-1 bottom-1 rounded p-1 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-60'
           >
             {copiedAmount ? (
-              <CheckIcon className='size-3 text-emerald-500' />
+              <CheckIcon className={join('size-3', type === 'income' ? 'text-emerald-500' : 'text-rose-500')} />
             ) : (
               <CopyIcon className='size-3' />
             )}
