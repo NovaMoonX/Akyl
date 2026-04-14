@@ -326,7 +326,7 @@ export default function Flow() {
         edgeTypes={edgeTypes}
         fitView={savedViewport === null}
         defaultViewport={savedViewport ?? { x: 0, y: 0, zoom: 1 }}
-        fitViewOptions={{ padding: 2 }}
+        fitViewOptions={savedViewport === null ? { padding: 2 } : undefined}
         onViewportChange={handleViewportChange}
         panOnScroll={true}
         selectionOnDrag={true}
