@@ -9,6 +9,7 @@ interface SpaceStore {
   updateSpace: (partial: Partial<Space>) => void;
   updateMetadata: (partial: Partial<Space['metadata']>) => void;
   updateConfig: (partial: Partial<Space['config']>) => void;
+  updateConfigSilent: (partial: Partial<Space['config']>) => void; // Update config without bumping updatedAt
   addIncome: (income: Income) => void;
   updateIncome: (id: string, updates: Partial<Income>) => void;
   removeIncome: (id: string) => void;
@@ -82,6 +83,15 @@ const useSpaceStore = create<SpaceStore>()(
               ...state.space,
               config: { ...state.space.config, ...partial },
               metadata: { ...state.space.metadata, updatedAt: Date.now() },
+            }
+          : initialSpace,
+      })),
+    updateConfigSilent: (partial) =>
+      set((state) => ({
+        space: state.space
+          ? {
+              ...state.space,
+              config: { ...state.space.config, ...partial },
             }
           : initialSpace,
       })),

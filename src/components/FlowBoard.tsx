@@ -14,7 +14,6 @@ import { Header, TableView } from '../components';
 import { useInitSpace, useKeyboardShortcuts, usePersistCloud, usePersistLocally, useSpaceFlow } from '../hooks';
 import { NO_BACKGROUND_VARIANT, URL_PARAM_FORM } from '../lib';
 import { useSpace } from '../store';
-import { useURL } from '../hooks';
 import BottomBar from './BottomBar';
 import { AnimatedInflowEdge, AnimatedOutflowEdge } from './edges';
 import { HiddenNodeEdge } from './edges/HiddenNodeEdge';
@@ -54,20 +53,6 @@ const BackgroundVariantClasses = {
   [BackgroundVariant.Lines]: 'opacity-40 dark:opacity-30',
 };
 
-const VIEWPORT_KEY_PREFIX = 'akyl_vp_';
-
-function readSavedViewport(spaceId: string): Viewport | null {
-  try {
-    const raw = localStorage.getItem(`${VIEWPORT_KEY_PREFIX}${spaceId}`);
-    if (!raw) return null;
-    const vp = JSON.parse(raw) as Viewport;
-    if (typeof vp?.x === 'number' && typeof vp?.y === 'number' && typeof vp?.zoom === 'number') {
-      return vp;
-    }
-  } catch { /* ignore */ }
-  return null;
-}
-
 /** Inner component (inside ReactFlow) that owns the Controls + its fit-to-chrome handler. */
 function FlowControls() {
   const rf = useReactFlow();
@@ -88,28 +73,119 @@ function FlowControls() {
   );
 }
 
+/**
+ * Inner component (inside ReactFlow) that persists and restores viewport
+ * per-sheet via config.sheetViewports.
+ */
+function FlowViewportManager() {
+  const rf = useReactFlow();
+  const [activeSheet, sheetViewports, updateConfigSilent] = useSpace(
+    useShallow((s) => [
+      s.space?.config?.activeSheet || 'all',
+      s.space?.config?.sheetViewports,
+      s.updateConfigSilent,
+    ]),
+  );
+
+  // Track the previously-active sheet so we can save its viewport before switching.
+  const prevSheetRef = useRef(activeSheet);
+  const vpSaveTimerRef = useRef<number | null>(null);
+  const isInitialMount = useRef(true);
+
+  // Save the current viewport for the given sheet key into config.
+  const saveViewportForSheet = useCallback(
+    (sheetKey: string, vp: Viewport) => {
+      updateConfigSilent({
+        sheetViewports: {
+          ...useSpace.getState().space?.config?.sheetViewports,
+          [sheetKey]: { x: vp.x, y: vp.y, zoom: vp.zoom },
+        },
+      });
+    },
+    [updateConfigSilent],
+  );
+
+  // On sheet change: save the old sheet's viewport, then restore the new sheet's.
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      // On initial mount, restore the active sheet's viewport if one exists
+      const saved = sheetViewports?.[activeSheet];
+      if (saved) {
+        rf.setViewport({ x: saved.x, y: saved.y, zoom: saved.zoom }, { duration: 0 });
+      }
+      prevSheetRef.current = activeSheet;
+      return;
+    }
+
+    const prevSheet = prevSheetRef.current;
+    if (prevSheet === activeSheet) return;
+
+    // Save old sheet's viewport
+    const currentVp = rf.getViewport();
+    saveViewportForSheet(prevSheet, currentVp);
+
+    // Restore new sheet's viewport or fit view
+    const freshViewports = useSpace.getState().space?.config?.sheetViewports;
+    const saved = freshViewports?.[activeSheet];
+    if (saved) {
+      rf.setViewport({ x: saved.x, y: saved.y, zoom: saved.zoom }, { duration: 300 });
+    } else {
+      // Small delay so nodes have time to re-layout for the new sheet
+      setTimeout(() => applyFitViewToChrome(rf), 50);
+    }
+
+    prevSheetRef.current = activeSheet;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSheet]);
+
+  // Throttled save on every viewport change
+  const handleViewportChange = useCallback(
+    (viewport: Viewport) => {
+      if (vpSaveTimerRef.current !== null) clearTimeout(vpSaveTimerRef.current);
+      vpSaveTimerRef.current = window.setTimeout(() => {
+        const sheet = useSpace.getState().space?.config?.activeSheet || 'all';
+        saveViewportForSheet(sheet, viewport);
+      }, 1000);
+    },
+    [saveViewportForSheet],
+  );
+
+  // Subscribe to viewport changes via onViewportChange on the ReactFlow instance.
+  // Since we're inside ReactFlow, we use the onViewportChange handler in the parent
+  // through a ref-forwarded callback.
+  useEffect(() => {
+    // Store the handler so FlowBoard can call it
+    viewportChangeHandlerRef.current = handleViewportChange;
+    return () => {
+      viewportChangeHandlerRef.current = null;
+    };
+  }, [handleViewportChange]);
+
+  return null;
+}
+
+// Module-level ref so FlowBoard can forward viewport changes to FlowViewportManager
+const viewportChangeHandlerRef: { current: ((vp: Viewport) => void) | null } = { current: null };
+
 export default function Flow() {
   useInitSpace();
   usePersistLocally();
   usePersistCloud();
 
-  const { spaceId } = useURL();
+  // Read initial viewport from config for the active sheet
+  const initialSheetViewport = useSpace(
+    useShallow((s) => {
+      const activeSheet = s.space?.config?.activeSheet || 'all';
+      return s.space?.config?.sheetViewports?.[activeSheet] ?? null;
+    }),
+  );
+  const [initialViewport] = useState(initialSheetViewport);
 
-  // Per-space viewport persistence
-  const [savedViewport] = useState<Viewport | null>(() =>
-    spaceId ? readSavedViewport(spaceId) : null,
-  );
-  const vpSaveTimerRef = useRef<number | null>(null);
-  const handleViewportChange = useCallback(
-    (viewport: Viewport) => {
-      if (!spaceId) return;
-      if (vpSaveTimerRef.current !== null) clearTimeout(vpSaveTimerRef.current);
-      vpSaveTimerRef.current = window.setTimeout(() => {
-        localStorage.setItem(`${VIEWPORT_KEY_PREFIX}${spaceId}`, JSON.stringify(viewport));
-      }, 500);
-    },
-    [spaceId],
-  );
+  // Forward viewport changes to the inner FlowViewportManager
+  const handleViewportChange = useCallback((viewport: Viewport) => {
+    viewportChangeHandlerRef.current?.(viewport);
+  }, []);
 
   const backgroundPattern = useSpace(
     useShallow((state) => state?.space?.config?.backgroundPattern),
@@ -324,9 +400,9 @@ export default function Flow() {
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        fitView={savedViewport === null}
-        defaultViewport={savedViewport ?? { x: 0, y: 0, zoom: 1 }}
-        fitViewOptions={savedViewport === null ? { padding: 2 } : undefined}
+        fitView={initialViewport === null}
+        defaultViewport={initialViewport ?? { x: 0, y: 0, zoom: 1 }}
+        fitViewOptions={initialViewport === null ? { padding: 2 } : undefined}
         onViewportChange={handleViewportChange}
         panOnScroll={true}
         selectionOnDrag={true}
@@ -337,6 +413,7 @@ export default function Flow() {
         {/* Keyboard shortcuts that require ReactFlow instance */}
         <FlowKeyboardShortcuts enabled={true} />
         <FlowCaptureThumbnail />
+        <FlowViewportManager />
 
         <Header />
         <h1 className='font-brand bg-background-light/50 dark:bg-background-dark/50 text-brand absolute bottom-0 left-0 z-10 rounded-tr-xl p-2 text-xl font-black sm:p-3 sm:text-4xl'>
