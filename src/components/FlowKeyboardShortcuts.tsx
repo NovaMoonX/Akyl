@@ -25,9 +25,11 @@ function measureChrome() {
   const top = headerEl ? headerEl.getBoundingClientRect().height : CHROME_TOP_FALLBACK;
   // The bottom bar is fixed with bottom-4 (16px), so the effective chrome
   // is the bar height plus the gap from the viewport bottom.
-  const bottom = bottomBarEl
-    ? bottomBarEl.getBoundingClientRect().height + (window.innerHeight - bottomBarEl.getBoundingClientRect().bottom)
-    : CHROME_BOTTOM_FALLBACK;
+  let bottom = CHROME_BOTTOM_FALLBACK;
+  if (bottomBarEl) {
+    const rect = bottomBarEl.getBoundingClientRect();
+    bottom = rect.height + (window.innerHeight - rect.bottom);
+  }
   return { top, bottom };
 }
 

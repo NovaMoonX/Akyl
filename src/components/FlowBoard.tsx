@@ -77,6 +77,9 @@ function FlowControls() {
  * Inner component (inside ReactFlow) that persists and restores viewport
  * per-sheet via config.sheetViewports.
  */
+/** Delay (ms) for nodes to re-layout after a sheet switch before fitting view. */
+const SHEET_RELAYOUT_DELAY = 50;
+
 function FlowViewportManager() {
   const rf = useReactFlow();
   const [activeSheet, sheetViewports, updateConfigSilent] = useSpace(
@@ -93,6 +96,7 @@ function FlowViewportManager() {
   const isInitialMount = useRef(true);
 
   // Save the current viewport for the given sheet key into config.
+  // Uses getState() intentionally to read the latest sheetViewports at call time.
   const saveViewportForSheet = useCallback(
     (sheetKey: string, vp: Viewport) => {
       updateConfigSilent({
@@ -125,21 +129,23 @@ function FlowViewportManager() {
     const currentVp = rf.getViewport();
     saveViewportForSheet(prevSheet, currentVp);
 
-    // Restore new sheet's viewport or fit view
+    // Restore new sheet's viewport or fit view.
+    // Read fresh from store since saveViewportForSheet just updated it.
     const freshViewports = useSpace.getState().space?.config?.sheetViewports;
     const saved = freshViewports?.[activeSheet];
     if (saved) {
       rf.setViewport({ x: saved.x, y: saved.y, zoom: saved.zoom }, { duration: 300 });
     } else {
-      // Small delay so nodes have time to re-layout for the new sheet
-      setTimeout(() => applyFitViewToChrome(rf), 50);
+      // Wait for nodes to re-layout for the new sheet before fitting
+      setTimeout(() => applyFitViewToChrome(rf), SHEET_RELAYOUT_DELAY);
     }
 
     prevSheetRef.current = activeSheet;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSheet]);
 
-  // Throttled save on every viewport change
+  // Throttled save on every viewport change.
+  // Uses getState() to read the current activeSheet at call time, not closure value.
   const handleViewportChange = useCallback(
     (viewport: Viewport) => {
       if (vpSaveTimerRef.current !== null) clearTimeout(vpSaveTimerRef.current);
