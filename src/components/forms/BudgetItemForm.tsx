@@ -175,7 +175,6 @@ export default function BudgetItemForm({
           <div>
             <label className='text-sm font-medium sm:text-base'>
               Name
-              <span className={type === 'expense' ? 'text-red-500' : 'text-emerald-500'}> *</span>
             </label>
             <input
               type='text'

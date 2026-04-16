@@ -1,5 +1,6 @@
 import { Handle, Position } from '@xyflow/react';
-import { memo } from 'react';
+import { CheckIcon, CopyIcon } from 'lucide-react';
+import { memo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
 import { CashFlowVerbiagePairs, formatCurrency } from '../../lib';
@@ -19,6 +20,9 @@ function CoreNode({ id }: CoreNodeProps) {
     ]),
   );
   const { incomesTotal, expensesTotal } = useBudget();
+  const [copiedInflow, setCopiedInflow] = useState(false);
+  const [copiedOutflow, setCopiedOutflow] = useState(false);
+  const [copiedDiff, setCopiedDiff] = useState(false);
 
   if (id !== NODE_CORE_ID || !cashFlowVerbiage || !currency) {
     return null;
@@ -28,28 +32,58 @@ function CoreNode({ id }: CoreNodeProps) {
   const outflowLabel = CashFlowVerbiagePairs[cashFlowVerbiage].out;
   const totalDiff = Math.round((incomesTotal - expensesTotal) * 100) / 100; // round to 2 decimal places
 
+  const handleCopy = (text: string, setter: (v: boolean) => void) => {
+    navigator.clipboard.writeText(text);
+    setter(true);
+    setTimeout(() => setter(false), 1500);
+  };
+
   return (
     <div className='relative'>
       <div className='bg-surface-light dark:bg-surface-dark border-node-border relative z-10 flex h-48 w-40 items-center justify-end rounded-full border shadow-md'>
         {/* Dashed Divider */}
         <div className='border-node-border/70 absolute top-1/2 right-2 left-2 z-0 -translate-y-[1px] border-t-2 border-dashed' />
         {/* Inflow Label (top half) */}
-        <div 
-          className='absolute top-0 left-0 flex h-1/2 w-full translate-y-1 flex-col items-center justify-center'
-        >
+        <div className='group absolute top-0 left-0 flex h-1/2 w-full translate-y-1 flex-col items-center justify-center'>
           <span className='text-xl font-bold'>{inflowLabel}</span>
-          <span className='text-inflow font-semibold/80 text-xl'>
-            {formatCurrency(incomesTotal, currency)}
-          </span>
+          <div className='relative flex items-center gap-1'>
+            <span className='text-inflow font-semibold/80 text-xl'>
+              {formatCurrency(incomesTotal, currency)}
+            </span>
+            <button
+              type='button'
+              aria-label='Copy income total'
+              onClick={() => handleCopy(formatCurrency(incomesTotal, currency), setCopiedInflow)}
+              className='rounded p-0.5 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-60'
+            >
+              {copiedInflow ? (
+                <CheckIcon className='size-3 text-emerald-500' />
+              ) : (
+                <CopyIcon className='size-3' />
+              )}
+            </button>
+          </div>
         </div>
         {/* Outflow Label (bottom half) */}
-        <div 
-          className='absolute bottom-0 left-0 flex h-1/2 w-full -translate-y-1.5 flex-col items-center justify-center'
-        >
+        <div className='group absolute bottom-0 left-0 flex h-1/2 w-full -translate-y-1.5 flex-col items-center justify-center'>
           <span className='text-xl font-bold'>{outflowLabel}</span>
-          <span className='text-outflow font-semibold/80 text-xl'>
-            {formatCurrency(expensesTotal, currency)}
-          </span>
+          <div className='relative flex items-center gap-1'>
+            <span className='text-outflow font-semibold/80 text-xl'>
+              {formatCurrency(expensesTotal, currency)}
+            </span>
+            <button
+              type='button'
+              aria-label='Copy expense total'
+              onClick={() => handleCopy(formatCurrency(expensesTotal, currency), setCopiedOutflow)}
+              className='rounded p-0.5 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-60'
+            >
+              {copiedOutflow ? (
+                <CheckIcon className='size-3 text-rose-500' />
+              ) : (
+                <CopyIcon className='size-3' />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* move handle inward for smoother edge animation */}
@@ -66,9 +100,7 @@ function CoreNode({ id }: CoreNodeProps) {
       </div>
 
       {/* right cap w/ amount diff */}
-      <div 
-        className='bg-surface-light dark:bg-surface-dark border-node-border absolute top-1/2 right-3 flex translate-x-full -translate-y-1/2 items-center justify-center rounded-r-full border p-4 shadow-md'
-      >
+      <div className='group bg-surface-light dark:bg-surface-dark border-node-border absolute top-1/2 right-3 flex translate-x-full -translate-y-1/2 items-center gap-1 justify-center rounded-r-full border p-4 shadow-md'>
         <span
           className={join(
             'text-sm font-semibold',
@@ -78,6 +110,18 @@ function CoreNode({ id }: CoreNodeProps) {
         >
           {formatCurrency(totalDiff, currency)}
         </span>
+        <button
+          type='button'
+          aria-label='Copy difference'
+          onClick={() => handleCopy(formatCurrency(totalDiff, currency), setCopiedDiff)}
+          className='rounded p-0.5 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-60'
+        >
+          {copiedDiff ? (
+            <CheckIcon className={join('size-3', totalDiff >= 0 ? 'text-emerald-500' : 'text-rose-500')} />
+          ) : (
+            <CopyIcon className='size-3' />
+          )}
+        </button>
       </div>
     </div>
   );

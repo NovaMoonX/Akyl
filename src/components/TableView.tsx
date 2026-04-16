@@ -366,7 +366,7 @@ export default function TableView() {
                                       }
                                       className={`cursor-pointer text-gray-700 dark:text-gray-300 ${itemHidden ? 'line-through' : ''} ${!income.disabled ? 'hover:underline' : ''}`}
                                     >
-                                      {income.label}
+                                      {income.label || `${formatCurrency(income.amount, currency)} income`}
                                     </span>
                                   )}
                                   {income.description && (
@@ -572,7 +572,7 @@ export default function TableView() {
                                       }
                                       className={`cursor-pointer text-gray-700 dark:text-gray-300 ${itemHidden ? 'line-through' : ''} ${!expense.disabled ? 'hover:underline' : ''}`}
                                     >
-                                      {expense.label}
+                                      {expense.label || `${formatCurrency(expense.amount, currency)} expense`}
                                     </span>
                                   )}
                                   {expense.description && (

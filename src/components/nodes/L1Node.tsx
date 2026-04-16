@@ -1,6 +1,6 @@
 import { Handle, Position } from '@xyflow/react';
-import { CheckIcon, EyeClosedIcon, EyeIcon } from 'lucide-react';
-import { memo, useMemo } from 'react';
+import { CheckIcon, CopyIcon, EyeClosedIcon, EyeIcon } from 'lucide-react';
+import { memo, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useBudget } from '../../hooks';
 import { formatCurrency, type L1Data } from '../../lib';
@@ -43,6 +43,8 @@ function L1Node({ data }: L1NodeProps) {
     incomeBySource,
     expenseByCategory,
   } = useBudget();
+
+  const [copiedAmount, setCopiedAmount] = useState(false);
 
   // Get current sheet's listExpenses or fall back to global
   const activeSheetObj =
@@ -188,6 +190,24 @@ function L1Node({ data }: L1NodeProps) {
           >
             {formatCurrency(amount, currency)}
           </span>
+
+          <button
+            type='button'
+            aria-label='Copy amount'
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(formatCurrency(amount, currency));
+              setCopiedAmount(true);
+              setTimeout(() => setCopiedAmount(false), 1500);
+            }}
+            className='absolute right-1 bottom-1 rounded p-1 opacity-60 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-60'
+          >
+            {copiedAmount ? (
+              <CheckIcon className={join('size-3', type === 'income' ? 'text-emerald-500' : 'text-rose-500')} />
+            ) : (
+              <CopyIcon className='size-3' />
+            )}
+          </button>
 
           {/* move handle inward for smoother edge animation */}
           <Handle

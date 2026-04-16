@@ -15,6 +15,7 @@ import { useRef, useState, useMemo, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useSpace } from '../store';
 import { generateId, join } from '../utils';
+import { useSheetBalances } from '../hooks';
 import BulkSheetEditor from './BulkSheetEditor';
 import HeaderBarSheets from './header/HeaderBarSheets';
 import Modal from './ui/Modal';
@@ -64,6 +65,7 @@ export default function BottomBar() {
   const [viewMode, setViewMode] = useSpace(
     useShallow((state) => [state.viewMode, state.setViewMode]),
   );
+  const sheetBalances = useSheetBalances();
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isAddSheetModalOpen, setIsAddSheetModalOpen] = useState(false);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
@@ -275,7 +277,7 @@ export default function BottomBar() {
 
   return (
     <>
-      <div className='bg-surface-light dark:bg-surface-dark fixed bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-full border border-gray-300 px-4 py-2 shadow-lg dark:border-gray-700'>
+      <div data-bottom-bar className='bg-surface-light dark:bg-surface-dark fixed bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-full border border-gray-300 px-4 py-2 shadow-lg dark:border-gray-700'>
         <div className='flex items-center gap-2 sm:gap-3'>
           {/* Desktop: Button-based sheet selector */}
           <div className='hidden sm:block'>
@@ -283,7 +285,24 @@ export default function BottomBar() {
           </div>
 
           {/* Mobile: Select-based sheet selector */}
-          <div className='sm:hidden'>
+          <div className='flex items-center gap-1.5 sm:hidden'>
+            {activeSheet !== 'all' && sheetBalances[activeSheet] && (
+              <span
+                className={join(
+                  'size-2 shrink-0 rounded-full',
+                  sheetBalances[activeSheet] === 'surplus' && 'bg-emerald-500',
+                  sheetBalances[activeSheet] === 'burden' && 'bg-rose-400',
+                  sheetBalances[activeSheet] === 'even' && 'bg-gray-400',
+                )}
+                title={
+                  sheetBalances[activeSheet] === 'surplus'
+                    ? 'Income surplus'
+                    : sheetBalances[activeSheet] === 'burden'
+                      ? 'Expense burden'
+                      : 'Breaking even'
+                }
+              />
+            )}
             <select
               value={activeSheet}
               onChange={(e) => setActiveSheet(e.target.value)}

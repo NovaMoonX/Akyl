@@ -48,6 +48,7 @@ export interface Config {
   hideCategories?: boolean;
   listExpenses?: boolean;
   activeSheet?: string; // ID of the currently active sheet, or 'all' for all items
+  sheetViewports?: Record<string, { x: number; y: number; zoom: number }>; // Per-sheet viewport state
 }
 
 export interface Space {
